@@ -136,7 +136,7 @@ Paul's question (2026-08-26): the snowpack was very light this year; how might t
 
 ### 7.1 What the data says, by year
 
-Snowpack is grouped by **water year** (October 1 to September 30, see section 8), computed by `experiments/snowpack/run.py` from `data/MichiganCreek.csv` (2026-08-28). Peak date is the first day the maximum is reached; melt-out is the first zero reading after the peak. The earlier calendar-year table was built from the newest-first file, so its peak dates were the last day of each plateau rather than the first.
+Snowpack is grouped by **water year** (October 1 to September 30, see `glossary.md`), computed by `experiments/snowpack/run.py` from `data/MichiganCreek.csv` (2026-08-28). Peak date is the first day the maximum is reached; melt-out is the first zero reading after the peak. The earlier calendar-year table was built from the newest-first file, so its peak dates were the last day of each plateau rather than the first.
 
 | Water year | Peak SWE (in) | Peak date | April 1 SWE (in) | Melt-out | Days peak to melt-out | Days with data |
 |---|---|---|---|---|---|---|
@@ -227,40 +227,9 @@ Item 4 of 7.3. `experiments/analog/`: the whole Michigan Creek SNOTEL record (NR
 
 Side result for section 9: the period-of-record median April 1 SWE at Michigan Creek (1999 to 2026) is 10.05 inches, so the 75% line is 7.5 inches; below it are 2012, 2018, 2002, 2004, 2013, and 2026, with 2022 just above at 7.6.
 
-## 8. Glossary for the non-water reader
+## 8. Glossary
 
-Plain-language definitions used in this file and the analysis. Items marked **(general knowledge)** are Della's background, not Jake's materials.
-
-- **Snowpack.** Snow lying on the mountains through winter. In the Colorado Front Range most of the year's water arrives as snowmelt, so the snowpack is the real reservoir.
-- **SWE, snow water equivalent.** If this snow melted right now, how deep a layer of water would it make? Depth of snow is useless (powder vs packed), so SWE is the measurement. Michigan Creek's 2026 peak of 9.0 means nine inches of water sitting on the hillside as snow.
-- **SNOTEL.** The federal network of automated mountain snow stations ("snow telemetry"). Michigan Creek is station 937. One point in a large watershed: a proxy for the basin, not the basin.
-- **Peak and melt-out.** SWE climbs all winter, reaches a maximum (peak), then falls to zero (melt-out). The shape of that curve is the year's water story: high, late, slow means a long strong river; low and gone in two weeks means a short pulse and a thin summer.
-- **April 1 SWE.** The traditional comparison date, usually near peak. "How was the snowpack this year" means "April 1 SWE vs average."
-- **Water year.** October 1 to September 30. Snow that falls in November melts the following May, so calendar years split one winter in half. The table in 7.1 grouped by calendar year, which is why earlier years show snow still present on December 31: that is the next winter's first snow. Regroup by water year before analysis.
-- **cfs, cubic feet per second.** River flow. 620 cfs means 620 cubic feet of water pass the gage each second.
-- **Flush.** The rising melt river scours banks, forest floor, and stream bed and carries a season's accumulated dead plant material downstream in a few weeks. That is the spring TOC spike. "First flush" is the same idea for any storm after a dry spell.
-- **Baseflow.** What the river is when it is neither raining nor melting: groundwater seeping from rock. Groundwater has been in contact with minerals, so it carries more of what makes alkalinity. Less melt means less dilution, so a dry year runs higher alkalinity, exactly as 2026 shows.
-- **Convective storms, monsoon.** Summer afternoon thunderstorms. In July and August, moist air from the south (the North American monsoon) produces short, intense downpours over small areas. Little annual water, but an inch on one hillside in an hour flushes sediment and organic matter fast.
-- **Burn scar (general knowledge).** Land where wildfire removed vegetation; rain runs straight off carrying ash, soil, and organic carbon. Denver Water's watershed has several (Buffalo Creek 1996, Hayman 2002). Ask Jake whether it matters at Strontia.
-- **Regime.** A stretch of time where one mechanism dominates. A snow-flush year and a drought-plus-thunderstorm year are two regimes: same river, different physics producing the TOC.
-- **Extrapolation.** Answering for inputs outside anything seen in training. Straight-line models try (badly); tree models cannot, and instead return the nearest remembered answer with full confidence.
-- **Novelty score.** For one day, how many of its inputs sit outside the training range. A cheap way to flag days where the model is extrapolating.
-- **Excursion.** A day beyond the operational threshold: TOC above 3 mg/L or alkalinity below 60 mg/L, the days Jake's sample weights emphasise and operators care about.
-
-See also `guide.md` sections 1 to 3 for TOC, alkalinity, soft sensor, turbidity, and specific conductance, and section 10 for R^2, RMSE, MAPE, and MAE.
-
-### Statistics terms used in sections 4 to 7
-
-- **MAE, mean absolute error.** The typical size of a miss in the target's units, as a plain average: each day's miss with the sign dropped, averaged. Unlike RMSE it does not square the misses, so one bad day cannot dominate a group. Used when comparing groups of days (novelty bins, regimes).
-- **Median.** The middle value when you sort a list. Half the values are above it, half below. Less sensitive to one extreme value than the mean, which is why the wet/dry reference is a median.
-- **Percentile, 5th and 95th.** The value below which 5% (or 95%) of the training days fall. A test day "beyond the 5th or 95th percentile" on some input is in a corner the model saw on fewer than one training day in twenty. Softer than "outside the minimum and maximum", which means never seen at all.
-- **Fold.** One train/test split. Rolling-origin folds (section 4.1) train on every year before N and test on year N; regime folds (7.5) train on wet years and test on dry, or the reverse.
-- **Anchored rows.** The rule that every feature set is scored on the same days: keep only days where all of Jake's full feature set is present, then remove columns. Without it, dropping a column with gaps changes which days survive, and the comparison is partly a different test set (section 4).
-- **Spearman correlation.** A number from -1 to 1 saying how consistently two things rise together, based on rank order rather than exact values. 0.4 means "more novelty tends to mean more error, loosely"; 1 would mean perfectly in step.
-- **Standardised (z-score).** Each column rescaled so its mean is 0 and its spread is 1, so that inches of snow and days of melt can be compared on one footing before measuring distance between years (7.7).
-- **Monotonically.** Only ever moving one way. "MAE rises monotonically with novelty count" means each step up in novelty brought a higher error, with no dips.
-- **Recall, precision, false alarm, base rate.** Recall: of the days that really were excursions, what share the model flagged. Precision: of the days the model flagged, what share were real. A false alarm is a flagged day that was not real. The base rate is what precision would be if the model flagged every day (59% for alkalinity below 60, since that is how often it happens); precision near the base rate means the flags carry little information. Full explanation in `guide.md` section 11.
-- **Lead (days).** For an episode, the gap between the first day the model flagged it and the day it actually began. Negative means the warning came before the episode; positive means the model noticed after it had started.
+Moved to `glossary.md`.
 
 ## 9. Wet and dry years: the measure
 

@@ -1,6 +1,6 @@
 # What Jake is doing, from the ground up
 
-A plain-language walkthrough of the Denver Water materials for someone who writes software but has never touched water treatment, statistics, pandas, or Jupyter. Written 2026-08-25 from Jake's notebooks, deck, and email, plus our local runs in `experiments/`. Where this fills in water chemistry Jake never spelled out, it says so.
+A plain-language walkthrough of the Denver Water materials for someone who writes software but has never touched water treatment, statistics, pandas, or Jupyter. Written 2026-08-25 from Jake's notebooks, deck, and email, plus our local runs in `experiments/`. Where this fills in water chemistry Jake never spelled out, it says so. Terms used across the rest of the repo (snowpack, water year, MAE, recall, and the like) are collected in [glossary.md](glossary.md).
 
 ## 1. The physical system
 

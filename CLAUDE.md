@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A private workspace for preparing the Explore DDD 2026 Design Storm exercises, built around Jake Slawson's (Denver Water) TOC and alkalinity soft-sensor models for the Foothills Water Treatment Plant. It holds Jake's original materials, a plain-language guide to them, reproducible re-runs of his notebooks, and a set of deterministic experiments layered on top. It is a preparation repo, not the repo that will be handed to conference cohorts.
 
-Start with `README.md` (what Jake sent and why), `guide.md` (the domain and the models explained from zero), and `exploration-notes.md` (findings, open questions for Denver Water, glossary). Each experiment package has its own README with method and results.
+Start with `README.md` (what Jake sent and why), `guide.md` (the domain and the models explained from zero), and `exploration-notes.md` (findings and open questions for Denver Water); `glossary.md` defines every water and statistics term. Each experiment package has its own README with method and results.
 
 ## Ground rules
 
@@ -74,4 +74,4 @@ Cross-package scores are comparable only because split, seeds, weights, and anch
 
 ## Writing style in the docs
 
-The markdown files are written for readers who are not data scientists or water engineers: terms get defined at first use (`guide.md` section 10 and the glossary in `exploration-notes.md` section 8), claims sourced from general knowledge rather than the materials are marked as such, and any quoted model score names the year it was measured on (a lesson from `experiments/rolling/`).
+The markdown files are written for readers who are not data scientists or water engineers: terms get defined at first use (`guide.md` section 10 and `glossary.md`), claims sourced from general knowledge rather than the materials are marked as such, and any quoted model score names the year it was measured on (a lesson from `experiments/rolling/`).

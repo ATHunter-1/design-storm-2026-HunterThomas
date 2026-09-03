@@ -65,5 +65,6 @@ Reported results (deck, ~July 2026):
 
 ## Related
 
+- Plain-language definitions of every water and statistics term used in this repo: [glossary.md](glossary.md)
 - People: Jake Slawson (Data Scientist, Water Quality & Treatment) and Cassidi Rosenkrance (WQ&T Manager, Lab-Monitoring), Denver Water
 - The four-cohort exercise structure is drafted in Explore DDD's planning docs, outside this repository
