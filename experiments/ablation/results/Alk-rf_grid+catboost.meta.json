@@ -1,0 +1,18 @@
+{
+  "inputs_md5": {
+    "FoothillsInfluent.csv": "369ed6e5755a7f8d391647dfc0d8815b",
+    "MichiganCreek.csv": "beacb35066e546b936f6c47cf411d2f4",
+    "SouthPlatteFlow.csv": "98df39c556dfc43fd170c22ad513251f",
+    "SouthPlatteTelemetry.csv": "edcac01b055d68992d48cdc2207045d4",
+    "USC00058022.csv": "c9f240e25264f47b9adde50d4468b460",
+    "USGS_South_Platte.csv": "fd78a7660898cf094e58f02674a06d16"
+  },
+  "versions": {
+    "python": "3.13.13",
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "scikit-learn": "1.9.0",
+    "catboost": "1.2.10"
+  },
+  "git_commit": "41cf9baf146ca9a333ae914411bd2069d2d1b33d"
+}

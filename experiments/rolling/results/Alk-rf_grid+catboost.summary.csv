@@ -1,0 +1,5 @@
+label,model,years,r2_mean,r2_min,r2_max,rmse_mean,recall_mean,precision_mean
+jake_full,rf_grid,4,0.074728,-0.522844,0.754592,5.986095,0.810161,0.760263
+jake_full,catboost,4,0.193812,-0.491356,0.795213,5.589484,0.752778,0.757440
+drop:turb_flow,rf_grid,4,-0.058421,-0.749037,0.719603,6.405659,0.826746,0.746944
+drop:turb_flow,catboost,4,0.108937,-0.871058,0.809594,5.678713,0.790022,0.762916

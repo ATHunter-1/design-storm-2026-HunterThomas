@@ -1,0 +1,6 @@
+water_year,april1_swe,fraction_of_reference,label,days_with_data,reference_median,reference_years,fallback_used
+2022,,,,182,10.0500,28,False
+2023,9.1000,0.9055,wet,365,10.0500,28,False
+2024,12.0000,1.1940,wet,366,10.0500,28,False
+2025,9.3000,0.9254,wet,364,10.0500,28,False
+2026,0.8000,0.0796,dry,327,10.0500,28,False

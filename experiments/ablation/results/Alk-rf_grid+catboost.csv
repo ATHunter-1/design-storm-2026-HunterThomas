@@ -1,0 +1,28 @@
+target,model,label,n_features,features,rows,r2,rmse,mape,excursion_recall,excursion_precision,cv_mean_r2,cv_std_r2
+Alk,linear,baseline_linear,1,Specific_Cond_Mean,840,0.504088,6.491604,0.086562,0.437086,0.785714,,
+Alk,rf_grid,jake_full,8,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.681384,5.203360,0.069610,0.834437,0.663158,-0.780392,1.798538
+Alk,rf_grid,drop:Specific_Cond_Mean,7,pH_Median month_sin month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.159063,8.453399,0.115209,0.847682,0.492308,-1.907717,3.112233
+Alk,rf_grid,drop:pH_Median,7,Specific_Cond_Mean month_sin month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.422782,7.003573,0.096333,0.980132,0.512111,-1.910716,2.885136
+Alk,rf_grid,drop:month_sin,7,Specific_Cond_Mean pH_Median month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.648980,5.461548,0.075166,0.748344,0.729032,-0.425964,1.254607
+Alk,rf_grid,drop:month_cos,7,Specific_Cond_Mean pH_Median month_sin flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.627964,5.622663,0.079323,0.874172,0.600000,-0.220400,0.732439
+Alk,rf_grid,drop:flow_7day_avg,7,Specific_Cond_Mean pH_Median month_sin month_cos turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.627249,5.628067,0.078627,0.841060,0.638191,-0.337972,0.967201
+Alk,rf_grid,drop:turb_3day,7,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_flow Dissolved_Oxygen_Mean,840,0.641226,5.521539,0.077358,0.847682,0.624390,-0.457650,1.290994
+Alk,rf_grid,drop:turb_flow,7,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_3day Dissolved_Oxygen_Mean,840,0.641354,5.520554,0.076943,0.847682,0.630542,-0.494581,1.429872
+Alk,rf_grid,drop:Dissolved_Oxygen_Mean,7,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_3day turb_flow,840,0.642693,5.510236,0.077040,0.841060,0.628713,-0.416687,1.377663
+Alk,rf_grid,top2_catboost,2,Specific_Cond_Mean pH_Median,840,0.375433,7.285163,0.099440,0.754967,0.678571,-0.041155,0.743738
+Alk,rf_grid,cond_plus_season,3,Specific_Cond_Mean month_sin month_cos,840,0.307932,7.668744,0.101937,0.933775,0.528090,-1.024346,1.431027
+Alk,rf_grid,no_season,6,Specific_Cond_Mean pH_Median flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.589450,5.906535,0.083178,0.887417,0.611872,0.000838,0.444082
+Alk,rf_grid,chemistry_only,3,Specific_Cond_Mean pH_Median Dissolved_Oxygen_Mean,840,0.548238,6.195902,0.090468,0.794702,0.606061,0.143911,0.357519
+Alk,catboost,jake_full,8,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.705994,4.998360,0.068175,0.589404,0.872549,,
+Alk,catboost,drop:Specific_Cond_Mean,7,pH_Median month_sin month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.415198,7.049432,0.095668,0.933775,0.493007,,
+Alk,catboost,drop:pH_Median,7,Specific_Cond_Mean month_sin month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.420600,7.016798,0.087704,0.794702,0.506329,,
+Alk,catboost,drop:month_sin,7,Specific_Cond_Mean pH_Median month_cos flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.596060,5.858791,0.078145,0.556291,0.857143,,
+Alk,catboost,drop:month_cos,7,Specific_Cond_Mean pH_Median month_sin flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.668400,5.308318,0.073549,0.609272,0.800000,,
+Alk,catboost,drop:flow_7day_avg,7,Specific_Cond_Mean pH_Median month_sin month_cos turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.618658,5.692549,0.079631,0.602649,0.728000,,
+Alk,catboost,drop:turb_3day,7,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_flow Dissolved_Oxygen_Mean,840,0.698883,5.058446,0.067504,0.662252,0.813008,,
+Alk,catboost,drop:turb_flow,7,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_3day Dissolved_Oxygen_Mean,840,0.721903,4.861253,0.066052,0.635762,0.711111,,
+Alk,catboost,drop:Dissolved_Oxygen_Mean,7,Specific_Cond_Mean pH_Median month_sin month_cos flow_7day_avg turb_3day turb_flow,840,0.692206,5.114224,0.069278,0.655629,0.846154,,
+Alk,catboost,top2_catboost,2,Specific_Cond_Mean pH_Median,840,0.141120,8.543109,0.118044,0.629139,0.719697,,
+Alk,catboost,cond_plus_season,3,Specific_Cond_Mean month_sin month_cos,840,0.131514,8.590752,0.111172,0.701987,0.519608,,
+Alk,catboost,no_season,6,Specific_Cond_Mean pH_Median flow_7day_avg turb_3day turb_flow Dissolved_Oxygen_Mean,840,0.366936,7.334551,0.104324,0.496689,0.862069,,
+Alk,catboost,chemistry_only,3,Specific_Cond_Mean pH_Median Dissolved_Oxygen_Mean,840,0.088359,8.801602,0.121988,0.503311,0.835165,,
