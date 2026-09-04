@@ -10,10 +10,10 @@ Start with `README.md` (what Jake sent and why), `guide.md` (the domain and the 
 
 ## Ground rules
 
-- **Jake's originals are read-only.** `scripts/`, `data/`, `figures/`, `Foothills_INF_ML_NoConclusions.pptx`, and the zip are the materials as sent (plus `data/` CSVs extracted from it). Never edit them; experiments work on copies. `ExploreDDD_Materials/` is gitignored; re-extract it from `ExploreDDD_Materials.zip` if needed.
+- **Jake's originals are read-only.** `scripts/`, `data/`, `figures/`, `Foothills_INF_ML_NoConclusions.pptx`, and the zips are the materials as sent (plus `data/` files extracted from them). Never edit them; experiments work on copies. `ExploreDDD_Materials/` is gitignored; re-extract it from `ExploreDDD_Materials_Update.zip` (2026-09-04, current) if needed. `ExploreDDD_Materials.zip` is the original 2026-08-25 drop, kept for history.
 - **The Denver Water disclaimer travels with the data.** It is at the top of `README.md`. Keep it with any derived dataset or shared output. The data is provisional; a fresh API pull can differ from the committed CSVs.
 - **Determinism is a hard requirement for experiments.** Fixed seeds (`SEED = 42`) and pinned thread counts live in `experiments/ablation/scoring.py`. Every `run.py` must produce byte-identical result CSVs on a second run; verify before writing findings into a README or the notes.
-- **Known data artifact:** `data/MichiganCreek.csv` (and the NRCS feed itself) shows SWE 9.0 on May 12 to 15, 2026 between zero readings. Treat those four days as suspect (see `exploration-notes.md` 7.1 and `experiments/analog/`).
+- **Known data artifact:** `data/MichiganCreek.csv` (and the NRCS feed itself) shows SWE 9.0 on May 12 to 15, 2026 between zero readings. Jake confirmed by replacing the station in the Sep 4 update ("erroneous spring 2026 at Michigan Creek"); the models now use `data/HoosierPass.csv`, and `MichiganCreek.csv` stays only for the drought analyses (`snowpack/`, `regime/`, `analog/`) built on its record (see `exploration-notes.md` 7.1). Unresolved: the shipped CSV is Hoosier Pass (station 531), but the updated notebooks fetch and read Buckskin Joe (938).
 
 ## Environment and commands
 

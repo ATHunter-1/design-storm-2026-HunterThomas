@@ -19,7 +19,9 @@ From `experiments/`:
 
 `run.py` owns the CSV parsing (`M/D/YYYY` dates, one non-numeric SWE row on 8/26/2025) and uses the in-kit median April 1 SWE as the fallback reference. The period-of-record median comes from the analog-years exploration.
 
-## Result, run 2026-08-28
+## Result, run 2026-08-28 (unchanged by the Sep 4 rerun)
+
+Jake's Sep 4 update replaced Michigan Creek as the models' snowpack predictor, but this package deliberately stays on `data/MichiganCreek.csv`: it exists to characterize the record the drought analyses (`regime/`, `analog/`) were built on, including the May 2026 artifact that prompted the replacement. Re-run 2026-09-04 with byte-identical output.
 
 | Water year | Peak SWE (in) | Peak date | April 1 SWE (in) | Melt-out | Days peak to melt-out | Days with data | Label |
 |---|---|---|---|---|---|---|---|

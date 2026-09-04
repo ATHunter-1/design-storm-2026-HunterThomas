@@ -8,7 +8,7 @@ Prompts to paste into an AI coding assistant working in a folder that holds the 
 
 ## 1. Understand the domain
 
-> Read the problem statement and the slide deck. In plain language: what does the Foothills treatment plant care about, why does it want four days of warning, and what happens at the plant when it gets one? Define TOC, alkalinity, turbidity, specific conductance, soft sensor, and influent as you go.
+> Read the problem statement and the slide deck. In plain language: what does the Foothills treatment plant care about, why does it want a few days of warning, and what happens at the plant when it gets one? Define TOC, alkalinity, turbidity, specific conductance, soft sensor, and influent as you go.
 
 > Draw the physical system as a sequence: where the snow falls, where the river is measured, where the water is treated. Label each measurement in the data with where on that path it is taken and who takes it.
 

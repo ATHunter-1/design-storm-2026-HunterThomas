@@ -1,12 +1,12 @@
 # What Jake is doing, from the ground up
 
-A plain-language walkthrough of the Denver Water materials for someone who writes software but has never touched water treatment, statistics, pandas, or Jupyter. Written 2026-08-25 from Jake's notebooks, deck, and email, plus our local runs in `experiments/`. Where this fills in water chemistry Jake never spelled out, it says so. Terms used across the rest of the repo (snowpack, water year, MAE, recall, and the like) are collected in [glossary.md](glossary.md).
+A plain-language walkthrough of the Denver Water materials for someone who writes software but has never touched water treatment, statistics, pandas, or Jupyter. Written 2026-08-25 from Jake's notebooks, deck, and email, plus our local runs in `experiments/`; revised 2026-09-05 for his Sep 4 update (data through Aug 19, shorter TOC lags, replacement SNOTEL station, bug fixes). Where this fills in water chemistry Jake never spelled out, it says so. Terms used across the rest of the repo (snowpack, water year, MAE, recall, and the like) are collected in [glossary.md](glossary.md).
 
 ## 1. The physical system
 
 Snow falls in the Rockies. It melts in spring and runs into the South Platte River. The river flows down to **Strontia Springs Reservoir** southwest of Denver, and from there the water goes to the **Foothills Water Treatment Plant**, which cleans it and sends it to Denver taps.
 
-Water takes time to move through that. Jake says about four days from where the river is measured (a sensor just above Strontia) to where it arrives (the plant intake). That transport time is the whole basis of the project: what the river looks like today tells you something about what the plant will receive in four days.
+Water takes time to move through that, and the "how long" turns out to be subtle. Denver Water's raw water group models water moving from the measurement point (a sensor just above Strontia) to the plant intake in about four hours. Yet the models predict best with the upstream readings lagged by days, not hours: the deck used 4 days, Jake recently got slightly better results with 2, and he thinks the multi-day scale is about mixing and deposition in the reservoir rather than raw travel time. The exact number is still moving and he asks that it not be leaned on. The premise survives in a looser form: what the river looked like a couple of days ago tells you something about what the plant receives today, and any heads-up of a day or more is useful to operators.
 
 ## 2. What the plant cares about
 
@@ -16,7 +16,7 @@ The water arriving at a plant is not the same every day. Treatment is a chemistr
 
 **Alkalinity.** The water's ability to resist changes in acidity, mostly from dissolved minerals picked up from rock. The main cleaning step, **coagulation**, doses the water with acidic chemicals that make fine particles clump so they can be filtered out. Low alkalinity means not enough buffering, the acidity swings, and coagulation stops working properly, so operators have to add something alkaline to compensate. (Again general knowledge; Jake only says "treatability".)
 
-Why four days of warning helps, in his words: staffing and treatment. Get the right people on shift and the right chemicals dosed before the unusual water arrives, rather than after someone notices.
+Why a few days of warning helps, in his words: staffing and treatment. Get the right people on shift and the right chemicals dosed before the unusual water arrives, rather than after someone notices.
 
 ## 3. The trick: a soft sensor
 
@@ -54,9 +54,9 @@ Colorado DWR gage (station PLASPLCO)
 Date,       Flow_CFS, GageHeight_ft, Precip
 2024-06-07, 1060.0,   4.058437,      -100.53875
 
-SNOTEL snowpack (station 937, Michigan Creek)
-DATE,     SWE
-4/1/2023, 9.1
+SNOTEL snowpack (HoosierPass.csv since the Sep 4 update; Michigan Creek before)
+DATE,       SWE
+2023-04-01, 12.6
 
 NOAA weather station (USC00058022)
 STATION,     DATE,       PRCP, SNOW, TMAX, TMIN
@@ -65,9 +65,9 @@ USC00058022, 2024-06-07, 0.0,  0.0,  86.0, 44
 
 Units: mg/L is milligrams per litre. CFS is cubic feet per second of river flow. SWE is snow water equivalent, the depth of water you would get if the snowpack melted. Temperatures in the NOAA file are Fahrenheit, the USGS ones Celsius.
 
-Two quirks. The DWR `Precip` column is a running total that occasionally resets, which is why it can be negative and why Jake takes its day-to-day difference. And the Foothills file has no January to March at all, partly because Jake's code filters those months out and partly because the river sensor has almost no winter readings (probably pulled out before the river freezes).
+Two quirks. The DWR `Precip` column is a running total that occasionally resets, which is why it can be negative and why Jake takes its day-to-day difference (his Sep 4 comment adds: don't use it as a predictor, the data is dirty, NOAA preferred). And the Foothills file has no January to March at all, because the river sensor has almost no winter readings (probably pulled out before the river freezes). Jake's code used to also filter those months out with a `month >= 4` mask; the Sep 4 update replaced that with a proper date cutoff, fixing the "bug in waiting" from section 14.
 
-About 1,100 rows in the target, spread over four and a half summers.
+About 1,100 rows in the target, spread over four and a half summers, ending 2026-08-19 to match the new reservoir sonde deployment.
 
 ## 5. What a Jupyter notebook is
 
@@ -85,7 +85,7 @@ pandas is Python's table library. A `DataFrame` is a table in memory with named 
 
 **`join`**: a SQL left join on the date index. Start with the target table, bolt the predictor columns onto each day's row. After four joins, each day has the lab result plus every sensor reading for that day, all in one wide row.
 
-**`shift(4, freq='D')`**: slide every row in a table four days later. This is the move that makes it a forecast. After shifting, the row dated June 10 actually contains the river readings from June 6. So when you join it to the June 10 lab result, the model is learning "readings from four days ago" against "lab result today". Without the shift it would be a same-day model, which is useless for warning anyone.
+**`shift(2, freq='D')`**: slide every row in a table two days later. This is the move that makes it a forecast. After shifting, the row dated June 10 actually contains the river readings from June 8. So when you join it to the June 10 lab result, the model is learning "readings from two days ago" against "lab result today". Without the shift it would be a same-day model, which is useless for warning anyone. The shift is 2 days in the TOC notebook and 4 in the alkalinity one (rain gets 4 and 6; NOAA publishes about two days behind, so its lag carries an operational allowance on top).
 
 **`rolling(7).mean()`**: a moving average over the last seven rows. Smooths noise and captures "the river has been high all week" as opposed to "the river spiked today". `diff()` is the sibling: today's value minus yesterday's, so rising or falling.
 
@@ -132,22 +132,22 @@ Three numbers appear everywhere.
 
 **MAE**, mean absolute error. Also the typical size of a miss in the target's units, but a plain average: take each day's miss, drop the sign, average. RMSE squares the misses first, so a few big misses dominate it; MAE counts one 3 mg/L miss as exactly ten 0.3 mg/L misses. The later experiments (`experiments/novelty/`) use MAE when comparing groups of days, because one outlier day should not swamp a group average.
 
-Jake's numbers as we reproduced them (test half of the data):
+Jake's numbers as we reproduced them (test half of the data, re-run 2026-09-04 on the updated materials; the baseline R² is scored on the ablation package's matched rows):
 
 | | Baseline line | Random forest | CatBoost |
 |---|---|---|---|
-| TOC, R² | -0.14 | 0.56 | 0.65 |
-| TOC, RMSE (mg/L) | 0.69 | 0.43 | 0.38 |
-| Alkalinity, R² | 0.51 | 0.68 | 0.71 |
-| Alkalinity, RMSE (mg/L) | 6.29 | 5.20 | 5.00 |
+| TOC, R² | 0.06 | 0.66 | 0.74 |
+| TOC, RMSE (mg/L) | 0.63 | 0.38 | 0.33 |
+| Alkalinity, R² | 0.51 | 0.61 | 0.68 |
+| Alkalinity, RMSE (mg/L) | 6.30 | 5.76 | 5.20 |
 
 How to read that:
 
-- For alkalinity, one variable and a straight line already explains half the variation (0.51). Conductance really is a good proxy for alkalinity, which matches the chemistry. The forest lifts it to 0.68, so the extra machinery is worth about 17 points. Real, not dramatic.
-- For TOC, the straight line is worse than guessing the average on the test half. The forest gets to 0.56. So the relationship is genuinely nonlinear and the trees are earning their keep.
+- For alkalinity, one variable and a straight line already explains half the variation (0.51). Conductance really is a good proxy for alkalinity, which matches the chemistry. The forest lifts it to 0.61, so the extra machinery is worth about 10 points. Real, not dramatic.
+- For TOC, the straight line is barely better than guessing the average. The forest gets to 0.66. So the relationship is genuinely nonlinear and the trees are earning their keep. (Both TOC models scored higher than on the August materials; the 2-day lags and the replacement snow station are the difference.)
 - Jake's own summary is honest: "pretty good, don't expect it to get much better without more data." He deliberately traded some R² for catching peaks, because a model that nails the boring days and misses the storm is worthless to an operator.
 
-One warning sign in the output. Cross-validation (testing on several different time slices of the training data) gave a mean R² of -0.79 for the TOC forest. That means the model's quality swings wildly depending on which stretch of time you test it on. The single 0.56 number is a good result on one particular half; it is not a stable property of the model.
+One warning sign in the output. Cross-validation (testing on several different time slices of the training data) gave a mean R² of -0.66 for the TOC forest. That means the model's quality swings wildly depending on which stretch of time you test it on. The single 0.66 number is a good result on one particular half; it is not a stable property of the model.
 
 ## 11. The yes/no version
 
@@ -158,16 +158,16 @@ For alkalinity Jake also asks a simpler question: **will it be below 60 mg/L, ye
 
 The two scores:
 
-- **Precision**: when the model says "low", how often is it right? 77%.
+- **Precision**: when the model says "low", how often is it right? 82%.
 - **Recall**: of the days that really were low, how many did it flag? 61%.
 
-Out of 378 test days: 92 lows caught, 59 lows missed, 27 false alarms, 200 correct all-clears. In the 2026 season plot there is a three-week run in late July and August where it kept predicting low while the water was high.
+Out of 377 test days: 92 lows caught, 60 lows missed, 20 false alarms, 205 correct all-clears. In the 2026 season plot there is a three-week run in late July and August where it kept predicting low while the water was high.
 
-Why it struggles: the average alkalinity in this data is 58.3 and 59% of days are below 60. The threshold runs straight through the middle of normal. The question "above or below 60" on water that hovers at 58 is close to a coin flip, and Jake says so ("not sold on precision", "lots of back and forth"). Whether 60 is the number operators actually act on, or just a round one, is worth asking.
+Why it struggles: the average alkalinity in this data is 58.3 and 58% of days are below 60. The threshold runs straight through the middle of normal. The question "above or below 60" on water that hovers at 58 is close to a coin flip, and Jake says so ("not sold on precision", "lots of back and forth"). Whether 60 is the number operators actually act on, or just a round one, is worth asking.
 
 ## 12. Which inputs the model leans on
 
-**Feature importance** ranks the inputs by how much the model uses them. For alkalinity: conductance 33%, pH 26%. For TOC: turbidity times flow 33%, conductance 17%, snowpack 15%. Both match the physical story: dissolved minerals for alkalinity, muddy high water for organic carbon. That agreement is reassuring, because a model that leaned on something physically meaningless would be memorising coincidences.
+**Feature importance** ranks the inputs by how much the model uses them. For alkalinity: conductance 33%, pH 29%. For TOC: turbidity times flow 34%, snowpack 17%, conductance 15%. Both match the physical story: dissolved minerals for alkalinity, muddy high water for organic carbon. That agreement is reassuring, because a model that leaned on something physically meaningless would be memorising coincidences.
 
 **SHAP** plots do the same per prediction: for this particular day, which inputs pushed the estimate up or down.
 
@@ -177,10 +177,13 @@ Jake has a small, clean, public dataset; a physically motivated question; a sens
 
 ## 14. Loose ends found in the code
 
-- The TOC notebook shifts the river readings by 2 days, not 4, under a comment saying 4. Alkalinity uses 4. Rain uses 6 in both.
-- The "trim to April 2022" filter removes January to March of every year. Harmless today, a bug in waiting.
+Two of the four originals were fixed by Jake's Sep 4 update; strikethrough kept for the story.
+
+- ~~The TOC notebook shifts the river readings by 2 days, not 4, under a comment saying 4.~~ Resolved Sep 4: the TOC notebook now shifts everything upstream by 2 days consistently (rain 4), and Jake's email explains the thinking (2 recently scored better; the number is expected to keep moving). Alkalinity still uses 4 (rain 6).
+- ~~The "trim to April 2022" filter removes January to March of every year.~~ Fixed Sep 4: now a real date cutoff (`index >= '2022-04-01'`).
 - Six turbidity figures came in the package with no turbidity notebook. There is a third model.
 - The two Foothills lab exports the notebooks actually read were not shared; `FoothillsInfluent.csv` is their combined output.
+- New in the Sep 4 update: the notebooks fetch and read Buckskin Joe SNOTEL (station 938), but the shipped CSV is `HoosierPass.csv` and its values match Hoosier Pass (station 531) on the NRCS feed. One of the two is stale; question for Jake.
 
 ## 15. Poking at it yourself
 
@@ -189,4 +192,4 @@ cd eddd/design-storm/experiments
 .venv/bin/jupyter notebook
 ```
 
-Open `runs/Alkalinity_Soft_Sensor.ipynb`. Read cells top to bottom; every one has its output underneath. Change a number (the 4 in `shift(4, freq='D')`, the 60 threshold, the feature list), then Kernel > Restart & Run All and watch the scores move. That is the fastest way to build intuition, and it is roughly what a cohort would do on the day.
+Open `runs/Alkalinity_Soft_Sensor.ipynb`. Read cells top to bottom; every one has its output underneath. Change a number (the lag in `shift(4, freq='D')`, the 60 threshold, the feature list), then Kernel > Restart & Run All and watch the scores move. That is the fastest way to build intuition, and it is roughly what a cohort would do on the day.

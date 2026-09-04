@@ -1,6 +1,6 @@
 # Design Storm 2026: Denver Water materials
 
-Sent by Jake Slawson (Data Scientist, Denver Water Water Quality & Treatment) on 2026-08-25, following the Aug 24 call with Cassidi Rosenkrance and Paul.
+Sent by Jake Slawson (Data Scientist, Denver Water Water Quality & Treatment) on 2026-08-25, following the Aug 24 call with Cassidi Rosenkrance and Paul. Updated 2026-09-04 (`ExploreDDD_Materials_Update.zip`): data through 2026-08-19 to match the real-time profiling sonde deployed in Strontia Reservoir, bug fixes in the notebooks, a replacement SNOTEL station, and shorter TOC lags. The Strontia sonde data itself arrived 2026-09-02 (`data/Strontia 0407_0819.xlsx`, byte-identical to the copy in the update zip).
 
 ## Disclaimer (Denver Water, must travel with the data)
 
@@ -9,9 +9,9 @@ Sent by Jake Slawson (Data Scientist, Denver Water Water Quality & Treatment) on
 
 ## The problem
 
-Predict **TOC** and **alkalinity** at the **Foothills Water Treatment Plant influent four days ahead**, from upstream gage, streamflow, snowpack, and precipitation data. Both analytes affect treatability, so advance warning lets plant operators plan staffing and treatment when outlier water is coming down the South Platte.
+Predict **TOC** and **alkalinity** at the **Foothills Water Treatment Plant influent a few days ahead**, from upstream gage, streamflow, snowpack, and precipitation data. Both analytes affect treatability, so advance warning lets plant operators plan staffing and treatment when outlier water is coming down the South Platte.
 
-The four-day horizon was chosen empirically (highest model accuracy) and lines up with transport time from the sampling area around Strontia Reservoir down to Foothills.
+The exact horizon is empirical and still moving, and Jake asks that it not be over-emphasized (email, 2026-09-04). The deck used 4 days; he recently got slightly better results with 2, and the September notebooks use 2 for TOC (alkalinity still uses 4). Physically, Denver Water's raw water group models water moving through this stretch in about 4 hours; the multi-day lag that predicts best for TOC and alkalinity is likely mixing and deposition, not transport. What operators need is any heads-up of a day or more.
 
 Jake's framing: the models are still under development, built as a case study for what is possible with current data. Not publication-ready.
 
@@ -28,16 +28,21 @@ Jake's framing: the models are still under development, built as a case study fo
 | `SNTL_grabber.ipynb` | NWCC / SNOTEL snowpack API pull |
 | `GHCN_grabber.ipynb` | NOAA GHCN precipitation API pull |
 
-`ExploreDDD_Materials/Data/` (CSV, all series start 2022-04-01)
+`ExploreDDD_Materials/Data/` (CSV, series run 2022-04-01 to 2026-08-19 in the Sep 4 update)
 
 | File | Columns | Rows |
 |---|---|---|
-| `FoothillsInfluent.csv` | DATE, TOC_mg_L, Alk_mg_L | 1120 |
-| `MichiganCreek.csv` | DATE, SWE (SNOTEL snow water equivalent) | 1606 |
-| `SouthPlatteFlow.csv` | measDate, Flow_CFS (DWR) | 1607 |
-| `SouthPlatteTelemetry.csv` | Date, Flow_CFS, GageHeight_ft, Precip | 1607 |
-| `USC00058022.csv` | STATION, DATE, PRCP, SNOW, TMAX, TMIN (NOAA GHCN) | 1604 |
-| `USGS_South_Platte.csv` | Date, site_no, dissolved oxygen, specific conductance, temp, turbidity, pH (max/mean/min) | 1033 |
+| `FoothillsInfluent.csv` | DATE, TOC_mg_L, Alk_mg_L | 1116 |
+| `HoosierPass.csv` | DATE, SWE (SNOTEL snow water equivalent) | 1602 |
+| `SouthPlatteFlow.csv` | measDate, Flow_CFS (DWR) | 1603 |
+| `SouthPlatteTelemetry.csv` | Date, Flow_CFS, GageHeight_ft, Precip | 1603 |
+| `USC00058022.csv` | STATION, DATE, PRCP, SNOW, TMAX, TMIN (NOAA GHCN, ends 2026-08-18) | 1602 |
+| `USGS_South_Platte.csv` | Date, site_no, dissolved oxygen, specific conductance, temp, turbidity, pH (max/mean/min) | 1028 |
+| `Strontia 0407_0819.xlsx` | Profiling sonde in Strontia Reservoir: timestamp, depth (vertical position), temp, conductivity, pH, ORP, turbidity, chlorophyll, phycocyanin, DO; 16,093 readings over 104 days, 2026-04-07 to 08-19, many depths per cast | |
+
+The Sep 4 update replaced Michigan Creek with a different SNOTEL station because of the erroneous spring 2026 readings (see exploration-notes 7.1). Naming discrepancy to resolve with Jake: the shipped CSV is Hoosier Pass data (station 531, verified against NRCS), but the updated notebooks fetch and read Buckskin Joe (station 938). The superseded `data/MichiganCreek.csv` is kept because the drought analyses (`experiments/snowpack`, `regime`, `analog`) were built on that station's record.
+
+The Strontia sonde is the "new sensor data (sonde?)" from Jake's next-steps note: a real-time reservoir profiling sonde deployed in Strontia, arrival-side data between the USGS river gage and the plant. Jake (Sep 2): it does not need to be pulled into the activity; it is available if there is interest.
 
 `ExploreDDD_Materials/Data/Figures/` holds the model output plots: correlation matrices, feature and permutation importance, and prediction comparisons for TOC, alkalinity, and turbidity, including CatBoost variants.
 
@@ -45,7 +50,7 @@ Jake's framing: the models are still under development, built as a case study fo
 
 ## Method, from the deck
 
-- Random forest, trained on lagged features shifted 4 days relative to Foothills influent
+- Random forest, trained on lagged features shifted relative to Foothills influent (the deck says 4 days; the September notebooks shift 2 for TOC and 4 for alkalinity, rain 4 and 6)
 - Month converted to radians so the model treats January and December as close
 - Rolling 7-day averages for flow and precipitation, rolling 3-day for turbidity
 - Flow times turbidity as a "loading" parameter
@@ -56,11 +61,11 @@ Reported results (deck, ~July 2026):
 - Alkalinity regression: R^2 0.65, RMSE 5.89 mg/L, MAPE 8.34%.
 - Alkalinity classification (above or below 60 mg/L): struggles with back-and-forth near the threshold. Jake: "not sold on precision."
 
-**Newer than the deck:** Michigan Creek SNOTEL added as a predictor, and CatBoost tried as an additional model. Neither is described in the slides.
+**Newer than the deck:** SNOTEL snowpack added as a predictor (Michigan Creek, replaced in the Sep 4 update), and CatBoost tried as an additional model. Neither is described in the slides.
 
 ## Open offers from Jake
 
-- Refresh the CSVs closer to the conference, for attendees who want ready-to-code data
+- Refresh the CSVs closer to the conference, for attendees who want ready-to-code data (first refresh delivered 2026-09-04)
 - Walk through the material by email or Zoom
 
 ## Related

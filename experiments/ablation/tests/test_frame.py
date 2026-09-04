@@ -35,9 +35,9 @@ def test_alk_recipe_lags_usgs_by_four_days_and_has_no_swe():
 
 def test_dwr_and_precip_lags():
     frame = build_frame(_sources(), RECIPES["TOC"])
-    assert frame.loc["2023-04-10", "Flow_CFS"] == 100 + 5 * 10
-    assert np.isnan(frame.loc["2023-04-05", "PRCP"])
-    assert frame.loc["2023-04-07", "PRCP"] == 1.0
+    assert frame.loc["2023-04-10", "Flow_CFS"] == 100 + 7 * 10
+    assert np.isnan(frame.loc["2023-04-03", "PRCP"])
+    assert frame.loc["2023-04-05", "PRCP"] == 1.0
 
 
 def test_month_encoding_puts_january_at_zero_radians():
@@ -58,3 +58,15 @@ def test_toc_only_features_exist_only_for_toc():
     for col in ["swe_7day", "turb/cond", "cond_7day", "gage_ht_3day"]:
         assert col in toc.columns
         assert col not in alk.columns
+
+
+def test_toc_recipe_lags_swe_by_two_days():
+    frame = build_frame(_sources(), RECIPES["TOC"])
+    assert frame.loc["2023-04-05", "SWE"] == 2.0
+
+
+def test_alk_recipe_keeps_four_day_dwr_and_six_day_precip_lags():
+    frame = build_frame(_sources(), RECIPES["Alk"])
+    assert frame.loc["2023-04-10", "Flow_CFS"] == 100 + 5 * 10
+    assert np.isnan(frame.loc["2023-04-05", "PRCP"])
+    assert frame.loc["2023-04-07", "PRCP"] == 1.0

@@ -1,11 +1,12 @@
 {
   "inputs_md5": {
-    "FoothillsInfluent.csv": "369ed6e5755a7f8d391647dfc0d8815b",
+    "FoothillsInfluent.csv": "8c262f857e8b2224027250e72ce38286",
+    "HoosierPass.csv": "3fa7c9147ed7c7eef9e7e1e17b0190d9",
     "MichiganCreek.csv": "beacb35066e546b936f6c47cf411d2f4",
-    "SouthPlatteFlow.csv": "98df39c556dfc43fd170c22ad513251f",
-    "SouthPlatteTelemetry.csv": "edcac01b055d68992d48cdc2207045d4",
-    "USC00058022.csv": "c9f240e25264f47b9adde50d4468b460",
-    "USGS_South_Platte.csv": "fd78a7660898cf094e58f02674a06d16",
+    "SouthPlatteFlow.csv": "5b209a700925ef66d7844e2a11e1b5fc",
+    "SouthPlatteTelemetry.csv": "b68a403872a36f1192b465def0b5cc51",
+    "USC00058022.csv": "e8a534457dbc8fcbf3b4d03cda0d3b15",
+    "USGS_South_Platte.csv": "c2e823fec47031047595b3a074e3f8af",
     "MichiganCreek_full.csv": "47daf220bc5c7dc52ad6e2cadf533620"
   },
   "versions": {
@@ -15,5 +16,5 @@
     "scikit-learn": "1.9.0",
     "catboost": "1.2.10"
   },
-  "git_commit": "886fbcde957ab54c3afe14a03940fbfaa0433328"
+  "git_commit": "93fc33c5a672fa68d971cee52a69b43bec1d9bf4"
 }

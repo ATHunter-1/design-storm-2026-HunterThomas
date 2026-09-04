@@ -55,7 +55,7 @@ def relocate_paths(text):
 
 
 def load_cell(target):
-    sntl_line = 'sntl = pd.read_csv(DATA / "MichiganCreek.csv")\n' if target == "TOC" else ""
+    sntl_line = 'sntl = pd.read_csv(DATA / "HoosierPass.csv")\n' if target == "TOC" else ""
     return (
         "# Local replacement for Jake's cells 1-5. His notebook built the target\n"
         "# series from two internal lab exports (PL-FTH-INF_cleaned.csv and\n"

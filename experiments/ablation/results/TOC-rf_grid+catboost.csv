@@ -1,32 +1,32 @@
 target,model,label,n_features,features,rows,r2,rmse,mape,excursion_recall,excursion_precision,cv_mean_r2,cv_std_r2
-TOC,linear,baseline_linear,1,turb_flow,852,-0.254896,0.725285,0.134090,0.735294,0.609756,,
-TOC,rf_grid,jake_full,10,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.559549,0.429689,0.128017,0.823529,0.538462,-0.786837,0.616906
-TOC,rf_grid,drop:Specific_Cond_Mean,9,month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.597790,0.410612,0.122949,0.823529,0.549020,-0.825286,1.009330
-TOC,rf_grid,drop:month_cos,9,Specific_Cond_Mean month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.604739,0.407049,0.121459,0.823529,0.571429,-0.778607,0.720684
-TOC,rf_grid,drop:month_sin,9,Specific_Cond_Mean month_cos turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.615671,0.401381,0.119161,0.823529,0.571429,-0.654371,0.678617
-TOC,rf_grid,drop:turb_flow,9,Specific_Cond_Mean month_cos month_sin turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.622298,0.397905,0.129407,0.823529,0.528302,-1.275231,0.811124
-TOC,rf_grid,drop:turb_3day,9,Specific_Cond_Mean month_cos month_sin turb_flow precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.650258,0.382894,0.122059,0.823529,0.571429,-0.755687,0.700231
-TOC,rf_grid,drop:precip_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.469270,0.471674,0.123820,0.794118,0.574468,-0.750415,0.653784
-TOC,rf_grid,drop:swe_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day turb/cond Turbidity_Median Turbidity_Max,852,0.704966,0.351675,0.110953,0.823529,0.560000,-0.768165,0.405475
-TOC,rf_grid,drop:turb/cond,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day Turbidity_Median Turbidity_Max,852,0.624604,0.396689,0.128087,0.823529,0.549020,-0.836536,0.698438
-TOC,rf_grid,drop:Turbidity_Median,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Max,852,0.576048,0.421564,0.122478,0.823529,0.583333,-0.805876,0.639084
-TOC,rf_grid,drop:Turbidity_Max,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median,852,0.590322,0.414406,0.123714,0.823529,0.560000,-0.799545,0.616298
-TOC,rf_grid,top3_catboost,3,turb_flow Specific_Cond_Mean swe_7day,852,0.533902,0.442022,0.138818,0.764706,0.530612,-0.964505,0.508586
-TOC,rf_grid,loading_plus_season,3,turb_flow month_sin month_cos,852,0.388691,0.506215,0.185164,0.823529,0.194444,-1.168838,1.428410
-TOC,rf_grid,no_season,8,Specific_Cond_Mean turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.537535,0.440296,0.128440,0.823529,0.571429,-0.644563,0.671762
-TOC,rf_grid,no_turbidity_family,5,Specific_Cond_Mean month_cos month_sin precip_7day swe_7day,852,0.435765,0.486334,0.162502,0.882353,0.405405,-1.646384,1.210394
-TOC,catboost,jake_full,10,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.647743,0.384269,0.119907,0.823529,0.666667,,
-TOC,catboost,drop:Specific_Cond_Mean,9,month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.630417,0.393605,0.124714,0.823529,0.622222,,
-TOC,catboost,drop:month_cos,9,Specific_Cond_Mean month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.633712,0.391847,0.120538,0.823529,0.666667,,
-TOC,catboost,drop:month_sin,9,Specific_Cond_Mean month_cos turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.561424,0.428773,0.128961,0.823529,0.636364,,
-TOC,catboost,drop:turb_flow,9,Specific_Cond_Mean month_cos month_sin turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.620436,0.398885,0.123118,0.823529,0.560000,,
-TOC,catboost,drop:turb_3day,9,Specific_Cond_Mean month_cos month_sin turb_flow precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.637524,0.389803,0.119206,0.823529,0.651163,,
-TOC,catboost,drop:precip_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.598925,0.410032,0.119548,0.764706,0.684211,,
-TOC,catboost,drop:swe_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day turb/cond Turbidity_Median Turbidity_Max,852,0.548447,0.435070,0.120757,0.823529,0.636364,,
-TOC,catboost,drop:turb/cond,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day Turbidity_Median Turbidity_Max,852,0.591805,0.413656,0.123279,0.794118,0.613636,,
-TOC,catboost,drop:Turbidity_Median,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Max,852,0.602918,0.407986,0.121454,0.823529,0.636364,,
-TOC,catboost,drop:Turbidity_Max,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median,852,0.576085,0.421545,0.123643,0.794118,0.627907,,
-TOC,catboost,top3_catboost,3,turb_flow Specific_Cond_Mean swe_7day,852,0.292809,0.544469,0.161927,0.764706,0.702703,,
-TOC,catboost,loading_plus_season,3,turb_flow month_sin month_cos,852,0.447132,0.481411,0.140788,0.735294,0.757576,,
-TOC,catboost,no_season,8,Specific_Cond_Mean turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,852,0.533186,0.442361,0.136756,0.852941,0.659091,,
-TOC,catboost,no_turbidity_family,5,Specific_Cond_Mean month_cos month_sin precip_7day swe_7day,852,0.442447,0.483446,0.147485,0.823529,0.538462,,
+TOC,linear,baseline_linear,1,turb_flow,856,0.061621,0.624190,0.137398,0.735294,0.595238,,
+TOC,rf_grid,jake_full,10,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.659376,0.376067,0.107272,0.794118,0.675000,-0.662388,0.656901
+TOC,rf_grid,drop:Specific_Cond_Mean,9,month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.696649,0.354895,0.104696,0.823529,0.682927,-0.923147,0.958058
+TOC,rf_grid,drop:month_cos,9,Specific_Cond_Mean month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.663254,0.373920,0.105763,0.794118,0.627907,-0.729329,0.657767
+TOC,rf_grid,drop:month_sin,9,Specific_Cond_Mean month_cos turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.657686,0.376999,0.107784,0.794118,0.658537,-0.701336,0.715471
+TOC,rf_grid,drop:turb_flow,9,Specific_Cond_Mean month_cos month_sin turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.626694,0.393695,0.128397,0.823529,0.538462,-1.255930,0.727267
+TOC,rf_grid,drop:turb_3day,9,Specific_Cond_Mean month_cos month_sin turb_flow precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.661807,0.374722,0.106201,0.794118,0.658537,-0.680252,0.542182
+TOC,rf_grid,drop:precip_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.251928,0.557313,0.118123,0.764706,0.650000,-0.646232,0.717872
+TOC,rf_grid,drop:swe_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day turb/cond Turbidity_Median Turbidity_Max,856,0.684468,0.361950,0.110548,0.823529,0.583333,-0.507402,0.445821
+TOC,rf_grid,drop:turb/cond,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day Turbidity_Median Turbidity_Max,856,0.669810,0.370262,0.107669,0.764706,0.650000,-0.689858,0.641104
+TOC,rf_grid,drop:Turbidity_Median,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Max,856,0.650758,0.380795,0.107567,0.794118,0.692308,-0.654509,0.673403
+TOC,rf_grid,drop:Turbidity_Max,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median,856,0.651997,0.380118,0.107587,0.794118,0.675000,-0.640965,0.672341
+TOC,rf_grid,top3_catboost,3,turb_flow Specific_Cond_Mean swe_7day,856,0.104028,0.609922,0.145827,0.764706,0.634146,-0.870430,0.686694
+TOC,rf_grid,loading_plus_season,3,turb_flow month_sin month_cos,856,0.373480,0.510029,0.185191,0.823529,0.194444,-1.188943,1.431359
+TOC,rf_grid,no_season,8,Specific_Cond_Mean turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.623563,0.395343,0.114046,0.794118,0.642857,-0.747395,0.620758
+TOC,rf_grid,no_turbidity_family,5,Specific_Cond_Mean month_cos month_sin precip_7day swe_7day,856,0.507561,0.452172,0.152424,0.852941,0.467742,-1.748012,1.206851
+TOC,catboost,jake_full,10,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.743679,0.326227,0.107880,0.794118,0.675000,,
+TOC,catboost,drop:Specific_Cond_Mean,9,month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.663100,0.374006,0.121420,0.823529,0.636364,,
+TOC,catboost,drop:month_cos,9,Specific_Cond_Mean month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.763374,0.313443,0.107829,0.823529,0.682927,,
+TOC,catboost,drop:month_sin,9,Specific_Cond_Mean month_cos turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.743601,0.326276,0.110877,0.794118,0.675000,,
+TOC,catboost,drop:turb_flow,9,Specific_Cond_Mean month_cos month_sin turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.703593,0.350809,0.108668,0.823529,0.560000,,
+TOC,catboost,drop:turb_3day,9,Specific_Cond_Mean month_cos month_sin turb_flow precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.733575,0.332594,0.111234,0.823529,0.682927,,
+TOC,catboost,drop:precip_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.527177,0.443075,0.108915,0.735294,0.862069,,
+TOC,catboost,drop:swe_7day,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day turb/cond Turbidity_Median Turbidity_Max,856,0.653240,0.379439,0.117958,0.823529,0.595745,,
+TOC,catboost,drop:turb/cond,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day Turbidity_Median Turbidity_Max,856,0.713861,0.344680,0.110578,0.764706,0.684211,,
+TOC,catboost,drop:Turbidity_Median,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Max,856,0.724972,0.337922,0.105893,0.823529,0.682927,,
+TOC,catboost,drop:Turbidity_Max,9,Specific_Cond_Mean month_cos month_sin turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median,856,0.688395,0.359691,0.113068,0.794118,0.675000,,
+TOC,catboost,top3_catboost,3,turb_flow Specific_Cond_Mean swe_7day,856,0.467832,0.470058,0.137595,0.735294,0.862069,,
+TOC,catboost,loading_plus_season,3,turb_flow month_sin month_cos,856,0.536483,0.438692,0.135827,0.735294,0.641026,,
+TOC,catboost,no_season,8,Specific_Cond_Mean turb_flow turb_3day precip_7day swe_7day turb/cond Turbidity_Median Turbidity_Max,856,0.715295,0.343815,0.120304,0.823529,0.666667,,
+TOC,catboost,no_turbidity_family,5,Specific_Cond_Mean month_cos month_sin precip_7day swe_7day,856,0.463763,0.471852,0.125104,0.794118,0.613636,,

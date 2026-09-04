@@ -1146,10 +1146,6 @@ date,test_year,model,n_outside_minmax,n_outside_quantiles,Specific_Cond_Mean_out
 2026-08-14,2026,rf_grid,0,0,False,False,False,False,False,False,False,False,58.000000,59.108533,1.108533
 2026-08-15,2026,rf_grid,0,0,False,False,False,False,False,False,False,False,58.500000,58.660873,0.160873
 2026-08-16,2026,rf_grid,0,0,False,False,False,False,False,False,False,False,57.000000,58.647143,1.647143
-2026-08-20,2026,rf_grid,0,0,False,False,False,False,False,False,False,False,57.000000,59.057768,2.057768
-2026-08-21,2026,rf_grid,0,0,False,False,False,False,False,False,False,False,57.500000,58.564530,1.064530
-2026-08-22,2026,rf_grid,0,0,False,False,False,False,False,False,False,False,60.900000,59.591441,1.308559
-2026-08-23,2026,rf_grid,0,0,False,False,False,False,False,False,False,False,61.300000,60.261802,1.038198
 2026-04-07,2026,catboost,0,2,False,False,False,False,False,False,False,False,63.500000,75.027658,11.527658
 2026-04-08,2026,catboost,0,2,False,False,False,False,False,False,False,False,62.000000,76.990946,14.990946
 2026-04-09,2026,catboost,0,2,False,False,False,False,False,False,False,False,63.000000,77.852558,14.852558
@@ -1279,7 +1275,3 @@ date,test_year,model,n_outside_minmax,n_outside_quantiles,Specific_Cond_Mean_out
 2026-08-14,2026,catboost,0,0,False,False,False,False,False,False,False,False,58.000000,60.632045,2.632045
 2026-08-15,2026,catboost,0,0,False,False,False,False,False,False,False,False,58.500000,59.013244,0.513244
 2026-08-16,2026,catboost,0,0,False,False,False,False,False,False,False,False,57.000000,58.304052,1.304052
-2026-08-20,2026,catboost,0,0,False,False,False,False,False,False,False,False,57.000000,60.321604,3.321604
-2026-08-21,2026,catboost,0,0,False,False,False,False,False,False,False,False,57.500000,57.039198,0.460802
-2026-08-22,2026,catboost,0,0,False,False,False,False,False,False,False,False,60.900000,58.871977,2.028023
-2026-08-23,2026,catboost,0,0,False,False,False,False,False,False,False,False,61.300000,58.271630,3.028370

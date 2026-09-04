@@ -8,7 +8,7 @@ See also `guide.md` sections 1 to 3 for TOC, alkalinity, soft sensor, turbidity,
 
 - **Snowpack.** Snow lying on the mountains through winter. In the Colorado Front Range most of the year's water arrives as snowmelt, so the snowpack is the real reservoir.
 - **SWE, snow water equivalent.** If this snow melted right now, how deep a layer of water would it make? Depth of snow is useless (powder vs packed), so SWE is the measurement. A peak of 9.0 means nine inches of water sitting on the hillside as snow.
-- **SNOTEL.** The federal network of automated mountain snow stations ("snow telemetry"). Michigan Creek is station 937. One point in a large watershed: a proxy for the basin, not the basin.
+- **SNOTEL.** The federal network of automated mountain snow stations ("snow telemetry"). Jake used Michigan Creek (station 937) until the Sep 4 update replaced it over bad spring 2026 readings; the shipped replacement CSV matches Hoosier Pass (531) while the notebooks name Buckskin Joe (938). One point in a large watershed: a proxy for the basin, not the basin.
 - **Peak and melt-out.** SWE climbs all winter, reaches a maximum (peak), then falls to zero (melt-out). The shape of that curve is the year's water story: high, late, slow means a long strong river; low and gone in two weeks means a short pulse and a thin summer.
 - **April 1 SWE.** The traditional comparison date, usually near peak. "How was the snowpack this year" means "April 1 SWE vs average."
 - **Water year.** October 1 to September 30. Snow that falls in November melts the following May, so calendar years split one winter in half. Group snow data by water year, never calendar year (see `exploration-notes.md` section 7.1 for what the calendar grouping got wrong).

@@ -15,5 +15,5 @@ test_year,model,n_outside_minmax,days,mae
 2024,rf_grid,1,15,1.863668
 2025,catboost,0,211,4.253518
 2025,rf_grid,0,211,4.280518
-2026,catboost,0,133,4.277118
-2026,rf_grid,0,133,4.368042
+2026,catboost,0,129,4.341224
+2026,rf_grid,0,129,4.461089

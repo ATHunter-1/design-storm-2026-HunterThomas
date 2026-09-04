@@ -15,7 +15,7 @@ From `experiments/`:
 .venv/bin/python -m novelty.run --replot           # redraw figures from results/*-daily.csv, no refit
 ```
 
-Two full runs produced byte-identical CSVs (checked 2026-08-28).
+Two full runs produced byte-identical CSVs (checked 2026-08-28 and again 2026-09-04 on the updated data).
 
 ## Two counts per day
 
@@ -35,18 +35,18 @@ Per target in `results/`:
 
 `figures/<target>-error-vs-novelty.png`: absolute error against novelty, one column per test year, top row min/max count, bottom row quantile count.
 
-## Results, run 2026-08-28
+## Results, run 2026-09-04 (Sep 4 data, 2-day TOC lags, Hoosier Pass SNOTEL)
 
 ### The 2026 answer: no min/max novelty at all
 
-In the 2026 fold (trained 2022 to 2025), **every test day scores 0 on `n_outside_minmax` for both targets** (135 TOC days, 133 alkalinity days, all 10 and all 8 features inside the training box). So the question "does MAE rise with novelty count in 2026" has a flat answer for every model:
+In the 2026 fold (trained 2022 to 2025), **every test day scores 0 on `n_outside_minmax` for both targets** (131 TOC days, 129 alkalinity days, all 10 and all 8 features inside the training box). So the question "does MAE rise with novelty count in 2026" has a flat answer for every model:
 
 | Target | Model | 2026 days at count 0 | MAE at count 0 | Days at count 1 or more |
 |---|---|---|---|---|
-| TOC | rf_grid | 135 | 0.231 | 0 |
-| TOC | catboost | 135 | 0.194 | 0 |
-| Alk | rf_grid | 133 | 4.368 | 0 |
-| Alk | catboost | 133 | 4.277 | 0 |
+| TOC | rf_grid | 131 | 0.156 | 0 |
+| TOC | catboost | 131 | 0.151 | 0 |
+| Alk | rf_grid | 129 | 4.461 | 0 |
+| Alk | catboost | 129 | 4.341 | 0 |
 
 MAE does not rise with min/max novelty in 2026 because there is none. The premise in section 7.2 (zero SWE in June, flow below any training day) does not survive contact with the model's actual inputs: `swe_7day` is 0 every summer after melt-out in 2022 to 2025, so 0 in June 2026 is familiar, and the 2026 minimum of `flow_7day_avg` (188 cfs) sits above the training minimum (175 cfs). 2026 is a quiet year inside the envelope, not outside it. Whatever is wrong with the 2026 predictions (alkalinity R^2 -0.5 in `rolling/`), it is not mechanical extrapolation in the min/max sense.
 
@@ -56,33 +56,33 @@ From `<target>-daily.csv`, binned on `n_outside_quantiles`:
 
 | Target | Model | count 0 (days, MAE) | 1 | 2 | 3 | 4 | 5 | Spearman(count, error) |
 |---|---|---|---|---|---|---|---|---|
-| TOC | rf_grid | 98, 0.231 | 27, 0.251 | 3, 0.167 | 4, 0.181 | 2, 0.175 | 1, 0.253 | 0.06 |
-| TOC | catboost | 98, 0.180 | 27, 0.253 | 3, 0.140 | 4, 0.159 | 2, 0.201 | 1, 0.305 | 0.19 |
-| Alk | rf_grid | 65, 3.11 | 51, 4.45 | 14, 9.09 | 1, 10.87 | 2, 7.05 | | 0.40 |
-| Alk | catboost | 65, 2.99 | 51, 4.53 | 14, 8.96 | 1, 9.54 | 2, 4.50 | | 0.41 |
+| TOC | rf_grid | 101, 0.17 | 20, 0.12 | 3, 0.09 | 4, 0.06 | 2, 0.07 | 1, 0.10 | -0.19 |
+| TOC | catboost | 101, 0.15 | 20, 0.16 | 3, 0.13 | 4, 0.19 | 2, 0.21 | 1, 0.31 | 0.16 |
+| Alk | rf_grid | 61, 3.22 | 51, 4.45 | 14, 9.09 | 1, 10.87 | 2, 7.05 | | 0.39 |
+| Alk | catboost | 61, 3.04 | 51, 4.53 | 14, 8.95 | 1, 9.54 | 2, 4.50 | | 0.41 |
 
-- **TOC 2026: flat.** Error is 0.2 to 0.3 mg/L at every count for both models. Which inputs were in the tails: `turb_flow` below the 5th percentile on 25 days, `turb_3day` and `Turbidity_Median` below on 7, `turb/cond` above the 95th on 7, `Turbidity_Max` above on 3 and below on 7, `precip_7day` above on 2. Snowpack: 0 days in either tail (2026 `swe_7day` maximum 5.1 in, training 95th percentile 11.6; that 5.1 is the 7-day mean over the four suspect 9.0 readings of May 12 to 15 noted in section 7.1, so the real 2026 snow signal is lower still and even further inside the box). A low, clear river is a corner of the box, and the models handle it.
-- **Alkalinity 2026: rises.** Days with no input in the tails have MAE 3.0 to 3.1 mg/L; days with two have 9.0 to 9.1 (14 days), three times worse, for both models. The tail inputs: `pH_Median` above the 95th percentile (8.4) on 35 days (2026 pH reached the training maximum, 8.6), `flow_7day_avg` below the 5th percentile (247 cfs) on 26 days, `turb_flow` below on 19, `turb_3day` and `Dissolved_Oxygen_Mean` below on 5. So the 2026 alkalinity days the models get most wrong are high-pH, low-flow days, a combination that occurred on under 5% of training days. This is the quantitative version of "2026 is the quietest water in the record", and it is the closest this experiment comes to naming the extrapolation.
+- **TOC 2026: flat.** Error is 0.1 to 0.3 mg/L at every count for both models (the forest's error now mildly *falls* with count). A low, clear river is a corner of the box, and the models handle it. On the Aug 28 run's feature-level tail attribution, the tail days were low-turbidity, low-loading days and snowpack was in neither tail; not recomputed for the new lags.
+- **Alkalinity 2026: rises.** Days with no input in the tails have MAE 3.0 to 3.2 mg/L; days with two have 9.0 to 9.1 (14 days), three times worse, for both models. The Aug 28 feature-level attribution named the combination: `pH_Median` above the training 95th percentile with `flow_7day_avg` (and `turb_flow`) below the 5th, a pairing seen on under 5% of training days; the alkalinity pipeline did not change in the Sep 4 update, so that reading carries over. The 2026 alkalinity days the models get most wrong are high-pH, low-flow days. This is the quantitative version of "2026 is the quietest water in the record", and it is the closest this experiment comes to naming the extrapolation.
 
 ### Earlier folds, min/max count (from `<target>-binned.csv`)
 
-**TOC 2023** (trained on 2022 only): MAE rises monotonically with count for both models.
+**TOC 2023** (trained on 2022 only): MAE rises with count for both models.
 
 | count | days | rf_grid MAE | catboost MAE |
 |---|---|---|---|
-| 0 | 107 | 0.53 | 0.53 |
-| 1 | 56 | 0.77 | 0.58 |
-| 2 | 6 | 1.52 | 1.50 |
-| 3 | 4 | 1.81 | 1.79 |
-| 4 | 8 | 2.27 | 2.27 |
-| 5 | 5 | 3.92 | 3.96 |
-| 6 | 5 | 4.02 | 4.07 |
+| 0 | 116 | 0.51 | 0.47 |
+| 1 | 49 | 0.55 | 0.50 |
+| 2 | 4 | 1.75 | 1.78 |
+| 3 | 3 | 1.60 | 1.62 |
+| 4 | 9 | 2.07 | 2.10 |
+| 5 | 5 | 3.72 | 3.86 |
+| 6 | 5 | 3.95 | 4.08 |
 
-Features outside on the most days in 2023: `turb_flow` 33, `month_cos` 27, `turb_3day` 25, `turb/cond` 22, `precip_7day` 19, `Turbidity_Median` 19, `swe_7day` 16 (of 191). This is the 2023 flush: 2022 had no year like it, so its peak days were outside on five or six inputs at once, and both models missed them by around 4 mg/L. Novelty and error share a cause here (the flush is both the novel input and the missed output), so the table says "2022 could not teach 2023" rather than something about the model class.
+Features outside on the most days in 2023: `turb_flow` 36, `turb_3day` 25, `turb/cond` 22, `precip_7day` 22, `Turbidity_Median` 19 (of 191); with Hoosier Pass and the 2-day lag, `swe_7day` no longer leaves the box at all. This is the 2023 flush: 2022 had no year like it, so its peak days were outside on five or six inputs at once, and both models missed them by around 4 mg/L. Novelty and error share a cause here (the flush is both the novel input and the missed output), so the table says "2022 could not teach 2023" rather than something about the model class.
 
-**TOC 2024**: only `swe_7day` went outside (52 of 126 days, the 2024 snowpack peaked above anything in 2022 to 2023). MAE 0.41 to 0.66 (rf_grid) and 0.33 to 0.52 (catboost) from count 0 to 1. Modest rise.
+**TOC 2024**: 61 of 126 days at count 1, essentially all snowpack (the 2024 Hoosier Pass peak exceeded anything in 2022 to 2023; one `Turbidity_Max` day besides). MAE 0.32 to 0.65 (rf_grid) and 0.22 to 0.46 (catboost) from count 0 to 1. Modest rise.
 
-**TOC 2025**: 0 on every day.
+**TOC 2025**: 0 on every day (210 days).
 
 **Alkalinity 2023**: 82 of 186 days had at least one input outside (`turb_flow` 36, `Dissolved_Oxygen_Mean` 35, `month_cos` 25, `turb_3day` 25, `flow_7day_avg` 24). MAE does **not** rise: catboost 4.53 at count 0 down to 1.31 at count 4; rf_grid 5.91, 4.94, 6.27, 6.67, 0.83. **Alkalinity 2024**: `pH_Median` outside on 14 days; MAE falls from 5.40 to 3.85 (catboost) and 4.61 to 1.86 (rf_grid). For alkalinity, being outside the training range on a turbidity or flow input does not hurt, which is consistent with the ablation: those inputs are worth 0 to 5 points and conductance and pH carry the model.
 

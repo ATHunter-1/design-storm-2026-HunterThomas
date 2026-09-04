@@ -28,6 +28,8 @@ The deck says "lagged by 4 days". The code uses 2 days for USGS in the TOC noteb
 
 Physically, transport time varies with flow (fast river, short lag), and Strontia Reservoir acts as a mixing buffer that smears upstream signals. **Experiment:** cross-correlate USGS turbidity against Foothills TOC at lags 0 through 10, split by flow tercile. If the best lag moves with flow, the model should carry a flow-dependent lag rather than a fixed shift.
 
+**Answered by Jake, 2026-09-04.** The raw water group models water moving through this stretch in about 4 hours; the multi-day predictive lag for TOC and alkalinity is likely mixing and deposition, not transport. He recently got slightly better results with 2 days than 4 (the Sep 4 TOC notebook uses 2 throughout), the number is subject to change, and any heads-up of a day or more helps operators. His ask: put less emphasis on the 4-day lag. The mixing-buffer hypothesis above is confirmed in spirit; the flow-dependent-lag experiment is still open.
+
 ### 1.4 Readings are provisional
 
 Our fresh API pull on 2026-08-25 differed from Jake's CSVs by one revised USGS value plus one extra day. Denver Water's own disclaimer says the water quality data is provisional. A reading has a lifecycle (provisional, then approved), and a forecast built on it inherits that. What does an operator do when yesterday's warning changes because an input was revised? Event-sourcing territory.
@@ -60,6 +62,8 @@ A sonde is a multi-parameter in-situ probe (turbidity, conductivity, pH, tempera
 1. A Denver Water-owned sonde nearer the plant (Strontia outlet or Foothills intake). Would give continuous arrival-side data instead of one daily lab sample, validate the lag directly, and turn the model into forecast plus confirmation.
 2. **(general knowledge)** A sonde with an optical organic-matter channel (fDOM), a near-direct TOC proxy, which would make most of the indirect features (turb_flow, rain, snowpack) unnecessary.
 
+**Resolved 2026-09-02:** reading 1 was right. Denver Water has a real-time profiling sonde deployed in Strontia Reservoir; Jake sent its data (`data/Strontia 0407_0819.xlsx`: Apr 7 to Aug 19 2026, 16,093 readings, full water-column profiles of temp, conductivity, pH, ORP, turbidity, chlorophyll, phycocyanin, DO by depth). The Sep 4 data refresh ends 2026-08-19 to line up with it. Jake: it need not be pulled into the activity; it is there if interest develops.
+
 Either way "remove redundant features / simplify" follows: a better signal makes half the engineered features noise. He also has a redundancy problem today: about twenty features chosen by eyeballing a correlation table, several nearly collinear (flow and 7-day flow, turbidity and turb_flow, snowpack and the month encoding). Trees tolerate that, but importance gets smeared across correlated columns, and a ten-feature model is harder to hand to operators than a three-feature one.
 
 The simplify half needs no new sensor. See section 4.
@@ -70,7 +74,7 @@ Grouped by what they're for. Numbers are for reference, not priority; the two I'
 
 ### Making the model more useful
 
-- **3.1 Score it as an event detector.** Build a catalogue of TOC excursions (episodes above 3) and ask per episode: did the model warn, with how many days of lead? Operators live in episodes. Also likely explains the gap between test R^2 0.56 and cross-validation mean -0.79: the instability probably lives in the peaks.
+- **3.1 Score it as an event detector.** Build a catalogue of TOC excursions (episodes above 3) and ask per episode: did the model warn, with how many days of lead? Operators live in episodes. Also likely explains the gap between the healthy single-split R^2 and the negative cross-validation mean: the instability probably lives in the peaks.
 - **3.2 Lead time vs accuracy.** Run the pipeline at horizons 1 through 7 days and plot the curve. A rough 6-day heads-up refined by a sharp 2-day one may beat a single 4-day number.
 - **3.3 Prediction intervals.** CatBoost supports quantile loss. "3.1 mg/L" becomes "80% likely between 2.7 and 3.6, 30% chance above 3." The decision rule then sits on a probability the operator can tune.
 - **3.4 Read the outlier year.** Jake says TOC overestimates "due to 2023 in training data". Isolate 2023 (big snowpack) and see what a model trained without it does to 2024 through 2026.
@@ -87,6 +91,8 @@ Grouped by what they're for. Numbers are for reference, not priority; the two I'
 
 - Candidate bounded contexts: Watershed Monitoring (USGS, DWR, SNOTEL, NOAA feeds, provisional data), Forecasting (Jake's models), Plant Operations (dosing, staffing, the USGS alert habit), Compliance (the DBPR matrix). The interesting seams are Forecasting to Operations (what a prediction obliges anyone to do) and Operations to Compliance (which cell are we in).
 - Ubiquitous language already visible in the code: soft sensor, influent, headworks, loading (`turb_flow`), lag, excursion, provisional. Worth a glossary.
+
+> **Sections 4 to 7 were written from the Aug 25 to 28 runs on the original materials** (data to Aug 23, mixed TOC lags, Michigan Creek SNOTEL). Everything was rerun 2026-09-04 on the Sep 4 update; current numbers live in the package READMEs. The findings below hold in shape, with two revisions worth knowing: the TOC snowpack disagreement between the two models largely dissolved with the uniform 2-day lags (snowpack now reads as stability insurance for the quiet 2026 fold, and `precip_7day` is the feature the models cannot spare), and the single-split TOC scores rose (forest 0.56 to 0.66, CatBoost 0.65 to 0.74).
 
 ## 4. Ablation study (done 2026-08-25)
 
@@ -114,11 +120,12 @@ Code and full tables: `experiments/rolling/README.md`. Built test-first on top o
 
 For Jake:
 - The turbidity notebook (six figures arrived without it).
-- The two lab exports the notebooks actually read (`PL-FTH-INF_cleaned.csv`, `PL-FTH-HW_cleaned.csv`); `FoothillsInfluent.csv` is presumably their daily-median blend.
+- ~~The two lab exports the notebooks actually read~~ Partly answered Sep 4: a notebook comment now says HW and influent "are the same site" for Design Storm purposes and the two are combined into the single cleaned spreadsheet.
 - Why 60 mg/L and 3 mg/L (section 1.1).
-- Why the TOC notebook shifts USGS by 2 days under a comment saying 4.
-- What he means by "sonde" (section 2.1).
+- ~~Why the TOC notebook shifts USGS by 2 days under a comment saying 4.~~ Answered Sep 4 (section 1.3): 2 days recently scored better; comment and code now agree.
+- ~~What he means by "sonde" (section 2.1).~~ Answered Sep 2: the Strontia Reservoir profiling sonde (section 2.1).
 - Whether the water-quantity side knows about the model (section 1.2).
+- New: the Sep 4 notebooks fetch and read Buckskin Joe SNOTEL (938) but the shipped CSV is Hoosier Pass data (531, verified against NRCS). Which station is the model actually on now?
 
 For Cassidi:
 - An operator voice (Craig, Ed, Tad, or a plant operator) among the floating SMEs, or a pre-conference conversation.
@@ -129,6 +136,8 @@ For Cassidi:
 - 2026-08-25: notebooks reproduced locally, guide written, this file started.
 - 2026-08-26: ablation and rolling-origin done (sections 4, 4.1). Drought-year analysis and glossary added (sections 7, 8).
 - 2026-08-28: wet/dry measure defined with sources (section 9). All four drought explorations built test-first and run (sections 7.4 to 7.7; packages `experiments/snowpack`, `novelty`, `regime`, `drivers`, `analog`; 101 tests). The May 12 to 15 2026 SNOTEL readings are an artifact still present in the NRCS feed (7.1, 7.7); question for Jake.
+- 2026-09-04: Jake reviewed the repo ("looks really good") and sent `ExploreDDD_Materials_Update.zip`: data through Aug 19, TOC lags standardized to 2 days, the month-filter bug fixed, the TOC plot label fixed, and Michigan Creek replaced as the SNOTEL predictor (confirming the artifact). Strontia Reservoir profiling sonde data had arrived Sep 2. His one content ask: de-emphasize the 4-day lag (section 1.3).
+- 2026-09-05: update integrated, experiments re-pointed at the new data and lags (`ablation.frame` TOC recipe: usgs 2, sntl 2, dwr 2, precip 4; SNOTEL from `HoosierPass.csv`), everything rerun.
 
 ## 7. The 2026 drought year and what it means for the model
 
@@ -155,6 +164,8 @@ Flow, TOC, and alkalinity stay by **calendar** year (they do not straddle a wint
 | 2024 | 1390 | 473 | 6.40 | 109 | 56.6 | 140 |
 | 2025 | 734 | 386 | 3.10 | 3 | 60.7 | 112 |
 | 2026 (to Aug) | 620 | 332 | 2.70 | 0 | 63.6 | 35 |
+
+**Postscript 2026-09-04:** Jake replaced Michigan Creek in his update ("choosing a different SNOTEL station due to the erroneous spring 2026"), which settles the question below in our favor. The tables in this section still read `data/MichiganCreek.csv`, deliberately: sections 7 and 9 are an analysis of that station's record, and the file stays in `data/` for them.
 
 The 2026 snow row needs a caveat. Its "peak" is four readings of 9.0 on May 12 to 15, with 0.0 on May 10 and 11 and 0.0 again from May 16 onward. A nine-inch snowpack does not appear on bare ground and vanish within four days in May; those rows look like a sensor or transmission artifact, and the earlier "9.0, May 15, gone by May 29" line (with the "latest peak, fastest melt-out" reading built on it) came from them. With those four days masked, water year 2026 peaks at 4.9 in on March 16 and reaches zero on April 12 (27 days). The functions report the file as it is; whether to drop those rows is a question for Jake (section 5), and the analog-years exploration, which fetches the same station's full record from NRCS, can check whether the QC'd data still shows them.
 

@@ -1,7 +1,7 @@
 model,driver,episodes,detected,recall,mean_lead
-rf_grid,snowmelt,3,3,1.000000,3.666667
+rf_grid,snowmelt,3,3,1.000000,0.666667
 rf_grid,rain,1,1,1.000000,-1.000000
 rf_grid,unclear,1,0,0.000000,
-catboost,snowmelt,3,3,1.000000,1.666667
+catboost,snowmelt,3,3,1.000000,2.000000
 catboost,rain,1,1,1.000000,-1.000000
 catboost,unclear,1,0,0.000000,

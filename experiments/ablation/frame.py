@@ -26,7 +26,7 @@ class Recipe:
 
 
 RECIPES = {
-    "TOC": Recipe(target="TOC", usgs_lag_days=2, dwr_lag_days=4, precip_lag_days=6, sntl_lag_days=4),
+    "TOC": Recipe(target="TOC", usgs_lag_days=2, dwr_lag_days=2, precip_lag_days=4, sntl_lag_days=2),
     "Alk": Recipe(target="Alk", usgs_lag_days=4, dwr_lag_days=4, precip_lag_days=6, sntl_lag_days=None),
 }
 
@@ -46,7 +46,7 @@ def load_sources(data_dir: Path) -> Sources:
         usgs=pd.read_csv(data_dir / "USGS_South_Platte.csv"),
         dwr=pd.read_csv(data_dir / "SouthPlatteTelemetry.csv"),
         precip=pd.read_csv(data_dir / "USC00058022.csv"),
-        sntl=pd.read_csv(data_dir / "MichiganCreek.csv"),
+        sntl=pd.read_csv(data_dir / "HoosierPass.csv"),
     )
 
 

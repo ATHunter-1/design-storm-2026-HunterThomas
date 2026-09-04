@@ -17,7 +17,7 @@ Results land in `results/<target>-<models>.csv` with a `.meta.json` beside it re
 
 ## What is held fixed
 
-- **Pipeline:** `frame.py` reproduces the notebooks' joins, lags, and engineered columns (USGS lag 2 for TOC, 4 for alkalinity; DWR 4; NOAA 6; SNOTEL 4 and TOC only).
+- **Pipeline:** `frame.py` reproduces the notebooks' joins, lags, and engineered columns. Since Jake's Sep 4 update: TOC lags everything upstream 2 days (NOAA 4); alkalinity keeps USGS and DWR at 4, NOAA at 6; SNOTEL (Hoosier Pass file, TOC only) at 2.
 - **Rows:** every feature set is scored on the days where all of Jake's full feature set is present (`anchored_rows`). Without this, dropping a column with gaps changes which days survive `dropna`, the train/test boundary moves, and the delta is partly a different test set. The first unanchored run produced a spurious "3 features beat 10" result for TOC that vanished once rows were anchored.
 - **Split, seeds, threads:** chronological 50/50 (TOC) and 55/45 (alkalinity), `random_state=42` everywhere, `TimeSeriesSplit(5)` grid search with Jake's grid, CatBoost with `thread_count=4`, no CatBoost log files.
 - **Sample weights:** Jake's emphasis on excursion days (TOC above 3 for the forest, above 4 for CatBoost; alkalinity below 60 for both).
@@ -28,58 +28,61 @@ Results land in `results/<target>-<models>.csv` with a `.meta.json` beside it re
 
 R^2, RMSE, MAPE on the test half, plus two operator-facing numbers computed at the excursion threshold (TOC 3 mg/L, alkalinity 60 mg/L): **excursion recall** (of test days actually beyond the threshold, how many the prediction also placed beyond it) and **excursion precision** (of predicted excursion days, how many were real).
 
-## Results, run 2026-08-25
+## Results, run 2026-09-04 (Sep 4 data, 2-day TOC lags, Hoosier Pass SNOTEL)
 
-Reproduction check first: `jake_full` matches the notebooks. Alkalinity forest 0.68, CatBoost 0.71, one-variable line 0.50 (0.51 in the notebook, which used its own rows). TOC forest 0.56, CatBoost 0.65.
+Reproduction check first: `jake_full` matches the notebooks. Alkalinity forest 0.61, CatBoost 0.68, one-variable line 0.51. TOC forest 0.66, CatBoost 0.74. (The Aug 25 run on the original materials: Alk 0.68 / 0.71, TOC 0.56 / 0.65.)
 
-### Alkalinity (8 features, 840 days)
+### Alkalinity (8 features, 836 days)
 
 | Feature set | Forest R^2 | CatBoost R^2 |
 |---|---|---|
-| jake_full | **0.68** | 0.71 |
-| drop turb_flow | 0.64 | **0.72** |
-| drop turb_3day | 0.64 | 0.70 |
-| drop Dissolved_Oxygen_Mean | 0.64 | 0.69 |
+| jake_full | 0.61 | **0.68** |
+| drop turb_3day | 0.64 | **0.71** |
+| drop turb_flow | 0.64 | 0.71 |
+| drop Dissolved_Oxygen_Mean | 0.64 | 0.68 |
 | drop month_cos | 0.63 | 0.67 |
 | drop flow_7day_avg | 0.63 | 0.62 |
-| drop month_sin | 0.65 | 0.60 |
-| drop pH_Median | 0.42 | 0.42 |
-| drop Specific_Cond_Mean | 0.16 | 0.42 |
-| no season (6) | 0.59 | 0.37 |
-| chemistry only: cond, pH, DO (3) | 0.55 | 0.09 |
-| cond + pH (2) | 0.38 | 0.14 |
+| drop month_sin | **0.65** | 0.58 |
+| drop pH_Median | 0.43 | 0.41 |
+| drop Specific_Cond_Mean | 0.26 | 0.46 |
+| no season (6) | 0.54 | 0.39 |
+| chemistry only: cond, pH, DO (3) | 0.55 | 0.05 |
+| cond + pH (2) | 0.36 | 0.05 |
 | cond + season (3) | 0.31 | 0.13 |
-| line on conductance alone (1) | 0.50 | |
+| line on conductance alone (1) | 0.51 | |
 
-Reading: conductance and pH are load-bearing for both models; remove either and the model collapses. Everything else is worth 0 to 5 points each, and one of `turb_flow` / `turb_3day` / DO can go for free. Going below six features costs a lot, and a tree model on two or three features does worse than a straight line on one, which is trees failing to extrapolate on a test half whose conductance range differs from training, not a statement about the features.
+Reading: unchanged in shape from the Aug 25 run. Conductance and pH are load-bearing for both models; remove either and the model collapses. Everything else is worth 0 to 5 points each, and one of `turb_flow` / `turb_3day` / DO can go for free (dropping either turbidity column now slightly *helps* both models). Going below six features costs a lot, and a tree model on two or three features does worse than a straight line on one, which is trees failing to extrapolate on a test half whose conductance range differs from training, not a statement about the features.
 
-### TOC (10 features, 852 days)
+### TOC (10 features, 856 days)
 
 | Feature set | Forest R^2 | CatBoost R^2 |
 |---|---|---|
-| jake_full | 0.56 | **0.65** |
-| drop swe_7day | **0.70** | 0.55 |
-| drop turb_3day | 0.65 | 0.64 |
-| drop turb/cond | 0.62 | 0.59 |
-| drop turb_flow | 0.62 | 0.62 |
-| drop month_sin | 0.62 | 0.56 |
-| drop month_cos | 0.60 | 0.63 |
-| drop Specific_Cond_Mean | 0.60 | 0.63 |
-| drop Turbidity_Max | 0.59 | 0.58 |
-| drop Turbidity_Median | 0.58 | 0.60 |
-| drop precip_7day | 0.47 | 0.60 |
-| no season (8) | 0.54 | 0.53 |
-| turb_flow, cond, swe (3) | 0.53 | 0.29 |
-| turb_flow + season (3) | 0.39 | 0.45 |
-| no turbidity family (5) | 0.44 | 0.44 |
-| line on turb_flow alone (1) | -0.25 | |
+| jake_full | 0.66 | 0.74 |
+| drop swe_7day | 0.68 | 0.65 |
+| drop turb_3day | 0.66 | 0.73 |
+| drop turb/cond | 0.67 | 0.71 |
+| drop turb_flow | 0.63 | 0.70 |
+| drop month_sin | 0.66 | 0.74 |
+| drop month_cos | 0.66 | **0.76** |
+| drop Specific_Cond_Mean | **0.70** | 0.66 |
+| drop Turbidity_Max | 0.65 | 0.69 |
+| drop Turbidity_Median | 0.65 | 0.72 |
+| drop precip_7day | 0.25 | 0.53 |
+| no season (8) | 0.62 | 0.72 |
+| turb_flow, cond, swe (3) | 0.10 | 0.47 |
+| turb_flow + season (3) | 0.37 | 0.54 |
+| no turbidity family (5) | 0.51 | 0.46 |
+| line on turb_flow alone (1) | 0.06 | |
 
-Reading: the two models disagree about almost every feature. Dropping snowpack is the best thing you can do to the forest (+14 points) and the worst thing you can do to CatBoost (-10). Dropping any one of the turbidity family barely matters because the other four cover for it: `turb_flow`, `turb_3day`, `turb/cond`, `Turbidity_Median`, `Turbidity_Max` are five views of one signal. Excursion recall sits at 0.82 for nearly every configuration, so the peaks are caught (or not) by the turbidity signal regardless of what else is present.
+Reading, and what changed with the 2-day lags:
 
-The disagreement is the finding. When two reasonable models flip sign on the same feature, the test half is too small and too particular (one and a half seasons, with 2023's big snow year in training) to say which features matter. That matches the cross-validation instability in the notebooks (mean R^2 -0.79 across time folds).
+- **The snowpack flip is largely gone.** On the Aug 25 run, dropping `swe_7day` moved the forest +14 and CatBoost -10; now it is +2.5 and -9. The dramatic disagreement was partly an artifact of the old mixed lags.
+- **Rain is the new load-bearing feature.** Dropping `precip_7day` costs the forest 41 points (0.66 to 0.25) and CatBoost 21. At the 4-day lag the rain signal is carrying weight it did not carry at 6.
+- **The turbidity family still collapses.** Any single member can go for a point or two; the five columns remain five views of one signal, and excursion recall sits at 0.76 to 0.82 in nearly every configuration.
+- The baseline line on `turb_flow` improved from -0.25 to 0.06: still explaining nothing, no longer actively worse than the mean.
 
 ## What this says about "simplify"
 
 - Alkalinity: eight to six features is free. Below that, not with trees.
-- TOC: the turbidity family can be collapsed from five columns to two without losing peak recall, and that is the only simplification the data supports. Whether snowpack belongs depends on which model you ask, which means it depends on which years you test on.
-- A single held-out half cannot settle the rest. The next experiment is rolling-origin evaluation (train to year N, test year N+1, for each N), which turns "R^2 on one half" into "R^2 per season" and would show whether the snowpack disagreement is really a 2023 story.
+- TOC: the turbidity family can still be collapsed without losing peak recall. The snowpack question has cooled (small, model-dependent effect); `precip_7day` has replaced it as the feature the models cannot spare.
+- A single held-out half cannot settle the rest; `rolling/` scores the same questions per year.
