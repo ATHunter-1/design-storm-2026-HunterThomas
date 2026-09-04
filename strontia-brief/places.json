@@ -1,0 +1,283 @@
+{
+  "_comment": "Every coordinate below is from a USGS source, not estimated. USGS publishes lat/long as DDMMSS strings; the decimal values here are converted from those. Pulled 2026-08-17. Denver is the one exception and is the conventional city-centre coordinate.",
+  "_sources": {
+    "usgs_sites": "https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=co&siteType=ST&siteStatus=all",
+    "usgs_lakes": "https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=co&siteType=LK&siteStatus=all&siteOutput=expanded",
+    "nldi_basins": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-{site}/basin",
+    "openstreetmap": "Overpass API, man_made=water_works / dam / natural=water. Same data behind the basemap.",
+    "nldi_downstream": "https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-06707525/navigation/DM/flowlines?distance=60"
+  },
+  "gages": {
+    "turbidity": {
+      "site": "06707525",
+      "name": "SOUTH PLATTE RIVER ABV STRONTIA SPGS RESERVOIR, CO",
+      "lat": 39.4164,
+      "lon": -105.15106,
+      "usgs_dms": [
+        "392459.10",
+        "1050903.80"
+      ],
+      "elevation_ft": 5997,
+      "basin_sq_mi_computed": 2584,
+      "note": "Parameters 00010 temp, 00095 specific conductance, 00300 DO, 00400 pH, 63680 turbidity, at 15-minute intervals. USGS publishes no drainage area for this site; 2584 is computed from the NLDI basin polygon."
+    },
+    "flow": {
+      "site": "06701900",
+      "name": "SOUTH PLATTE RIVER BLW BRUSH CRK NEAR TRUMBULL, CO",
+      "lat": 39.26,
+      "lon": -105.2214,
+      "usgs_dms": [
+        "391536",
+        "1051317"
+      ],
+      "basin_sq_mi_published": 2028,
+      "basin_sq_mi_computed": 2029,
+      "note": "Nearest upstream discharge gage. Published and computed areas agree to 0.05%, which validates the area method used for the other basins."
+    },
+    "fraser_below_moffat": {
+      "site": "09023562",
+      "name": "FRASER RIVER BLW MOFFAT TUNNEL AT WINTER PARK, CO",
+      "lat": 39.8876,
+      "lon": -105.762019,
+      "usgs_dms": [
+        "395315.36",
+        "1054543.27"
+      ],
+      "elevation_ft": 9062,
+      "basin_sq_mi_computed": 31
+    },
+    "williams_fork": {
+      "site": "09037500",
+      "name": "WILLIAMS FORK NEAR PARSHALL, CO",
+      "lat": 40.0002,
+      "lon": -106.180367,
+      "usgs_dms": [
+        "400000.72",
+        "1061049.32"
+      ],
+      "elevation_ft": 7811.1,
+      "basin_sq_mi_published": 184,
+      "basin_sq_mi_computed": 184
+    },
+    "north_fork_at_grant": {
+      "site": "06702500",
+      "name": "NORTH FORK SOUTH PLATTE RIVER AT GRANT, CO.",
+      "lat": 39.45915449,
+      "lon": -105.6641716,
+      "note": "Grant is where Roberts Tunnel water enters the North Fork. Used as the tunnel's east portal in the schematic."
+    },
+    "north_fork_confluence": {
+      "site": "06707000",
+      "name": "NF SOUTH PLATTE RIVER AT SOUTH PLATTE, CO.",
+      "lat": 39.408878,
+      "lon": -105.1758234,
+      "note": "The North Fork joins the mainstem here, 2 km upstream of the turbidity gage. This is why gage 06707525 measures the combined inflow."
+    },
+    "mainstem_at_south_platte": {
+      "site": "06707500",
+      "name": "SOUTH PLATTE RIVER AT SOUTH PLATTE, CO",
+      "lat": 39.4091558,
+      "lon": -105.1699899
+    }
+  },
+  "reservoirs": {
+    "dillon": {
+      "site": "393714106032600",
+      "name": "DILLON RESERVOIR NEAR DAM",
+      "lat": 39.6206,
+      "lon": -106.0572,
+      "usgs_dms": [
+        "393714",
+        "1060326"
+      ],
+      "note": "Denver Water. West of the Continental Divide, Blue River basin, Colorado River side."
+    },
+    "williams_fork_reservoir": {
+      "site": "400148106123801",
+      "name": "WILLIAMS FORK RESERVOIR NEAR DAM",
+      "lat": 40.03,
+      "lon": -106.2106,
+      "usgs_dms": [
+        "400148",
+        "1061238"
+      ]
+    },
+    "gross": {
+      "site": "395626105225600",
+      "name": "GROSS RESERVOIR, NR WINIGER GULCH, NR COAL CK, CO",
+      "lat": 39.9406,
+      "lon": -105.3822,
+      "usgs_dms": [
+        "395626",
+        "1052256"
+      ],
+      "note": "North system storage, east of the divide."
+    },
+    "cheesman": {
+      "site": "06701000",
+      "name": "CHEESMAN LAKE NEAR DECKERS, CO.",
+      "lat": 39.2072,
+      "lon": -105.2717,
+      "usgs_dms": [
+        "391226",
+        "1051618"
+      ]
+    },
+    "eleven_mile": {
+      "site": "385758105345600",
+      "name": "ELEVEN MILE CANYON RESERVOIR NR HARTSEL, CO.",
+      "lat": 38.9661,
+      "lon": -105.5822,
+      "usgs_dms": [
+        "385758",
+        "1053456"
+      ]
+    },
+    "antero": {
+      "site": "385937105534200",
+      "name": "ANTERO RESERVOIR",
+      "lat": 38.9936,
+      "lon": -105.895,
+      "usgs_dms": [
+        "385937",
+        "1055342"
+      ]
+    },
+    "chatfield": {
+      "site": "06709600",
+      "name": "CHATFIELD LAKE NEAR LITTLETON, CO.",
+      "lat": 39.5572,
+      "lon": -105.0575,
+      "usgs_dms": [
+        "393326",
+        "1050327"
+      ],
+      "note": "Downstream of Waterton Canyon. Useful Denver-side landmark."
+    },
+    "marston": {
+      "site": "393718105035400",
+      "name": "MARSTON LAKE",
+      "lat": 39.6217,
+      "lon": -105.065,
+      "usgs_dms": [
+        "393718",
+        "1050354"
+      ],
+      "note": "Marston Treatment Plant, inside Denver."
+    }
+  },
+  "places": {
+    "denver": {
+      "name": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "note": "Conventional city-centre coordinate. The only point here not taken from a USGS site record."
+    }
+  },
+  "conveyance": {
+    "roberts_tunnel": {
+      "from": "dillon",
+      "to": "north_fork_at_grant",
+      "length_mi_published": 23,
+      "straight_line_km_computed": 38.2,
+      "note": "Denver Water: 23 miles under the Continental Divide, delivering Blue River water to the North Fork of the South Platte. Computed straight-line distance between the two verified endpoints matches the published length, which confirms the portals. Source: https://www.denverwater.org/tap/famed-tunnel-under-continental-divide-brings-water-and-juice"
+    },
+    "strontia_springs": {
+      "note": "Denver Water: 'Eighty percent of Denver Water's supply passes through Strontia Springs Reservoir.' Dam completed 1983, 243 ft, 6.2 miles up Waterton Canyon; diverts to the Foothills and Marston treatment plants. Sources: https://www.denverwater.org/tap/where-does-your-water-come and https://www.denverwater.org/recreation/waterton-canyon-strontia-springs-resevoir"
+    },
+    "two_intakes": {
+      "note": "Denver Water Source Water Protection Plan for the Upper South Platte, Nov 2015: \"Denver Water utilizes an intake at Strontia Springs Reservoir and one just downstream in Waterton Canyon located southwest of Denver to get water from the Upper South Platte River watershed into its system. The raw water diverted from the surface water intakes is sent to two surface water treatment plants (Foothills and Marston).\" Both plants therefore receive this water, by two separate routes. Denver Water Part 12D inspection RFP confirms only ONE Denver Water intake tower exists at the dam; the second tower there belongs to Aurora Water.",
+      "source": "https://www.denverwater.org/sites/default/files/2017-05/upper-south-platte-source-water-protection-plan-report.pdf"
+    },
+    "aurora": {
+      "note": "Aurora Water has its own intake tower at Strontia Springs Dam and draws more than 90% of its supply through the reservoir, per Denver Water's March 2025 Strontia Springs Permanent Bypass Feasibility Study RFP. Water passing gage 06707525 is not exclusively Denver Water's."
+    },
+    "conduit_26": {
+      "note": "Denver Water's 2010 audited CAFR breaks Conduit 26 down as 17,935 ft (3.4 mi) of 120-inch steel pipe, 30 ft of reinforced concrete cylinder, and 1,732 ft (0.3 mi) of concrete-lined TUNNEL, totalling 3.7 miles at 750 MGD. The 2017 CAFR gives 3.8 miles. So the \"3.4-mile-long tunnel\" in the FERC Environmental Assessment is really the steel pipe segment; the actual tunnel is 0.3 miles. My earlier objection that a tunnel cannot be shorter than its own chord rested on that conflation. The 4.15 mi I computed was to the centroid of a large site polygon; the nearest plant-boundary distance is 3.53 mi, consistent with a 3.7-3.8 mi near-straight conduit.",
+      "sources": [
+        "https://www.denverwater.org/sites/default/files/2017-05/2010-comprehensive-annual-financial-report.pdf",
+        "https://www.denverwater.org/sites/default/files/2017-comprehensive-annual-financial-report.pdf"
+      ]
+    }
+  },
+  "event": {
+    "date": "2026-08-15",
+    "peak_turbidity_fnu": 329,
+    "peak_time_mdt": "01:45",
+    "baseline_turbidity_fnu": 2,
+    "conductance_outlier": {
+      "time_mdt": "2026-08-14T13:00",
+      "value": 38,
+      "neighbours": [
+        296,
+        300
+      ],
+      "qualifier": "P",
+      "note": "Carries only the standard provisional flag. Nothing marks it as suspect."
+    }
+  },
+  "facilities": {
+    "strontia_springs_dam": {
+      "name": "Strontia Springs Dam",
+      "lat": 39.43276,
+      "lon": -105.12591,
+      "source": "OpenStreetMap way, name=Strontia Springs Dam, man_made=dam",
+      "note": "1.76 km straight-line below the gage. Denver Water: completed 1983, 243 ft, 6.2 miles up Waterton Canyon. Diverts to the Foothills and Marston treatment plants."
+    },
+    "strontia_springs_reservoir": {
+      "name": "Strontia Springs Reservoir",
+      "lat": 39.42453,
+      "lon": -105.13845,
+      "source": "OpenStreetMap way, natural=water",
+      "note": "Centroid. The gage sits at its inflow."
+    },
+    "foothills_plant": {
+      "name": "Foothills Water Treatment Facility",
+      "lat": 39.46637,
+      "lon": -105.06154,
+      "source": "OpenStreetMap way, man_made=water_works",
+      "straight_line_from_dam_mi": 4.15,
+      "note": "A widely repeated \"3.4-mile tunnel\" figure appears in a Library of Congress photo caption, not in Denver Water material, and is shorter than the 4.15-mile straight line between the verified endpoints. Not cited in the brief for that reason.",
+      "conveyance_note": "FERC Environmental Assessment for the Strontia Springs Hydroelectric Project (P-6916-011): \"diverts water from a the Strontia Springs Reservoir into a 3.4-mile-long tunnel under the mountains to the Foothills Water Treatment Plant near Denver.\" Note the 3.4 mi figure is shorter than the 4.15 mi straight line to the plant centroid, so it likely measures to the plant headworks. Denver Water pairs Strontia Springs with Conduit No. 26, but no opened document states Conduit 26 endpoints verbatim."
+    },
+    "marston_plant": {
+      "name": "Marston Water Treatment Plant",
+      "lat": 39.63655,
+      "lon": -105.06148,
+      "source": "OpenStreetMap way",
+      "straight_line_from_dam_mi": 14.51,
+      "note": "The second plant Strontia Springs feeds. Beside Marston Lake, inside Denver."
+    },
+    "marston_diversion_dam": {
+      "name": "Marston Diversion Dam",
+      "lat": 39.47026,
+      "lon": -105.13474,
+      "source": "OpenStreetMap way, waterway=weir, name=Marston Diversion Dam",
+      "aliases": [
+        "Platte Canyon Diversion Dam",
+        "Platte Canyon Intake Dam"
+      ],
+      "note": "The second intake. 24 m from the south end of Conduit 20, and 4.24 km below Strontia Springs Dam. Denver Water calls this one structure by three different names across its own documents, which is why it is hard to find. Its pairing with Conduit 20 matches the Integrated Water Resource Plan: \"Platte Canyon Intake Dam and Conduit No. 20, Marston Reservoir\"."
+    },
+    "conduit_26_intake": {
+      "name": "Conduit 26 intake (Strontia Springs Denver intake)",
+      "lat": 39.431939,
+      "lon": -105.126546,
+      "source": "Colorado DWR/CDSS structure record WDID 0801017, https://dwr.state.co.us/Rest/GET/api/v2/structures/?format=json&wdid=0801017",
+      "cdss_structure_name": "DENVER FOOTHILLS PL 26",
+      "cdss_aliases": [
+        "COND26CO",
+        "DENVER CONDUIT 26",
+        "STRONTIA SPRINGS DENVER INTAKE"
+      ],
+      "structure_type": "PIPELINE",
+      "water_source": "SOUTH PLATTE RIVER",
+      "stream_mile": 270.22,
+      "period_of_record_start": "1983-06-14",
+      "length_mi_2010_cafr": 3.7,
+      "length_mi_2017_cafr": 3.8,
+      "capacity_mgd": 750,
+      "note": "The state register names this asset \"DENVER FOOTHILLS PL 26\" and lists \"STRONTIA SPRINGS DENVER INTAKE\" among its aliases, which is as close as any public record comes to stating the endpoints. No prose document states them in a sentence. Period of record starts 1983, the year the Foothills plant opened."
+    }
+  }
+}
