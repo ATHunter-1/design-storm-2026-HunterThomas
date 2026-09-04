@@ -66,6 +66,6 @@ Reported results (deck, ~July 2026):
 ## Related
 
 - Plain-language definitions of every water and statistics term used in this repo: [glossary.md](glossary.md)
-- Visualizations (open in a browser; both need an internet connection for map tiles and libraries): [design-storm-water-system-3d.html](design-storm-water-system-3d.html), a 3D map of the supply system from snowpack to treatment plants, and [design-storm-strontia-springs-brief.html](design-storm-strontia-springs-brief.html), a brief on a real turbidity spike at the Strontia gage on 15 Aug 2026, written before Jake's materials arrived
+- Visualizations: [design-storm-water-system-3d.html](design-storm-water-system-3d.html), a 3D map of the supply system from snowpack to treatment plants, and [design-storm-strontia-springs-brief.html](design-storm-strontia-springs-brief.html), a brief on a real turbidity spike at the Strontia gage on 15 Aug 2026, written before Jake's materials arrived. To view: `python3 serve.py 8765` from the repo root (or `python3 -m http.server`), then open `localhost:8765/design-storm-water-system-3d.html`. They load their data from `water-system-3d/` and `strontia-brief/`, so opening the files straight off disk shows an error; map tiles and live gage data also need an internet connection.
 - People: Jake Slawson (Data Scientist, Water Quality & Treatment) and Cassidi Rosenkrance (WQ&T Manager, Lab-Monitoring), Denver Water
 - The four-cohort exercise structure is drafted in Explore DDD's planning docs, outside this repository
