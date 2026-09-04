@@ -1,0 +1,1355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How a storm turns a Denver Water river filthy in an hour, read from public sensor data, explained from zero.">
+<style>
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  img, svg { max-width: 100%; }
+</style>
+<title>The Strontia Springs Spike</title>
+
+<link rel="stylesheet" href="strontia-brief/vendor/leaflet.css">
+<script src="strontia-brief/vendor/leaflet.js"></script>
+
+<style>
+  :root {
+    --ground: #F6F8F7;
+    --surface: #FFFFFF;
+    --sunken: #EDF1EF;
+    --ink: #16201E;
+    --ink-2: #3D4B47;
+    --muted: #5C6B66;
+    --rule: #DCE3E0;
+    --rule-soft: #E9EEEC;
+    --silt: #A8621B;
+    --silt-wash: rgba(168, 98, 27, 0.13);
+    --teal: #068C7D;
+    --teal-wash: rgba(6, 140, 125, 0.12);
+    --focus: #A8621B;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121716;
+      --surface: #1A201F;
+      --sunken: #151B1A;
+      --ink: #E7EDEA;
+      --ink-2: #C0CBC7;
+      --muted: #93A39D;
+      --rule: #2C3634;
+      --rule-soft: #232C2A;
+      --silt: #C07D33;
+      --silt-wash: rgba(192, 125, 51, 0.17);
+      --teal: #1E9E96;
+      --teal-wash: rgba(30, 158, 150, 0.15);
+      --focus: #C07D33;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #121716;
+    --surface: #1A201F;
+    --sunken: #151B1A;
+    --ink: #E7EDEA;
+    --ink-2: #C0CBC7;
+    --muted: #93A39D;
+    --rule: #2C3634;
+    --rule-soft: #232C2A;
+    --silt: #C07D33;
+    --silt-wash: rgba(192, 125, 51, 0.17);
+    --teal: #1E9E96;
+    --teal-wash: rgba(30, 158, 150, 0.15);
+    --focus: #C07D33;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", ui-serif, serif;
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 24px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .measure { max-width: 34rem; }
+
+  /* ---- masthead ---- */
+
+  header.masthead {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+  }
+
+  h1 {
+    font-size: clamp(2.1rem, 5.5vw, 3.1rem);
+    line-height: 1.08;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+
+  .standfirst {
+    font-size: 1.18rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: 42rem;
+    text-wrap: pretty;
+  }
+
+  /* ---- sections ---- */
+
+  section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  section:last-of-type { border-bottom: none; }
+
+  h2 {
+    font-size: 1.42rem;
+    font-weight: 400;
+    line-height: 1.25;
+    margin: 0;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  p { margin: 0; max-width: 34rem; text-wrap: pretty; }
+
+  a { color: inherit; text-decoration-color: var(--silt); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 2px; }
+
+  em.term { font-style: normal; font-weight: 700; }
+
+  .num {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.9em;
+  }
+
+  sup.ref {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 9px;
+    color: var(--silt);
+    vertical-align: super;
+    line-height: 0;
+    padding-left: 1px;
+  }
+  sup.ref a { text-decoration: none; }
+
+  blockquote {
+    margin: 0;
+    padding-left: 20px;
+    border-left: 2px solid var(--silt);
+    color: var(--ink-2);
+    font-size: 1.05rem;
+    max-width: 34rem;
+  }
+  blockquote cite {
+    display: block;
+    margin-top: 10px;
+    font-style: normal;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  /* ---- glossary ---- */
+
+  dl.glossary {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 4px 40px;
+  }
+  .gitem {
+    padding: 14px 0;
+    border-top: 1px solid var(--rule-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  dt {
+    font-weight: 700;
+    font-size: 0.98rem;
+  }
+  dt .unit {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 8px;
+    text-transform: uppercase;
+  }
+  dd { margin: 0; font-size: 0.94rem; color: var(--ink-2); line-height: 1.5; }
+
+  /* ---- figure ---- */
+
+  figure {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 24px 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-x: auto;
+  }
+
+  .fig-head { display: flex; flex-direction: column; gap: 4px; }
+  .fig-title { font-size: 1.02rem; }
+  .fig-sub {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  svg { display: block; width: 100%; min-width: 520px; height: auto; overflow: visible; }
+
+  .panel-label {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    fill: var(--muted);
+  }
+  .axis-txt {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+    fill: var(--muted);
+  }
+  .gridline { stroke: var(--rule-soft); stroke-width: 1; }
+  .axisline { stroke: var(--rule); stroke-width: 1; }
+  .anno {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+    fill: var(--ink-2);
+  }
+
+  /* ---- maps ---- */
+
+  .maplab {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    fill: var(--ink);
+  }
+  .maplab-city {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.11em;
+    fill: var(--ink);
+  }
+  .maplab-soft {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+    fill: var(--muted);
+  }
+  .maplab-hero {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 19px;
+    fill: var(--silt);
+    letter-spacing: 0.01em;
+  }
+  .map-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+  .map-key span { display: inline-flex; align-items: center; gap: 7px; }
+  .map-key i {
+    width: 13px;
+    height: 13px;
+    border-radius: 2px;
+    display: inline-block;
+    flex: none;
+  }
+  .k-silt { background: var(--silt-wash); border: 1.5px solid var(--silt); }
+  .k-teal { background: var(--teal-wash); border: 1.5px solid var(--teal); }
+  .k-gaged { background: var(--sunken); border: 1.5px dashed var(--muted); }
+  .k-supply { background: none; border: none; border-top: 3px dotted #B0197A; height: 3px; border-radius: 0; align-self: center; }
+  .k-river { background: none; border: none; border-top: 2px solid var(--teal); height: 2px; border-radius: 0; align-self: center; }
+
+  figcaption {
+    font-size: 0.86rem;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 46rem;
+  }
+
+  /* ---- tooltip ---- */
+
+  .tip {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 90ms linear;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 8px 11px;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--ink);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.13);
+    z-index: 10;
+    white-space: nowrap;
+  }
+  .tip .k { color: var(--muted); }
+  .tip .v { font-variant-numeric: tabular-nums; }
+
+  /* ---- table ---- */
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 460px; }
+  caption {
+    text-align: left;
+    padding: 14px 16px 10px;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  th, td {
+    padding: 7px 16px;
+    text-align: right;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    border-top: 1px solid var(--rule-soft);
+  }
+  th { color: var(--muted); font-weight: 500; letter-spacing: 0.04em; }
+  th:first-child, td:first-child { text-align: left; }
+  tr.peak td { background: var(--silt-wash); }
+  tr.odd td { color: var(--ink-2); }
+  td .flag {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--silt);
+    padding-left: 8px;
+  }
+
+  /* ---- findings ---- */
+
+  ol.findings { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; counter-reset: f; }
+  ol.findings > li {
+    counter-increment: f;
+    border-top: 1px solid var(--rule-soft);
+    padding: 18px 0;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 0 16px;
+    align-items: start;
+  }
+  ol.findings > li::before {
+    content: counter(f, decimal-leading-zero);
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--silt);
+    letter-spacing: 0.06em;
+    padding-top: 5px;
+  }
+  ol.findings .f-body { display: flex; flex-direction: column; gap: 7px; }
+  ol.findings h4 { margin: 0; font-size: 1.04rem; font-weight: 700; line-height: 1.35; }
+  ol.findings p { font-size: 0.95rem; color: var(--ink-2); }
+
+  /* ---- status split ---- */
+
+  .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 40px; }
+  .split > div { border-top: 2px solid var(--rule); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .split .known { border-top-color: var(--teal); }
+  .split .unknown { border-top-color: var(--silt); }
+  .split ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+  .split li { font-size: 0.95rem; color: var(--ink-2); line-height: 1.5; }
+  .split li strong { color: var(--ink); font-weight: 700; }
+
+  /* ---- sources ---- */
+
+  ol.sources { margin: 0; padding: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; }
+  ol.sources li {
+    counter-increment: s;
+    position: relative;
+    border-top: 1px solid var(--rule-soft);
+    padding: 12px 0 12px 30px;
+    font-size: 0.88rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 44rem;
+  }
+  ol.sources li::before {
+    content: counter(s);
+    position: absolute;
+    left: 0;
+    top: 15px;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--silt);
+  }
+  ol.sources .url {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+    display: block;
+    margin-top: 3px;
+  }
+  ol.sources li:target { background: var(--silt-wash); }
+
+  footer.colophon {
+    padding: 36px 0 0;
+    border-top: 1px solid var(--rule);
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---- interactive map ---- */
+
+  /* The page-wide `svg` rule below sizes chart figures. Leaflet draws its vectors
+     into its own <svg> overlay, and that rule was stretching it and displacing every
+     polygon from the basemap. Keep Leaflet's own sizing. */
+  #locator-map svg,
+  #locator-map img {
+    width: auto;
+    height: auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  #locator-map {
+    height: 680px;
+    width: 100%;
+    border-radius: 3px;
+    background: var(--sunken);
+    z-index: 0;
+  }
+  #locator-map .leaflet-container {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  #locator-map .leaflet-popup-content {
+    font-family: Georgia, "Iowan Old Style", ui-serif, serif;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 12px 14px;
+  }
+  #locator-map .leaflet-popup-content strong {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  #locator-map .leaflet-tooltip,
+  #locator-map .leaflet-control-attribution {
+    font-size: 10.5px;
+  }
+
+  /* OSM tiles ship light. Darken them for the dark theme rather than swapping providers. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) #locator-map .leaflet-tile-pane {
+      filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.7);
+    }
+  }
+  :root[data-theme="dark"] #locator-map .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.7);
+  }
+
+  .map-hint {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* ---- flow schematic ---- */
+
+  .flownode { fill: var(--surface); stroke: var(--rule); stroke-width: 1.5; }
+  .flownode-key { fill: var(--silt-wash); stroke: var(--silt); stroke-width: 1.8; }
+  .flowtitle {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11.5px; fill: var(--ink);
+  }
+  .flowsub {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 9.5px; fill: var(--muted);
+  }
+  .flowarrow { stroke: var(--muted); stroke-width: 1.6; fill: none; }
+  .flowarrow-tunnel { stroke: var(--teal); stroke-width: 2; fill: none; stroke-dasharray: 6 4; }
+
+  /* ---- theme toggle ---- */
+
+  .theme-toggle {
+    margin-left: auto;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--muted); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .theme-toggle svg { width: 15px; height: 15px; min-width: 0; }
+
+  .icon-sun { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .icon-moon { display: none; }
+    :root:not([data-theme="light"]) .icon-sun { display: block; }
+  }
+  :root[data-theme="dark"] .icon-moon { display: none; }
+  :root[data-theme="dark"] .icon-sun { display: block; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<script>
+(function () {
+  var KEY = "strontia-theme";
+  var root = document.documentElement;
+  var mq = window.matchMedia("(prefers-color-scheme: dark)");
+
+  function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function save(v) { try { localStorage.setItem(KEY, v); } catch (e) { /* private mode */ } }
+  function current() { return root.getAttribute("data-theme") || (mq.matches ? "dark" : "light"); }
+
+  var saved = stored();
+  if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+
+  function wire() {
+    var btn = document.getElementById("theme-toggle");
+    if (!btn) return;
+    function label() {
+      btn.setAttribute("aria-label", current() === "dark" ? "Switch to light theme" : "Switch to dark theme");
+    }
+    label();
+    btn.addEventListener("click", function () {
+      var next = current() === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      save(next);
+      label();
+    });
+    if (mq.addEventListener) mq.addEventListener("change", label);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire);
+  else wire();
+})();
+</script>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span>Denver Water</span>
+      <span>Public data</span>
+      <span>17 Aug 2026</span>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
+      </button>
+    </div>
+    <h1>The Strontia Springs Spike</h1>
+    <p class="standfirst">Two nights ago, a sensor on Denver Water&rsquo;s own supply watched a river go from clear
+      to filthy in about an hour, and then clean itself up again by lunchtime. All of it is public, and it is the
+      phenomenon Cassidi&rsquo;s team is trying to predict.</p>
+  </header>
+
+  <section>
+    <h3>Why this exists</h3>
+    <h2>What I was doing when you asked</h2>
+    <p>Cassidi described a model her team is building, in one paragraph, on a call. I wanted to see whether the thing
+      she described actually shows up in public data, and what it looks like when it does.</p>
+    <p>It does, on Denver Water&rsquo;s own supply, and there was a live example two nights before we spoke. This is
+      what that looks like and what makes it interesting, nothing more. Deciding whether any of it becomes a conference
+      exercise is a separate question, and Cassidi&rsquo;s to answer first.</p>
+  </section>
+
+  <section>
+    <h3>Her words</h3>
+    <h2>The problem Cassidi described</h2>
+    <blockquote>
+      What he&rsquo;s trying to do is basically look at certain water quality parameters. And model based on storm events
+      where we might see exceedances. So you could plug in any type of storm event or stream flow and say, this is where
+      we might have a problem for future&hellip; planning, and then that kind of informs those who work on our water
+      quantity, how we move water, where we take water from, and then subsequently our treatment plants, what they need
+      to do to treat the water.
+      <cite>Cassidi Rosenkrance, 17 Aug 2026<sup class="ref"><a href="#s1">1</a></sup></cite>
+    </blockquote>
+    <p>Unpacked: a storm dumps rain on a mountain watershed. Soil, ash and organic matter wash into the streams that feed
+      the reservoirs. The water arriving at the treatment plant is briefly much dirtier than usual. If you can predict
+      <em>when</em> and <em>how dirty</em>, you can move water from a cleaner source instead, or tell the plant to change
+      how it treats what&rsquo;s coming.</p>
+  </section>
+
+  <section>
+    <h3>Vocabulary</h3>
+    <h2>Every term you need, once</h2>
+    <dl class="glossary">
+      <div class="gitem">
+        <dt>Watershed</dt>
+        <dd>The land area that drains into a particular river or reservoir. Rain falling anywhere in it eventually shows
+          up in that water body. Not a building.</dd>
+      </div>
+      <div class="gitem">
+        <dt>Gage</dt>
+        <dd>A fixed monitoring station in a river. The USGS spelling of &ldquo;gauge.&rdquo; Instruments take readings
+          automatically, here every 15 minutes, and publish them free.</dd>
+      </div>
+      <div class="gitem">
+        <dt>Turbidity <span class="unit">FNU</span></dt>
+        <dd>How cloudy the water is, measured by shining a light through it and reading how much scatters sideways. Clear
+          mountain water sits near 2. Above roughly 100 the river looks like coffee. FNU is Formazin Nephelometric
+          Units.</dd>
+      </div>
+      <div class="gitem">
+        <dt>Discharge <span class="unit">cfs</span></dt>
+        <dd>How much water is flowing past a point, in cubic feet per second. This is what people mean by
+          &ldquo;stream flow.&rdquo;</dd>
+      </div>
+      <div class="gitem">
+        <dt>Specific conductance <span class="unit">&micro;S/cm</span></dt>
+        <dd>How well the water conducts electricity, which tracks how much dissolved mineral is in it. Rainwater is
+          nearly pure, so a big rain event usually <em>dilutes</em> a river and pushes this number down.</dd>
+      </div>
+      <div class="gitem">
+        <dt>Exceedance</dt>
+        <dd>A reading that goes past a threshold somebody cares about, whether a legal limit or an operational one like
+          &ldquo;past this, our plant can&rsquo;t cope.&rdquo; Which thresholds Denver Water uses is still an open
+          question.</dd>
+      </div>
+      <div class="gitem">
+        <dt>Provisional data</dt>
+        <dd>Published immediately, before a human has reviewed it. Everything in this brief is provisional. It may be
+          revised or withdrawn later.<sup class="ref"><a href="#s2">2</a></sup></dd>
+      </div>
+      <div class="gitem">
+        <dt>Design storm</dt>
+        <dd>A hypothetical rainfall event of specified size that engineers design drainage against. Also, now, the name
+          of our format, which turns out to be more literal than we intended.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <h3>The find</h3>
+    <h2>One gage sits on Denver Water&rsquo;s own supply</h2>
+    <p>USGS station <span class="num">06707525</span>, <em class="term">South Platte River above Strontia Springs
+      Reservoir</em>, publishes turbidity, specific conductance, water temperature, pH and dissolved oxygen every
+      15 minutes, free and unauthenticated.<sup class="ref"><a href="#s3">3</a></sup> Strontia Springs is a Denver Water
+      reservoir, and it is the one with the story: after the 1996 Buffalo Creek and 2002 Hayman fires, storms washed more
+      than a million cubic yards of sediment into it, roughly fifteen years&rsquo; worth in a single flood season. Denver
+      Water has spent over <span class="num">$27 million</span> on the consequences, and the episode is what started their
+      forest-and-watershed program.<sup class="ref"><a href="#s4">4</a></sup><sup class="ref"><a href="#s5">5</a></sup></p>
+    <p>Two more of their collection watersheds carry the same instruments: the Fraser River below the Moffat Tunnel
+      (<span class="num">09023562</span>) and the Williams Fork near Parshall (<span class="num">09037500</span>). Across
+      Colorado there are 49 active turbidity series and 362 discharge series running right now.<sup class="ref"><a href="#s3">3</a></sup></p>
+    <p>So the domain has public instruments pointed directly at Denver Water&rsquo;s drinking water, with a famous
+      disaster attached to explain why anyone cares.</p>
+
+    <figure>
+      <div class="fig-head">
+        <div class="fig-title">Where all of this is, relative to Denver</div>
+        <div class="fig-sub">Denver Water&rsquo;s collection country, the divide, and the gage</div>
+      </div>
+      <div id="locator-map" role="application" aria-label="Interactive map of Denver Water's collection country: the drainage basins, the Continental Divide, the Roberts Tunnel, and the Strontia Springs gage, with Denver for reference."></div>
+      <div class="map-key">
+        <span><i class="k-silt"></i> East of the divide &#183; flows toward Denver</span>
+        <span><i class="k-teal"></i> West of the divide &#183; tunnelled through</span>
+        <span><i class="k-gaged"></i> Measured by the flow gage</span>
+        <span><i class="k-supply"></i> The supply: gage &rarr; dam &rarr; treatment plants</span>
+        <span class="map-hint">Drag to pan &#183; click the map to enable scroll-zoom &#183; click any point for detail</span>
+      </div>
+      <figcaption>Basin outlines and river channels are real geometry from the USGS Network Linked Data Index;
+        gages and reservoirs are USGS station coordinates; the dam, the diversion, the plants and the conduits are
+        OpenStreetMap features, the same data behind the basemap.<sup class="ref"><a href="#s7">7</a></sup> Magenta is
+        the measured water. It reaches <em class="term">two</em> plants by two routes: from the reservoir to Foothills,
+        and from a second intake 2.6 miles downstream into Conduit 20 and on to Marston. Denver Water&rsquo;s own
+        source water plan describes both intakes.<sup class="ref"><a href="#s13">13</a></sup> The two straight runs are
+        schematic because no public route geometry exists for them: the Roberts Tunnel, whose computed
+        <span class="num">38 km</span> matches the published <span class="num">23 miles</span>,<sup class="ref"><a href="#s9">9</a></sup>
+        and Conduit 26 to Foothills. Conduit 20 is drawn from its mapped route. The grey line is Aurora Water&rsquo;s,
+        which has its own intake at the same dam.<sup class="ref"><a href="#s11">11</a></sup></figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h3>The connection</h3>
+    <h2>How this gage relates to Denver</h2>
+    <p>The gage is about <span class="num">38 km</span> (24 miles) south-west of downtown Denver, up a canyon, which
+      makes it look remote on a map. Functionally it is the opposite of remote. It sits immediately above
+      <em class="term">Strontia Springs Reservoir</em>, and Denver Water says plainly: &ldquo;Eighty percent of Denver
+      Water&rsquo;s supply passes through Strontia Springs Reservoir.&rdquo;<sup class="ref"><a href="#s8">8</a></sup></p>
+    <p>Denver is on the dry side of the mountains, so the city reaches west for water and then funnels almost all of it
+      through one narrow point before treatment. That point is this reservoir, and this gage is the last measurement
+      taken before the water gets there.</p>
+
+    <figure>
+      <div class="fig-head">
+        <div class="fig-title">From two river basins to the tap</div>
+        <div class="fig-sub">Denver Water&rsquo;s south system, and where the gage sits in it</div>
+      </div>
+      <svg viewBox="0 0 760 460" role="img" aria-label="Flow diagram. Water from the Blue River basin at Dillon Reservoir, west of the Continental Divide, travels 23 miles through the Roberts Tunnel to the North Fork of the South Platte. Separately, the Upper South Platte flows from Antero, Eleven Mile and Cheesman reservoirs. Both merge and pass gage 06707525 on the way into Strontia Springs Reservoir, through which 80 percent of Denver Water's supply passes. From there water goes to the Foothills and Marston treatment plants and on to 1.5 million people.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 1 L9 5 L0 9 z" fill="var(--muted)" />
+          </marker>
+          <marker id="ah-t" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 1 L9 5 L0 9 z" fill="var(--teal)" />
+          </marker>
+        </defs>
+
+        <rect class="flownode" x="20" y="14" width="250" height="50" rx="3" />
+        <text class="flowtitle" x="34" y="36">Blue River basin</text>
+        <text class="flowsub" x="34" y="52">Dillon Reservoir &#183; west of the divide</text>
+
+        <rect class="flownode" x="430" y="14" width="300" height="50" rx="3" />
+        <text class="flowtitle" x="444" y="36">Upper South Platte</text>
+        <text class="flowsub" x="444" y="52">Antero, Eleven Mile, Cheesman</text>
+
+        <path class="flowarrow-tunnel" d="M145 64 L145 106" marker-end="url(#ah-t)" />
+        <text class="flowsub" x="158" y="82">Roberts Tunnel</text>
+        <text class="flowsub" x="158" y="95">23 miles under the Continental Divide</text>
+
+        <rect class="flownode" x="20" y="110" width="250" height="44" rx="3" />
+        <text class="flowtitle" x="34" y="130">North Fork of the</text>
+        <text class="flowtitle" x="34" y="146">South Platte</text>
+
+        <path class="flowarrow" d="M145 154 L145 184 L361 184" />
+        <text class="flowsub" x="150" y="176">then ~26 miles as an ordinary river</text>
+        <path class="flowarrow" d="M580 64 L580 184 L379 184" />
+
+        <circle cx="370" cy="184" r="7" fill="var(--silt)" stroke="var(--surface)" stroke-width="2.5" />
+        <text class="flowtitle" x="388" y="158">gage 06707525</text>
+        <text class="flowsub" x="388" y="172">measures the combined inflow</text>
+
+        <path class="flowarrow" d="M370 191 L370 212" marker-end="url(#ah)" />
+
+        <rect class="flownode-key" x="175" y="216" width="390" height="54" rx="3" />
+        <text class="flowtitle" x="191" y="238">Strontia Springs Reservoir</text>
+        <text class="flowsub" x="191" y="255">80% of Denver Water&#8217;s supply passes through here</text>
+
+        <path class="flowarrow-tunnel" d="M300 270 L300 292 L270 292 L270 312" marker-end="url(#ah-t)" />
+        <path class="flowarrow" d="M440 270 L440 292 L470 292 L470 312" marker-end="url(#ah)" />
+        <text class="flowsub" x="150" y="288">diverted at the dam</text>
+        <line x1="228" y1="284" x2="264" y2="284" class="axisline" />
+
+        <rect class="flownode" x="180" y="316" width="180" height="42" rx="3" />
+        <text class="flowtitle" x="194" y="335">Foothills Plant</text>
+        <text class="flowsub" x="194" y="350">treatment</text>
+
+        <rect class="flownode" x="380" y="316" width="180" height="42" rx="3" />
+        <text class="flowtitle" x="394" y="335">Marston Plant</text>
+        <text class="flowsub" x="394" y="350">treatment</text>
+
+        <path class="flowarrow" d="M270 358 L270 378 L340 378 L340 396" marker-end="url(#ah)" />
+        <path class="flowarrow" d="M470 358 L470 378 L400 378 L400 396" marker-end="url(#ah)" />
+
+        <rect class="flownode" x="250" y="400" width="240" height="42" rx="3" />
+        <text class="flowtitle" x="264" y="419">1.5 million people</text>
+        <text class="flowsub" x="264" y="434">Denver and suburbs</text>
+      </svg>
+      <figcaption>A schematic of the route, not a survey. The tunnel really is 23 miles long and really does run under
+        the Continental Divide, carrying water from the Colorado River side of the mountains to the
+        Denver side.<sup class="ref"><a href="#s9">9</a></sup> Strontia Springs Dam was completed in 1983 and sits
+        6.2 miles up Waterton Canyon; it feeds the Foothills and Marston treatment
+        plants.<sup class="ref"><a href="#s10">10</a></sup></figcaption>
+    </figure>
+  </section>
+
+
+  <section>
+    <h3>The event</h3>
+    <h2>What happened on the night of 15 August</h2>
+
+    <figure>
+      <div class="fig-head">
+        <div class="fig-title">Turbidity and flow, South Platte above Strontia Springs</div>
+        <div class="fig-sub">14 Aug 12:00 &ndash; 15 Aug 18:00 MDT &middot; hourly samples &middot; provisional</div>
+      </div>
+
+      <svg viewBox="0 0 900 430" role="img" aria-label="Two stacked line charts sharing a time axis. Turbidity is flat near 3 FNU, spikes to 303 at 2am on 15 August, then decays through the morning. Discharge stays between 139 and 147 cubic feet per second throughout, showing no response.">
+        <g id="plot"></g>
+      </svg>
+
+      <figcaption>Top panel: turbidity, the cloudiness of the water. Bottom panel: discharge, how much water is flowing,
+        measured at the nearest upstream gage (<span class="num">06701900</span>, South Platte below Brush Creek near
+        Trumbull). Two panels rather than two lines on one axis, because the whole point is that they disagree. Hourly
+        samples shown; the 15-minute feed peaked higher, at <span class="num">329 FNU</span> at 01:45.</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Selected readings &middot; USGS 06707525 and 06701900</caption>
+        <thead>
+          <tr><th scope="col">Time (MDT)</th><th scope="col">Turbidity FNU</th><th scope="col">Conductance &micro;S/cm</th><th scope="col">Flow cfs</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>14 Aug 12:00</td><td>4.6</td><td>296</td><td>139</td></tr>
+          <tr class="odd"><td>14 Aug 13:00</td><td>16.1</td><td>38 <span class="flag">&larr; unflagged outlier</span></td><td>141</td></tr>
+          <tr><td>14 Aug 18:00</td><td>2.7</td><td>290</td><td>145</td></tr>
+          <tr><td>15 Aug 00:00</td><td>10.2</td><td>281</td><td>143</td></tr>
+          <tr><td>15 Aug 01:00</td><td>237</td><td>285</td><td>141</td></tr>
+          <tr class="peak"><td>15 Aug 02:00</td><td>303</td><td>282</td><td>141</td></tr>
+          <tr><td>15 Aug 05:00</td><td>90.1</td><td>289</td><td>141</td></tr>
+          <tr><td>15 Aug 08:00</td><td>25.6</td><td>297</td><td>141</td></tr>
+          <tr><td>15 Aug 12:00</td><td>10.3</td><td>305</td><td>141</td></tr>
+          <tr><td>15 Aug 18:00</td><td>4.9</td><td>299</td><td>141</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h3>What makes it hard</h3>
+    <h2>Three difficulties hiding in thirty-one rows</h2>
+    <ol class="findings">
+      <li>
+        <div class="f-body">
+          <h4>The obvious predictor doesn&rsquo;t work</h4>
+          <p>Anyone modelling &ldquo;storm makes river dirty&rsquo;&rsquo; reaches first for flow. Flow never moved:
+            <span class="num">139&ndash;147 cfs</span> across the entire event, while turbidity went up
+            <span class="num">30&times;</span>. Whatever delivered that sediment came in below the upstream gage, from a
+            tributary or a burn scar, and the headline measurement is blind to it.</p>
+
+      <figure>
+        <div class="fig-head">
+          <div class="fig-title">The blind spot</div>
+          <div class="fig-sub">Everything draining to Strontia Springs, and the part the flow gage actually measures</div>
+        </div>
+        <svg viewBox="0 0 760 470" role="img" aria-label="Map of the South Platte basin above Strontia Springs. A dashed inner boundary marks the 2,028 square miles measured by the upstream flow gage at Trumbull. The remaining outer band of roughly 555 square miles, containing the lower canyon, drains to the turbidity gage without passing the flow gage.">
+          <path d="M394.1 365.4 L392.0 366.8 L387.4 365.2 L386.5 366.2 L385.0 365.7 L384.0 366.1 L383.0 368.9 L380.1 370.2 L380.0 371.7 L378.1 371.2 L377.0 372.1 L375.6 370.9 L372.7 372.7 L369.3 371.7 L368.8 372.7 L367.5 370.8 L362.6 370.6 L361.0 368.7 L357.1 371.7 L356.6 374.0 L354.0 375.5 L351.6 371.5 L350.4 370.8 L348.3 371.9 L347.9 373.4 L344.9 373.1 L344.4 374.2 L340.8 375.4 L339.5 370.3 L337.3 369.2 L333.6 370.6 L332.5 373.3 L323.8 379.5 L323.8 380.9 L319.3 379.7 L315.2 380.2 L311.7 386.0 L310.2 385.1 L308.4 385.9 L307.3 385.4 L305.8 386.4 L305.1 385.8 L303.0 386.3 L298.1 390.6 L297.0 390.7 L294.9 393.9 L291.5 391.4 L284.3 391.5 L283.9 392.3 L280.1 392.3 L278.6 391.4 L277.5 392.0 L270.0 391.8 L267.2 393.3 L265.5 393.0 L261.9 394.1 L261.5 395.0 L257.0 396.0 L249.4 394.5 L247.0 388.5 L243.2 387.8 L237.1 389.0 L236.1 391.6 L234.4 392.3 L232.7 394.7 L230.5 394.0 L229.0 401.1 L227.3 400.7 L226.5 402.7 L223.1 403.0 L220.2 404.5 L218.4 404.0 L219.6 407.7 L218.9 410.4 L219.9 410.5 L221.3 412.2 L221.6 414.0 L220.6 417.3 L219.3 416.8 L216.7 418.7 L216.3 421.6 L217.3 427.7 L215.5 429.5 L212.1 427.5 L209.3 427.3 L206.7 425.4 L203.5 427.3 L201.0 427.1 L200.5 426.6 L201.1 425.6 L198.4 423.1 L194.0 420.6 L194.4 418.2 L191.4 414.5 L190.1 414.5 L187.4 416.3 L184.3 415.8 L182.7 413.3 L180.5 413.2 L176.8 410.3 L175.2 405.9 L165.7 406.8 L165.8 405.2 L163.7 404.5 L160.9 401.5 L158.3 402.4 L155.2 401.1 L146.5 403.0 L144.1 404.8 L142.7 405.0 L140.3 404.0 L139.8 402.3 L129.1 390.1 L130.0 387.5 L128.7 384.7 L130.0 382.5 L132.1 381.4 L133.1 377.4 L135.0 375.9 L134.5 375.0 L132.9 374.7 L129.0 369.7 L126.9 371.1 L121.2 369.6 L117.8 371.1 L116.2 368.4 L115.9 365.8 L119.5 363.1 L120.7 360.7 L119.3 359.2 L116.8 358.5 L116.8 356.8 L113.7 355.2 L110.9 356.5 L109.5 356.4 L109.1 354.9 L102.8 347.8 L101.7 347.7 L98.8 343.8 L95.9 344.9 L91.0 343.9 L88.9 344.4 L87.6 346.7 L86.2 347.2 L86.0 349.0 L84.2 348.7 L79.1 345.6 L75.9 346.7 L71.6 345.0 L69.3 344.9 L69.6 340.4 L69.0 338.4 L70.1 337.4 L69.7 336.4 L71.4 334.0 L72.3 330.8 L70.7 326.6 L70.8 324.0 L68.1 323.7 L64.4 321.1 L62.3 320.2 L59.7 320.4 L58.0 319.2 L49.8 321.5 L47.4 318.5 L46.4 313.4 L41.5 310.3 L41.4 309.5 L42.7 308.7 L41.8 305.3 L43.9 303.1 L45.1 300.4 L44.0 297.6 L44.4 295.7 L42.2 293.3 L41.9 287.9 L43.8 286.1 L43.5 285.0 L49.8 278.8 L48.7 275.1 L46.6 272.0 L35.4 271.5 L36.3 269.0 L37.9 268.0 L37.8 265.9 L39.6 265.8 L43.1 263.8 L43.7 260.4 L45.1 259.8 L45.8 258.0 L48.5 256.0 L47.6 248.2 L46.1 244.2 L46.7 239.8 L44.1 234.1 L45.9 231.7 L46.4 229.1 L44.4 224.2 L46.6 222.2 L46.8 219.7 L49.4 217.5 L50.0 214.4 L48.6 211.8 L44.8 210.3 L44.2 209.1 L45.7 206.7 L45.9 200.8 L43.6 192.4 L44.3 189.3 L45.4 187.7 L45.0 186.5 L45.7 183.7 L45.0 183.0 L44.6 178.7 L47.2 178.1 L47.9 175.3 L49.7 173.4 L56.1 173.9 L56.3 172.2 L60.0 165.5 L57.4 161.0 L57.0 157.0 L55.4 155.1 L56.9 152.6 L58.5 152.6 L60.4 150.8 L61.5 147.4 L66.6 148.8 L75.0 148.2 L78.9 151.8 L83.3 152.5 L89.2 157.0 L96.7 157.0 L102.1 154.8 L102.8 153.7 L102.9 149.2 L102.3 146.7 L103.8 144.1 L105.9 144.0 L110.2 140.5 L111.1 137.6 L114.4 137.3 L115.2 135.5 L123.3 131.0 L125.6 131.6 L124.3 127.9 L124.6 126.4 L122.5 125.2 L120.3 121.0 L122.2 120.2 L124.8 120.9 L128.3 119.8 L128.8 115.0 L130.5 111.9 L134.7 111.5 L139.6 112.7 L140.7 111.4 L141.5 111.6 L146.5 100.4 L150.9 100.6 L151.2 97.7 L152.4 96.3 L155.3 95.8 L156.4 92.1 L159.0 90.8 L157.6 87.7 L154.7 84.6 L156.0 83.3 L157.7 79.0 L158.3 78.7 L159.5 80.7 L162.6 82.5 L163.0 81.5 L167.8 78.8 L170.5 79.7 L172.4 75.6 L171.9 72.9 L173.0 69.8 L169.6 68.3 L168.1 63.6 L165.7 62.3 L165.1 60.5 L167.3 58.2 L171.2 56.0 L172.3 56.8 L175.9 55.6 L178.3 51.3 L185.3 47.7 L187.0 45.9 L190.9 51.4 L195.0 51.5 L197.1 49.8 L199.2 49.5 L201.3 50.4 L202.9 49.0 L206.8 47.9 L208.9 49.3 L209.6 52.1 L217.2 48.2 L220.2 42.4 L222.3 43.0 L227.3 40.5 L230.5 42.5 L228.7 44.7 L229.1 47.8 L228.2 49.7 L228.7 51.7 L230.7 53.2 L233.4 53.5 L237.1 56.1 L237.1 61.2 L239.6 62.3 L246.2 68.0 L248.9 69.1 L254.3 69.6 L257.2 67.7 L261.3 68.7 L266.1 68.6 L269.9 66.9 L278.0 69.2 L278.5 70.3 L283.9 71.9 L286.3 67.2 L291.5 68.4 L292.8 65.5 L298.3 64.5 L300.5 63.3 L303.9 67.6 L310.4 67.5 L311.8 70.6 L313.9 72.2 L317.3 71.8 L317.5 73.2 L320.5 75.3 L320.7 77.2 L322.9 79.1 L325.7 79.8 L327.9 82.9 L330.8 82.5 L333.5 85.2 L333.7 86.6 L334.4 86.1 L336.2 90.2 L344.0 87.9 L345.4 86.1 L353.7 85.3 L356.9 83.6 L357.5 84.5 L358.4 84.2 L361.1 88.7 L367.0 91.6 L366.7 94.4 L368.7 95.9 L369.3 97.5 L371.3 98.1 L374.1 97.5 L375.9 98.4 L376.2 100.0 L377.8 101.2 L377.7 102.7 L379.5 104.3 L382.6 105.0 L383.9 106.7 L386.3 107.3 L388.7 106.6 L389.3 108.4 L393.9 111.3 L394.5 115.0 L392.9 115.8 L391.0 118.9 L393.7 120.7 L394.3 122.0 L399.5 121.9 L400.0 122.7 L402.6 122.6 L405.0 123.9 L405.2 125.1 L410.6 126.2 L411.5 129.5 L411.3 132.2 L408.0 137.3 L407.9 140.9 L408.8 142.5 L413.0 145.5 L412.1 147.3 L415.1 151.5 L414.7 154.1 L418.2 154.1 L421.3 157.1 L420.7 160.2 L423.4 165.1 L423.3 166.8 L424.9 170.7 L427.5 172.0 L426.6 174.6 L427.6 175.9 L427.0 181.2 L425.4 183.8 L425.5 186.3 L421.1 192.3 L419.8 192.7 L419.5 193.9 L420.5 195.1 L419.8 197.9 L419.0 199.0 L417.8 198.9 L417.4 201.5 L416.3 202.4 L416.9 206.6 L417.9 207.7 L418.9 211.2 L419.9 211.6 L421.2 211.0 L422.9 213.9 L423.8 213.2 L428.3 214.9 L429.0 213.8 L429.1 215.6 L432.8 218.3 L433.4 220.1 L437.1 219.2 L437.7 223.6 L439.4 226.6 L439.7 232.3 L441.6 234.8 L443.1 235.1 L443.5 236.9 L445.5 237.0 L445.7 239.0 L449.2 241.3 L449.3 242.9 L450.3 243.7 L450.1 246.8 L448.4 248.3 L449.1 250.7 L448.0 255.9 L448.4 258.5 L446.4 260.9 L446.4 264.5 L445.7 266.1 L443.9 266.7 L442.9 268.5 L445.7 270.2 L446.1 271.4 L448.7 271.9 L448.7 272.9 L449.5 272.7 L450.4 274.1 L448.0 276.4 L447.9 281.6 L448.6 282.2 L448.0 283.1 L449.0 287.8 L450.1 288.9 L449.3 289.9 L450.2 292.2 L451.2 292.7 L450.2 295.4 L451.6 297.8 L451.8 301.0 L453.0 301.6 L453.3 304.3 L454.3 305.6 L453.4 307.0 L453.4 311.9 L451.8 314.0 L452.8 314.9 L452.3 316.6 L448.8 319.0 L446.8 318.3 L446.0 316.2 L443.7 317.8 L441.6 317.9 L439.6 319.3 L432.6 321.8 L432.7 323.2 L434.4 324.3 L434.0 326.5 L435.4 328.1 L434.4 329.0 L434.6 330.5 L431.2 333.1 L431.6 334.5 L429.6 336.5 L430.9 337.9 L430.2 340.8 L428.2 342.9 L424.9 343.5 L421.9 346.7 L420.9 348.3 L420.3 352.0 L419.1 354.0 L416.1 356.0 L414.4 359.6 L413.7 362.7 L414.3 363.8 L413.4 365.1 L411.1 366.4 L409.5 366.0 L408.5 364.3 L407.3 364.5 L406.4 362.9 L405.7 363.5 L403.4 362.7 L399.3 364.0 L395.5 366.3 L394.1 365.4 Z" fill="var(--silt-wash)" stroke="var(--silt)" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M393.9 365.4 L392.0 366.8 L387.4 365.2 L386.5 366.2 L385.0 365.7 L384.0 366.1 L383.0 368.9 L380.1 370.2 L380.0 371.7 L378.1 371.2 L377.0 372.1 L375.6 370.9 L372.7 372.7 L369.3 371.7 L368.8 372.7 L367.5 370.8 L362.6 370.6 L361.0 368.7 L357.1 371.7 L356.6 374.0 L354.0 375.5 L351.6 371.5 L350.4 370.8 L348.3 371.9 L347.9 373.4 L344.9 373.1 L344.4 374.2 L340.8 375.4 L339.5 370.3 L337.3 369.2 L333.6 370.6 L332.5 373.3 L323.8 379.5 L323.8 380.9 L319.3 379.7 L315.2 380.2 L311.7 386.0 L310.2 385.1 L308.4 385.9 L307.3 385.4 L305.8 386.4 L305.1 385.8 L303.0 386.3 L298.1 390.6 L297.0 390.7 L294.9 393.9 L291.5 391.4 L284.3 391.5 L283.9 392.3 L280.1 392.3 L278.6 391.4 L277.5 392.0 L270.0 391.8 L267.2 393.3 L265.5 393.0 L261.9 394.1 L261.5 395.0 L257.0 396.0 L249.4 394.5 L247.0 388.5 L243.2 387.8 L237.1 389.0 L236.1 391.6 L234.4 392.3 L232.7 394.7 L230.5 394.0 L229.0 401.1 L227.3 400.7 L226.5 402.7 L223.1 403.0 L220.2 404.5 L218.4 404.0 L219.6 407.7 L218.9 410.4 L219.9 410.5 L221.3 412.2 L221.6 414.0 L220.6 417.3 L219.3 416.8 L216.7 418.7 L216.3 421.6 L217.3 427.7 L215.5 429.5 L212.1 427.5 L209.3 427.3 L206.7 425.4 L203.5 427.3 L201.0 427.1 L200.5 426.6 L201.1 425.6 L198.4 423.1 L194.0 420.6 L194.4 418.2 L191.4 414.5 L190.1 414.5 L187.4 416.3 L184.3 415.8 L182.7 413.3 L180.5 413.2 L176.8 410.3 L175.2 405.9 L165.7 406.8 L165.8 405.2 L163.7 404.5 L160.9 401.5 L158.3 402.4 L155.2 401.1 L146.5 403.0 L144.1 404.8 L142.7 405.0 L140.3 404.0 L139.8 402.3 L129.1 390.1 L130.0 387.5 L128.7 384.7 L130.0 382.5 L132.1 381.4 L133.1 377.4 L135.0 375.9 L134.5 375.0 L132.9 374.7 L129.0 369.7 L126.9 371.1 L121.2 369.6 L117.8 371.1 L116.2 368.4 L115.9 365.8 L119.5 363.1 L120.7 360.7 L119.3 359.2 L116.8 358.5 L116.8 356.8 L113.7 355.2 L110.9 356.5 L109.5 356.4 L109.1 354.9 L102.8 347.8 L101.7 347.7 L98.8 343.8 L95.9 344.9 L91.0 343.9 L88.9 344.4 L87.6 346.7 L86.2 347.2 L86.0 349.0 L84.2 348.7 L79.1 345.6 L75.9 346.7 L71.6 345.0 L69.3 344.9 L69.6 340.4 L69.0 338.4 L70.1 337.4 L69.7 336.4 L71.4 334.0 L72.3 330.8 L70.7 326.6 L70.8 324.0 L68.1 323.7 L64.4 321.1 L62.3 320.2 L59.7 320.4 L58.0 319.2 L49.8 321.5 L47.4 318.5 L46.4 313.4 L41.5 310.3 L41.4 309.5 L42.7 308.7 L41.8 305.3 L43.9 303.1 L45.1 300.4 L44.0 297.6 L44.4 295.7 L42.2 293.3 L41.9 287.9 L43.8 286.1 L43.5 285.0 L49.8 278.8 L48.7 275.1 L46.6 272.0 L35.4 271.5 L36.3 269.0 L37.9 268.0 L37.8 265.9 L39.6 265.8 L43.1 263.8 L43.7 260.4 L45.1 259.8 L45.8 258.0 L48.5 256.0 L47.6 248.2 L46.1 244.2 L46.7 239.8 L44.1 234.1 L45.9 231.7 L46.4 229.1 L44.4 224.2 L46.6 222.2 L46.8 219.7 L49.4 217.5 L50.0 214.4 L48.6 211.8 L44.8 210.3 L44.2 209.1 L45.7 206.7 L45.9 200.8 L43.6 192.4 L44.3 189.3 L45.4 187.7 L45.0 186.5 L45.7 183.7 L45.0 183.0 L44.6 178.7 L47.2 178.1 L47.9 175.3 L49.7 173.4 L56.1 173.9 L56.3 172.2 L60.0 165.5 L57.4 161.0 L57.0 157.0 L55.4 155.1 L56.9 152.6 L58.5 152.6 L60.4 150.8 L61.5 147.4 L66.6 148.8 L75.0 148.2 L78.9 151.8 L83.3 152.5 L89.2 157.0 L96.7 157.0 L101.3 155.5 L102.8 153.7 L102.3 146.7 L103.8 144.1 L105.9 144.0 L110.2 140.5 L111.1 137.6 L114.4 137.3 L115.2 135.5 L123.3 131.0 L125.6 131.6 L124.3 127.9 L124.6 126.4 L122.5 125.2 L120.3 121.0 L122.2 120.2 L124.8 120.9 L128.3 119.8 L128.8 115.0 L130.5 111.9 L134.7 111.5 L139.6 112.7 L140.7 111.4 L141.5 111.6 L146.5 100.4 L150.9 100.6 L151.2 97.7 L153.9 95.6 L155.3 95.8 L156.1 97.5 L160.3 99.7 L162.6 104.1 L161.8 108.1 L162.0 113.0 L165.9 114.9 L173.0 115.4 L175.9 117.6 L177.9 117.7 L178.8 119.5 L178.7 121.1 L182.3 125.7 L182.4 127.9 L183.8 129.3 L185.3 128.5 L187.2 129.6 L187.9 131.3 L191.0 132.3 L194.0 131.4 L194.6 132.8 L196.2 133.1 L198.7 135.6 L199.2 137.8 L201.8 141.2 L203.8 141.2 L205.7 139.5 L207.2 139.8 L215.4 136.4 L215.9 135.0 L222.1 130.0 L225.5 128.8 L228.4 128.9 L230.2 130.7 L230.5 134.7 L231.3 134.8 L235.6 139.5 L235.7 141.8 L239.2 144.6 L242.0 149.7 L243.0 149.8 L246.1 152.5 L249.0 153.0 L251.5 155.8 L254.7 156.1 L255.6 158.6 L259.7 160.4 L260.8 162.1 L265.6 162.5 L268.8 164.9 L270.8 168.5 L274.3 170.9 L279.4 172.8 L283.1 175.9 L285.2 180.3 L290.4 184.3 L292.5 185.0 L295.6 184.2 L301.4 184.3 L302.8 185.6 L307.2 186.2 L308.4 187.1 L308.5 189.5 L315.1 189.6 L319.0 191.7 L322.2 190.5 L324.4 192.1 L327.5 192.7 L330.0 194.8 L331.6 194.4 L333.3 192.9 L334.7 193.2 L339.9 184.7 L343.5 184.1 L348.7 185.1 L353.1 181.3 L354.1 181.6 L359.5 180.1 L362.7 185.4 L365.2 185.4 L366.5 187.1 L370.5 186.6 L372.7 191.1 L375.0 192.5 L375.6 195.1 L377.2 196.2 L381.5 196.3 L383.3 197.8 L387.2 197.4 L392.0 198.7 L393.2 199.9 L395.4 200.4 L397.9 203.0 L399.4 201.7 L402.0 201.5 L403.1 203.3 L406.9 203.5 L408.4 204.5 L412.0 202.3 L414.9 204.9 L416.5 204.7 L418.9 211.2 L419.9 211.6 L421.2 211.0 L422.9 213.9 L423.8 213.2 L428.3 214.9 L429.0 213.8 L429.1 215.6 L432.8 218.3 L433.4 220.1 L437.1 219.2 L437.7 223.6 L439.4 226.6 L439.7 232.3 L441.6 234.8 L443.1 235.1 L443.5 236.9 L445.5 237.0 L445.7 239.0 L449.2 241.3 L449.3 242.9 L450.3 243.7 L450.1 246.8 L448.4 248.3 L449.1 250.7 L448.0 255.9 L448.4 258.5 L446.4 260.9 L446.4 264.5 L445.7 266.1 L443.9 266.7 L442.9 268.5 L445.7 270.2 L446.1 271.4 L448.7 271.9 L448.7 272.9 L449.5 272.7 L450.4 274.1 L448.0 276.4 L447.9 281.6 L448.6 282.2 L448.0 283.1 L449.0 287.8 L450.1 288.9 L449.3 289.9 L450.2 292.2 L451.2 292.7 L450.2 295.4 L451.6 297.8 L451.8 301.0 L453.0 301.6 L453.3 304.3 L454.3 305.6 L453.4 307.0 L453.4 311.9 L451.8 314.0 L452.8 314.9 L452.3 316.6 L449.2 319.0 L446.8 318.3 L446.0 316.2 L443.7 317.8 L441.6 317.9 L439.6 319.3 L432.6 321.8 L432.7 323.2 L434.4 324.3 L434.0 326.5 L435.4 328.1 L434.4 329.0 L434.6 330.5 L431.2 333.1 L431.6 334.5 L429.6 336.5 L430.9 337.9 L430.2 340.8 L428.2 342.9 L424.9 343.5 L421.9 346.7 L420.9 348.3 L420.3 352.0 L419.1 354.0 L416.1 356.0 L414.4 359.6 L413.7 362.7 L414.3 363.8 L413.4 365.1 L411.1 366.4 L409.5 366.0 L408.5 364.3 L407.3 364.5 L406.4 362.9 L405.7 363.5 L403.4 362.7 L399.3 364.0 L395.5 366.3 L393.9 365.4 Z" fill="var(--sunken)" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="4 3" stroke-linejoin="round"/>
+        <path d="M398.1 134.8 L399.7 134.4 L401.7 131.9 L403.5 132.0 L408.2 128.9 L410.6 126.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M399.5 142.5 L400.4 142.0 L399.3 140.8 L398.1 134.8" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M398.4 157.2 L399.6 155.3 L398.7 152.6 L399.3 150.7 L397.5 148.8 L398.5 146.9 L397.2 145.8 L398.4 143.1" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M392.6 171.3 L392.0 170.6 L394.2 169.3 L392.2 167.9 L395.2 165.2 L395.9 161.0 L397.6 159.4 L398.4 157.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M391.8 173.8 L392.9 172.4 L392.6 171.3" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M388.9 180.4 L388.5 178.6 L391.8 175.5 L391.8 173.8" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M385.0 187.8 L386.0 187.0 L385.6 186.0 L387.0 186.2 L385.4 183.8 L389.3 182.3 L388.9 180.4" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M382.3 195.2 L382.2 193.3 L384.0 191.9 L383.6 190.1 L384.5 188.6" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M379.4 201.0 L381.8 201.1 L380.7 197.5 L381.4 196.4" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M378.3 203.7 L379.8 202.9 L379.4 201.0" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M375.7 208.1 L375.8 206.2 L374.8 205.7 L375.9 204.9 L376.0 203.4" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M368.8 210.0 L369.4 208.7 L371.7 210.1 L375.7 208.1" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M365.9 224.6 L367.0 222.9 L365.7 219.0 L366.5 217.9 L365.7 215.2 L367.9 213.3 L368.8 210.0" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M362.5 224.8 L363.5 224.1 L365.9 224.6" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M360.9 226.6 L360.9 225.0 L361.9 224.4" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M357.9 233.4 L358.8 228.2 L360.9 226.6" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M357.3 237.0 L356.3 235.2 L357.9 233.4" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M350.9 244.2 L352.8 242.8 L352.4 241.8 L353.3 240.6 L354.7 240.5 L357.3 237.0" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M347.7 252.7 L348.3 246.6 L350.9 244.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M343.4 262.9 L342.6 260.5 L345.3 256.9 L344.9 252.9" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M339.7 266.6 L342.5 265.9 L342.4 263.6 L343.4 262.9" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M340.5 271.2 L339.4 269.6 L339.7 266.6" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M340.7 279.1 L339.4 277.5 L339.9 276.3 L339.2 274.6" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M337.3 289.9 L338.3 289.1 L338.3 286.2 L340.5 282.6 L339.8 280.5 L340.7 279.1" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M336.2 297.4 L334.8 294.2 L337.3 289.9" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M335.5 306.6 L336.4 304.8 L336.0 302.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M329.1 314.8 L330.9 314.5 L330.3 312.3 L331.5 312.0 L331.0 310.6 L332.3 309.6 L332.1 308.7 L335.5 306.6" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M329.5 320.1 L330.6 319.7 L329.7 318.3" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M330.8 323.7 L331.0 322.7 L329.1 321.2 L329.5 320.1" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M314.3 348.4 L315.6 347.8 L316.0 345.2 L320.3 344.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M307.8 353.8 L307.6 352.2 L309.4 351.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M291.5 361.3 L293.5 360.4 L295.7 361.3 L298.6 357.1 L300.8 356.0" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M275.9 346.6 L277.9 348.1 L280.5 353.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M253.1 332.0 L255.7 332.9 L257.0 335.4 L258.1 335.4 L257.6 336.9 L259.9 338.1 L260.6 340.7" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M245.7 332.2 L247.0 332.5 L247.7 331.3 L249.3 331.1 L250.4 332.7 L253.1 332.0" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M240.9 330.1 L241.5 331.2 L242.3 330.5 L242.3 331.3 L245.7 332.2" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M208.0 316.5 L211.8 316.6 L215.1 317.9 L216.4 317.3 L218.5 318.3" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M202.7 315.3 L205.9 315.2 L208.0 316.5" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M172.2 307.7 L176.0 307.6 L177.5 308.2 L177.8 309.7 L183.2 309.5 L185.1 311.2 L188.7 311.6 L189.5 312.6 L194.4 311.7 L197.7 313.5 L199.5 313.4" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M157.7 312.0 L158.9 312.2 L159.1 310.5 L162.1 308.1 L164.7 308.9 L172.2 307.7" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M156.5 318.3 L158.5 316.8 L157.3 315.0 L157.7 312.0" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M145.1 321.1 L149.2 321.8 L152.6 320.7" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M141.7 323.1 L143.0 321.5 L145.1 321.1" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M136.1 322.3 L138.7 323.5 L141.7 323.1" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M130.2 321.5 L132.5 322.6 L136.1 322.3" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M108.6 283.8 L111.1 283.2 L113.6 285.1 L117.7 285.9 L118.1 288.1" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M95.5 280.0 L97.9 280.6 L99.7 282.5 L108.6 283.8" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <path d="M48.2 263.7 L62.5 284.9 L67.6 287.6" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-linecap="round" opacity="0.85"/>
+        <circle cx="380.4" cy="201.3" r="6" fill="var(--muted)" stroke="var(--surface)" stroke-width="2"/>
+        <text class="maplab" x="391.4" y="205.3" text-anchor="start">Flow gage 06701900</text>
+        <text class="maplab-soft" x="391.4" y="218.3">saw nothing</text>
+        <circle cx="405.0" cy="130.9" r="6" fill="var(--silt)" stroke="var(--surface)" stroke-width="2"/>
+        <text class="maplab" x="416.0" y="134.9" text-anchor="start">Turbidity gage 06707525</text>
+        <text class="maplab-soft" x="416.0" y="147.9">303 FNU</text>
+        <text class="maplab-hero" x="512" y="59">~555 sq mi</text>
+        <text class="maplab-soft" x="512" y="76">ungaged for flow</text>
+        <line x1="504" y1="54" x2="165" y2="68" class="axisline"/>
+        <g transform="translate(600,438)"><line x1="0" y1="0" x2="161.7" y2="0" class="axisline"/><line x1="0" y1="-4" x2="0" y2="4" class="axisline"/><line x1="161.7" y1="-4" x2="161.7" y2="4" class="axisline"/><text class="axis-txt" x="80.9" y="-8" text-anchor="middle">40 km</text></g>
+        </svg>
+        <div class="map-key">
+          <span><i class="k-gaged"></i> Measured by the flow gage &middot; 2,028 sq mi</span>
+          <span><i class="k-silt"></i> Not measured &middot; ~555 sq mi</span>
+          <span><i class="k-river"></i> South Platte mainstem</span>
+        </div>
+        <figcaption>The flow gage sits <span class="num">18 km</span> upstream in a straight line, further by river.
+          Everything in the
+          outer band, about a fifth of the watershed, reaches Strontia Springs without ever passing it. Basin geometry
+          from the USGS NLDI; the 2,028 sq mi figure is USGS-published and matches the computed
+          basin to within 0.1%.<sup class="ref"><a href="#s7">7</a></sup></figcaption>
+      </figure>
+        </div>
+      </li>
+      <li>
+        <div class="f-body">
+          <h4>There is a lie in the data and nothing marks it</h4>
+          <p>At 13:00 on the 14th, conductance reads <span class="num">38</span>, sitting between neighbours of
+            <span class="num">296</span> and <span class="num">300</span>. It carries no error flag, only the same
+            &ldquo;provisional&rdquo; label every other reading carries.<sup class="ref"><a href="#s2">2</a></sup> Almost
+            certainly a sensor artifact, but nothing in the feed says so.</p>
+        </div>
+      </li>
+      <li>
+        <div class="f-body">
+          <h4>The shape is asymmetric</h4>
+          <p>Turbidity rose roughly <span class="num">30&times;</span> in about an hour and then took nine hours to come
+            back down. Rivers dirty fast and clean slow. Any model that treats the rise and the recovery as the same
+            process gets the operationally important part wrong, because the recovery is the part that decides how long a
+            treatment plant is dealing with it.</p>
+        </div>
+      </li>
+    </ol>
+    <p>None of these are obvious from the description of the model. They only show up once you look at an actual
+      event.</p>
+  </section>
+
+
+
+  <section>
+    <h3>What the record shows</h3>
+    <h2>How this storm compares, and what actually breaches a standard</h2>
+    <p>The Upper South Platte has been studied after fire, and USGS did it in cooperation with Denver Water. On the
+      mainstem between Cheesman and Strontia Springs, in the year after the Hayman fire: &ldquo;During rainstorms, some
+      turbidity values exceeded 1,000 NTU&hellip; which is the maximum range for the equipment used to measure
+      continuous turbidity in this study.&rdquo;<sup class="ref"><a href="#s16">16</a></sup> Against a pre-fire baseline
+      that &ldquo;averaged 5 NTU and did not exceed 10 NTU in most streams&rdquo;.<sup class="ref"><a href="#s17">17</a></sup>
+      So the <span class="num">303 FNU</span> above is a real event and an ordinary one for this watershed. It pegged no
+      instruments.</p>
+    <p>Turbidity is not the only candidate. In the one study built around how much of each basin burned, nitrate is its
+      equal: basins burned severely across more than 45% of their area had &ldquo;twice the streamwater nitrate and
+      four times the turbidity as basins burned to a lower
+      extent&rdquo;.<sup class="ref"><a href="#s17">17</a></sup></p>
+    <p>And here is the turn. If an exceedance means breaching an actual standard, the parameters that did so in this
+      watershed were <em class="term">trace elements</em>, not turbidity. Counting against the standards of the day, in
+      41 samples from a Hayman-burned tributary USGS recorded iron over its chronic standard 33 times, mercury 18,
+      manganese 9, arsenic once.<sup class="ref"><a href="#s16">16</a></sup> (The arsenic comparison used 50 &micro;g/L,
+      which is the pre-2006 federal drinking water limit rather than a current Colorado in-stream standard, so treat
+      that one as dated.) On the mainstem the pattern shifts, and the report explains
+      why: &ldquo;the water-quality standards apply primarily to dissolved-phase&hellip; constituents, and the
+      predominant phase associated with Hayman postfire runoff is
+      particulate&rdquo;.<sup class="ref"><a href="#s16">16</a></sup> Dissolved manganese exceeded nothing there. What
+      moved was particulate iron.</p>
+    <p>The one exceedance statement that names this reservoir directly is a seasonal load rather than a storm
+      concentration: the 2003 April-September phosphorus load at the Trumbull gage &ldquo;would have exceeded the
+      allowable phosphorus load of 17,930 pounds (includes all sources upstream from Strontia Springs Reservoir outlet)
+      for Chatfield Lake&rdquo;, at almost 23,000 pounds.<sup class="ref"><a href="#s16">16</a></sup></p>
+    <p>Worth knowing which rules apply where. The river through Waterton Canyon is not its own segment: it is part of
+      <em class="term">COSPUS06A</em>, &ldquo;Mainstem of the South Platte River from the outlet of Cheesman Reservoir
+      to the inlet of Chatfield Reservoir&rdquo;, classified for Agriculture, Aquatic Life Cold 1, Recreation E and
+      Water Supply. The reservoir itself is a different segment, COSPUS19, which additionally carries a direct use
+      water supply classification and chlorophyll standards the river does
+      not.<sup class="ref"><a href="#s19">19</a></sup> A sample from the canyon and a sample from the pool are judged
+      against different tables.</p>
+    <p>Two cautions for anyone counting exceedances here. Colorado&rsquo;s metals standards are &ldquo;levels not to be
+      exceeded more than once every three years on the average&rdquo;, so a single sample above a number is not a
+      regulatory exceedance. And the manganese figure is not a fixed 50 &micro;g/L: the standard is the
+      <em>less restrictive</em> of that or the water&rsquo;s existing quality as of January 1,
+      2000.<sup class="ref"><a href="#s19">19</a></sup> The reach carries one live water-supply listing, and it is for
+      arsenic, not for anything storms move. Strontia Springs Reservoir is not listed for anything at
+      all.<sup class="ref"><a href="#s21">21</a></sup></p>
+    <p><strong>A correction to my own earlier note.</strong> I wrote that manganese was the real problem after Hayman.
+      That claim belongs to the <em>1996 Buffalo Creek</em> fire, not Hayman, and its only public sources are a USGS
+      photograph caption and a 2002 university press release quoting a research
+      assistant.<sup class="ref"><a href="#s18">18</a></sup> The peer-reviewed statement for this watershed is far more
+      guarded: fine sediment, organic matter and manganese &ldquo;<em>may</em> decrease the efficiency of treatment
+      processes&rdquo;. Manganese is a treatment concern with a thin evidentiary base here, not the documented headline
+      I made it.</p>
+  </section>
+
+  <section>
+    <h3>What &ldquo;exceedance&rdquo; means</h3>
+    <h2>Not one threshold, and not always a legal one</h2>
+    <p>I had assumed an exceedance meant breaching a legal limit. The published literature uses the word in two senses
+      at once, on opposite sides of the same model, and the threshold being crossed is as often an operating limit as a
+      regulatory one. Towler and colleagues, modelling exactly this problem for Portland&rsquo;s drinking water source,
+      put it plainly: water quality thresholds are &ldquo;set by regulatory agencies or identified as limits to
+      particular treatment options.&rdquo;<sup class="ref"><a href="#s14">14</a></sup></p>
+    <p>Then a harder fact, which settles it for turbidity specifically. <strong>Colorado sets no numeric in-stream
+      standard for turbidity at all.</strong> The word does not appear in a single segment table in Regulation 38. What
+      the state says about suspended material is narrative only: waters shall be free from substances that &ldquo;can
+      settle to form bottom deposits detrimental to the beneficial uses&rdquo;, with no
+      number.<sup class="ref"><a href="#s19">19</a></sup> Turbidity is regulated instead at the
+      <em class="term">combined filter effluent</em>, the treated water leaving the plant, at
+      <span class="num">0.3 NTU</span> for 95% of monthly readings and <span class="num">1 NTU</span> maximum under
+      conventional filtration.<sup class="ref"><a href="#s20">20</a></sup></p>
+    <p>So a raw-water turbidity reading in Waterton Canyon cannot legally exceed anything, in either direction. There is
+      no in-stream limit, and the plant limit applies to water that has already been treated. The
+      <span class="num">303 FNU</span> in the chart above is an operational signal about treatability, and nothing
+      else. My original framing of it as a possible compliance number was wrong in kind, not merely in detail.</p>
+    <p>On the driver side, <em class="term">exceedance probability</em> is an ordinary hydrology term for how often a
+      storm or flow of a given size occurs. On the response side, it means a concentration crossing a fixed number. The
+      numbers that matter operationally are not drinking water standards at all: conventional treatment is typically
+      required above <span class="num">20 NTU</span> turbidity or <span class="num">4 mg/L</span> dissolved organic
+      carbon, and manganese becomes a problem at <span class="num">0.2 mg/L</span> because it promotes microbial growth
+      in reservoirs and pipes, well above the <span class="num">0.05 mg/L</span> secondary
+      standard.<sup class="ref"><a href="#s15">15</a></sup></p>
+    <p>There is also a published model that matches the description closely. It takes a precipitation forecast,
+      generates streamflow scenarios, and returns the <em>probability</em> of crossing a turbidity threshold rather
+      than a predicted value. The reason is instructive: at high flows the turbidity response scatters too widely to
+      predict a number, but the probability of crossing the line is still forecastable, and that is what operations
+      actually needs.<sup class="ref"><a href="#s14">14</a></sup> Portland&rsquo;s response to a likely exceedance is to
+      switch to a more expensive groundwater source. The output of such a model is a decision, not a
+      measurement.</p>
+    <p>Two things in that literature bear directly on the chart above. Turbidity serves as both a modelled target and a
+      predictor of other constituents, which is a documented source of confusion and one I had fallen into. And
+      post-fire response is driven by <em class="term">30-minute rainfall intensity</em> rather than storm total, so a
+      short, violent cloudburst matters more than a long soaking. Whether the 15 August event was one of those is not
+      something the gage data alone can tell us.</p>
+  </section>
+
+  <section>
+    <h3>Limits</h3>
+    <h2>What I know, and what I am guessing at</h2>
+    <div class="split">
+      <div class="known">
+        <h3>Established</h3>
+        <ul>
+          <li><strong>The phenomenon is real and observable</strong> on public instruments, on Denver Water&rsquo;s own
+            supply, without asking them for anything.</li>
+          <li><strong>Storm event in, water quality out</strong> is exactly the direction Cassidi described.</li>
+          <li><strong>The decisions she named</strong> (where to draw water from, how to treat it) are real operational
+            consequences, which is what makes the prediction worth having.</li>
+          <li><strong>This gage sits on the main supply line</strong>, immediately above the reservoir that 80% of
+            Denver Water&rsquo;s supply passes through.</li>
+        </ul>
+      </div>
+      <div class="unknown">
+        <h3>Guesswork</h3>
+        <ul>
+          <li><strong>Which parameters</strong> her data scientist actually models. Still her statement to make,
+            though turbidity now looks like a reasonable guess rather than a shot in the dark: see below. Nitrate is
+            its equal in the one study built around burn extent.</li>
+          <li><strong>What counts as an exceedance</strong> and whose threshold it is. Partly settled: in this
+            literature the threshold is as often a treatment-plant operating limit as a regulatory one, and
+            &ldquo;exceedance&rdquo; carries a statistical sense as well as a compliance one. See below. Which of
+            those Denver Water means is still hers to say.</li>
+          <li><strong>Which watershed</strong> the model covers. Strontia Springs is my inference from her mention of
+            a watershed program, not something she said.</li>
+          <li><strong>Whether her model is predictive or diagnostic</strong>, and over what horizon. &ldquo;Plug in a
+            storm event&rdquo; suggests a scenario tool, but that is reading a lot into one sentence.</li>
+          <li><strong>Where the watershed program&rsquo;s public data actually lives.</strong> She said the model runs
+            on data &ldquo;publicly available through our watershed program&rdquo;. I could not find what that
+            programme publishes or where. Everything in this brief comes from USGS instruments and Denver Water&rsquo;s
+            documents, not from that source, so there may be a body of data here I have never seen.</li>
+        </ul>
+      </div>
+    </div>
+    <p>The items on the right are the ones only she can settle, and the last is a plain question worth
+      asking.</p>
+  </section>
+
+  <section>
+    <h3>Provenance</h3>
+    <h2>Sources</h2>
+    <ol class="sources">
+      <li id="s1">Call transcript, Denver Water and Explore DDD, 17 Aug 2026. Verbatim, from Paul's call notes.</li>
+      <li id="s2">USGS qualifier code P, &ldquo;Provisional data subject to revision,&rdquo; returned on every series
+        cited here. Checked 17 Aug 2026.</li>
+      <li id="s3">USGS Water Services instantaneous-values API. All figures pulled 17 Aug 2026. Note this host is
+        scheduled for decommissioning in early 2027; the successor is the OGC API at api.waterdata.usgs.gov.
+        <span class="url">https://waterservices.usgs.gov/nwis/iv/?format=json&amp;sites=06707525&amp;parameterCd=63680,00095&amp;period=P14D</span></li>
+      <li id="s4">Denver Water, &ldquo;The legacy of Colorado&rsquo;s largest wildfire.&rdquo; Hayman Fire burned 137,760
+        acres in 2002; more than 1 million cubic yards of sediment entered Strontia Springs against roughly 250,000
+        accumulated since the dam was completed in 1983; over $27 million spent across both fires.
+        <span class="url">https://www.denverwater.org/tap/legacy-colorados-largest-wildfire</span></li>
+      <li id="s5">From Forests to Faucets, Denver Water and the US Forest Service, begun 2010 in response to the Buffalo
+        Creek and Hayman fires; expanded 2017; nearly $96 million invested through July 2023; more than 120,000 acres
+        treated. Denver Water&rsquo;s watershed program, and plausibly the one Cassidi referred to, though she did not
+        name it. <span class="url">https://www.denverwater.org/your-water/water-supply-and-planning/watershed-protection-and-management</span></li>
+      <li id="s6">USGS site metadata, station 06707525, elevation 5,997 ft, and station 06701900 used for discharge.
+        <span class="url">https://waterservices.usgs.gov/nwis/site/?format=rdb&amp;sites=06707525&amp;siteOutput=expanded</span></li>
+      <li id="s7">USGS Network Linked Data Index, drainage basin polygons and mainstem flowlines. Pulled 17 Aug 2026 and
+        rendered directly as vector geometry; no map tiles or external services are used by this page.
+        <span class="url">https://api.water.usgs.gov/nldi/linked-data/nwissite/USGS-06707525/basin</span></li>
+      <li id="s11">OpenStreetMap via the Overpass API, pulled 18 Aug 2026: Strontia Springs Dam, the Foothills and
+        Marston treatment plants, and the water pipelines in the corridor. Conduit 20 (<code>man_made=pipeline,
+        substance=water</code>) ends at <span class="num">39.6214, -105.0657</span>, which is Marston Lake to within
+        about 50 m. No pipeline or tunnel feeding the Foothills plant from Strontia Springs appears in OSM; the tunnel
+        that does leave the dam in that direction is named Aurora Rampart Tunnel No. 2.
+        <span class="url">https://overpass-api.de/api/interpreter</span></li>
+      <li id="s12">Denver Water, <em>Integrated Water Resource Plan</em>, on the South Platte Collection System:
+        &ldquo;The major facilities in the system include Antero Reservoir, Eleven Mile Canyon Reservoir, Cheesman
+        Reservoir, Strontia Springs Reservoir and Conduit No. 26, Platte Canyon Intake Dam and Conduit No. 20, Marston
+        Reservoir&hellip;&rdquo; That pairing is the only mention of either conduit in the document, and it is why
+        Conduit 20 is not drawn as this reservoir&rsquo;s supply. How Marston draws on Strontia Springs is not
+        something these sources settle.
+        <span class="url">https://www.cakex.org/sites/default/files/documents/Denver%20Water.pdf</span></li>
+      <li id="s13">Denver Water, <em>Source Water Protection Plan for the Upper South Platte River</em>, November 2015,
+        section 4.2: &ldquo;Denver Water utilizes an intake at Strontia Springs Reservoir and one just downstream in
+        Waterton Canyon&hellip; The raw water diverted from the surface water intakes is sent to two surface water
+        treatment plants (Foothills and Marston).&rdquo; Denver Water&rsquo;s Part 12D inspection RFP (Jan 2020) adds
+        that only one of the two intake towers at the dam is theirs: &ldquo;One intake tower is for the City of Aurora
+        water supply, and the other is owned and operated by Denver Water.&rdquo; The downstream structure appears in
+        Denver Water documents as the Marston Diversion Dam, the Platte Canyon Diversion Dam and the Platte Canyon
+        Intake Dam; its mapped position is 24 m from the head of Conduit 20.
+        <span class="url">https://www.denverwater.org/sites/default/files/2017-05/upper-south-platte-source-water-protection-plan-report.pdf</span></li>
+      <li id="s14">Towler, Rajagopalan, Summers &amp; Yates, &ldquo;An approach for probabilistic forecasting of
+        seasonal turbidity threshold exceedance,&rdquo; <em>Water Resources Research</em> 46, W06511, 2010. Case study
+        is the Bull Run River, Portland Water Bureau. On thresholds: &ldquo;set by regulatory agencies or identified as
+        limits to particular treatment options.&rdquo; On the design choice: &ldquo;Although the variability of the
+        turbidity response for higher streamflows would make estimation of actual values difficult, the ability to
+        forecast the probability of being above or below the threshold shows potential.&rdquo;</li>
+      <li id="s15">Murphy, Writer, McCleskey &amp; Martin, &ldquo;The role of precipitation type, intensity, and spatial
+        distribution in source water quality after wildfire,&rdquo; <em>Environmental Research Letters</em> 10 084007,
+        2015 (USGS, Colorado Front Range). Treatment-relevant levels are given as 20 NTU turbidity, 4 mg/L dissolved
+        organic carbon, and manganese at 0.2 mg/L against the 0.05 mg/L secondary standard. Response is driven by
+        30-minute rainfall intensity above 10 mm/h. This is Front Range work, not Upper South Platte work; whether
+        these figures hold for this watershed specifically is still open.</li>
+      <li id="s16">Stevens and others, <em>Analysis of Postfire Hydrology, Water Quality, and Sediment Transport for
+        Selected Streams in Areas of the 2002 Hayman and Hinman Fires, Colorado</em>, USGS Scientific Investigations
+        Report 2012-5267, prepared in cooperation with Denver Water. Exceedance counts are from Table 13. A warning for
+        anyone re-extracting this PDF: text extraction renders the micro sign as &ldquo;m&rdquo; throughout the
+        narrative, so trace element concentrations read 1,000&times; too high unless taken from the tables.
+        <span class="url">https://pubs.usgs.gov/sir/2012/5267/pdf/sir2012-5267.pdf</span></li>
+      <li id="s17">Rhoades, Entwistle &amp; Butler, on the influence of wildfire extent and severity on streamwater
+        chemistry following the Hayman Fire, <em>International Journal of Wildland Fire</em> 20:430-442, 2011. Ten
+        watersheds in the Upper South Platte drainage.
+        <span class="url">https://www.fs.usda.gov/rm/pubs_other/rmrs_2011_rhoades_c001.pdf</span></li>
+      <li id="s18">The manganese and chlorine-demand claim traces to a USGS photograph caption by John A. Moody
+        (<span class="url">https://www.usgs.gov/media/images/burned-watersheds-debris-strontia-springs-reservoir</span>),
+        about the 1996 Buffalo Creek fire, and to a 2002 University of Colorado press release quoting a research
+        assistant. Two widely circulated attributions of this claim, to a Duke University case study and to a Denver
+        Water article, were checked against the documents themselves and are fabricated: neither text contains the
+        words manganese or chlorine.</li>
+      <li id="s19">Colorado Water Quality Control Commission Regulation 38, <em>Classifications and Numeric Standards
+        for South Platte River Basin</em> (5 CCR 1002-38), and Regulation 31, <em>The Basic Standards and Methodologies
+        for Surface Water</em> (5 CCR 1002-31), both effective 25 Nov 2024. Segment COSPUS06A covers the mainstem from
+        Cheesman Reservoir to Chatfield; Strontia Springs Reservoir falls under segment COSPUS19. Turbidity appears in
+        no segment table in Regulation 38. The narrative provision is 31.11(1)(a)(i). On frequency, Regulation 31
+        Table III note 4: metals standards are &ldquo;levels not to be exceeded more than once every three years on the
+        average&rdquo;. On manganese, Regulation 38.6(2)(b) sets the water-supply standard as &ldquo;the less
+        restrictive&rdquo; of existing quality as of 1 January 2000 or 50 &micro;g/L dissolved, so the flat 50 is a
+        floor rather than the applicable number.</li>
+      <li id="s20">Colorado Regulation 11, <em>Colorado Primary Drinking Water Regulations</em> (5 CCR 1002-11),
+        section 11.8, the Surface Water Treatment Rule. Limits are measured at the combined filter effluent:
+        &ldquo;Maintain treated water turbidity levels of less than or equal to the 95th percentile limit specified in
+        Table 11.8-I in at least 95 percent of the turbidity monitoring results collected each month.&rdquo; Table
+        11.8-I gives 0.3 NTU and 1 NTU maximum for conventional and direct filtration. Note that the older citation
+        5 CCR 1003-1 was repealed effective 1 March 2014. No source-water turbidity criterion appears in section 11.8;
+        Colorado requires filtration of all surface water systems, so the federal filtration-avoidance criterion has no
+        Colorado analogue.</li>
+      <li id="s21">Colorado Regulation 93, section 93.3, 2024 listing cycle. Segment COSPUS06a_A, which contains
+        Waterton Canyon, is on the Monitoring &amp; Evaluation list for total arsenic; COSPUS06a_B is on the 303(d)
+        list for arsenic and macroinvertebrates. Strontia Springs Reservoir carries no listing. Nothing in the reach is
+        listed for turbidity, sediment or suspended solids, which follows necessarily from there being no standard to
+        be impaired against. A 2026 listing cycle exists and was not checked; the Colorado Secretary of State site was
+        returning server errors, so these citations come from EPA-hosted and Cornell LII compilations of the same
+        regulations.</li>
+      <li id="s8">Denver Water, &ldquo;Where does your water come from?&rdquo; &ldquo;Eighty percent of Denver
+        Water&rsquo;s supply passes through Strontia Springs Reservoir, an area prone to wildfires.&rdquo; Denver Water
+        serves 1.5 million people, and its collection system draws on the Blue and upper South Platte basins for the
+        south system.
+        <span class="url">https://www.denverwater.org/tap/where-does-your-water-come</span></li>
+      <li id="s9">Denver Water on the Harold D. Roberts Tunnel: 23 miles under the Continental Divide, delivering Blue
+        River water &ldquo;to the North Fork of the South Platte River, so it can flow onward to Denver Water
+        customers.&rdquo;
+        <span class="url">https://www.denverwater.org/tap/famed-tunnel-under-continental-divide-brings-water-and-juice</span></li>
+      <li id="s10">Denver Water, Waterton Canyon and Strontia Springs Reservoir. &ldquo;Strontia Springs Dam is 6.2 miles
+        upstream of the mouth of Waterton Canyon on the South Platte River.&rdquo; Completed 1983, 243 feet above the
+        streambed; water is diverted to the Foothills and Marston treatment plants.
+        <span class="url">https://www.denverwater.org/recreation/waterton-canyon-strontia-springs-resevoir</span></li>
+    </ol>
+  </section>
+
+  <footer class="colophon">
+    All measurements provisional and subject to USGS revision. Nothing here has been shown to Denver Water.<br />
+    Inferences are marked as inferences; everything else is quoted or pulled from the cited endpoint.
+  </footer>
+
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var T = [4.6,16.1,3.5,3.1,2.8,2.7,2.7,3.9,13.9,6.5,8.4,9.6,10.2,237,303,184,214,90.1,50.2,35.0,25.6,21.6,16.3,11.8,10.3,8.5,7.1,6.8,7.4,6.8,4.9];
+  var Q = [139,141,139,147,143,143,145,143,143,143,143,143,143,141,141,141,141,141,141,143,141,139,143,141,141,145,141,145,141,141,141];
+  var labels = [];
+  for (var h = 12; h <= 23; h++) labels.push({ d: 14, h: h });
+  for (var h2 = 0; h2 <= 18; h2++) labels.push({ d: 15, h: h2 });
+
+  var W = 900, PAD_L = 52, PAD_R = 16;
+  var P1_TOP = 26, P1_H = 190, P2_TOP = 282, P2_H = 96;
+  var innerW = W - PAD_L - PAD_R;
+
+  function x(i) { return PAD_L + (i / (T.length - 1)) * innerW; }
+  function y1(v) { return P1_TOP + P1_H - (v / 320) * P1_H; }
+  function y2(v) { return P2_TOP + P2_H - ((v - 130) / 25) * P2_H; }
+
+  function path(vals, yf) {
+    var d = "";
+    for (var i = 0; i < vals.length; i++) d += (i ? "L" : "M") + x(i).toFixed(1) + " " + yf(vals[i]).toFixed(1) + " ";
+    return d.trim();
+  }
+
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+  var svgNS = "http://www.w3.org/2000/svg";
+  var g = document.getElementById("plot");
+  var parts = [];
+
+  // panel 1 gridlines + labels
+  [0, 80, 160, 240, 320].forEach(function (v) {
+    parts.push('<line class="gridline" x1="' + PAD_L + '" y1="' + y1(v).toFixed(1) + '" x2="' + (W - PAD_R) + '" y2="' + y1(v).toFixed(1) + '"/>');
+    parts.push('<text class="axis-txt" x="' + (PAD_L - 9) + '" y="' + (y1(v) + 3.5).toFixed(1) + '" text-anchor="end">' + v + '</text>');
+  });
+  parts.push('<text class="panel-label" x="' + PAD_L + '" y="' + (P1_TOP - 11) + '">Turbidity &#183; FNU</text>');
+
+  // panel 1 area + line
+  parts.push('<path d="' + path(T, y1) + ' L' + x(T.length - 1).toFixed(1) + ' ' + y1(0).toFixed(1) + ' L' + x(0).toFixed(1) + ' ' + y1(0).toFixed(1) + ' Z" fill="var(--silt-wash)" stroke="none"/>');
+  parts.push('<path d="' + path(T, y1) + '" fill="none" stroke="var(--silt)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>');
+
+  // peak marker + annotation
+  var pi = 14;
+  parts.push('<circle cx="' + x(pi).toFixed(1) + '" cy="' + y1(T[pi]).toFixed(1) + '" r="4.5" fill="var(--silt)" stroke="var(--surface)" stroke-width="2"/>');
+  parts.push('<text class="anno" x="' + (x(pi) + 12).toFixed(1) + '" y="' + (y1(T[pi]) + 4).toFixed(1) + '">303 FNU at 02:00</text>');
+
+  // panel 2 gridlines
+  [130, 140, 150].forEach(function (v) {
+    parts.push('<line class="gridline" x1="' + PAD_L + '" y1="' + y2(v).toFixed(1) + '" x2="' + (W - PAD_R) + '" y2="' + y2(v).toFixed(1) + '"/>');
+    parts.push('<text class="axis-txt" x="' + (PAD_L - 9) + '" y="' + (y2(v) + 3.5).toFixed(1) + '" text-anchor="end">' + v + '</text>');
+  });
+  parts.push('<text class="panel-label" x="' + PAD_L + '" y="' + (P2_TOP - 11) + '">Discharge &#183; cfs &#183; 139&#8211;147 throughout</text>');
+  parts.push('<path d="' + path(Q, y2) + '" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>');
+
+  // x axis
+  parts.push('<line class="axisline" x1="' + PAD_L + '" y1="' + (P2_TOP + P2_H) + '" x2="' + (W - PAD_R) + '" y2="' + (P2_TOP + P2_H) + '"/>');
+  [0, 6, 12, 18, 24, 30].forEach(function (i) {
+    var L = labels[i];
+    var txt = (L.h < 10 ? "0" : "") + L.h + ":00";
+    parts.push('<text class="axis-txt" x="' + x(i).toFixed(1) + '" y="' + (P2_TOP + P2_H + 16) + '" text-anchor="middle">' + txt + '</text>');
+  });
+  parts.push('<text class="axis-txt" x="' + x(0).toFixed(1) + '" y="' + (P2_TOP + P2_H + 31) + '" text-anchor="middle">14 Aug</text>');
+  parts.push('<text class="axis-txt" x="' + x(24).toFixed(1) + '" y="' + (P2_TOP + P2_H + 31) + '" text-anchor="middle">15 Aug</text>');
+
+  // hover layer
+  parts.push('<line id="cross" x1="0" y1="' + P1_TOP + '" x2="0" y2="' + (P2_TOP + P2_H) + '" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>');
+  parts.push('<circle id="dot1" r="5" fill="var(--silt)" stroke="var(--surface)" stroke-width="2" opacity="0"/>');
+  parts.push('<circle id="dot2" r="5" fill="var(--teal)" stroke="var(--surface)" stroke-width="2" opacity="0"/>');
+  parts.push('<rect id="hit" x="' + PAD_L + '" y="' + P1_TOP + '" width="' + innerW + '" height="' + (P2_TOP + P2_H - P1_TOP) + '" fill="transparent" style="cursor:crosshair"/>');
+
+  g.innerHTML = parts.join("");
+
+  var svg = g.ownerSVGElement;
+  var cross = document.getElementById("cross");
+  var dot1 = document.getElementById("dot1");
+  var dot2 = document.getElementById("dot2");
+  var hit = document.getElementById("hit");
+  var tip = document.getElementById("tip");
+
+  function show(evt) {
+    var r = svg.getBoundingClientRect();
+    var sx = (evt.clientX - r.left) * (W / r.width);
+    var i = Math.round(((sx - PAD_L) / innerW) * (T.length - 1));
+    if (i < 0) i = 0;
+    if (i > T.length - 1) i = T.length - 1;
+    var px = x(i);
+    cross.setAttribute("x1", px); cross.setAttribute("x2", px); cross.setAttribute("opacity", "1");
+    dot1.setAttribute("cx", px); dot1.setAttribute("cy", y1(T[i])); dot1.setAttribute("opacity", "1");
+    dot2.setAttribute("cx", px); dot2.setAttribute("cy", y2(Q[i])); dot2.setAttribute("opacity", "1");
+    var L = labels[i];
+    tip.innerHTML = '<span class="k">' + L.d + ' Aug ' + (L.h < 10 ? "0" : "") + L.h + ':00</span><br />' +
+      '<span class="k">turbidity</span> <span class="v">' + esc(T[i]) + '</span> FNU<br />' +
+      '<span class="k">discharge</span> <span class="v">' + esc(Q[i]) + '</span> cfs';
+    tip.style.opacity = "1";
+    var tx = evt.clientX + 16, ty = evt.clientY - 12;
+    if (tx + 190 > window.innerWidth) tx = evt.clientX - 190;
+    tip.style.left = tx + "px";
+    tip.style.top = ty + "px";
+  }
+
+  function hide() {
+    cross.setAttribute("opacity", "0");
+    dot1.setAttribute("opacity", "0");
+    dot2.setAttribute("opacity", "0");
+    tip.style.opacity = "0";
+  }
+
+  hit.addEventListener("mousemove", show);
+  hit.addEventListener("mouseleave", hide);
+  hit.addEventListener("touchmove", function (e) { if (e.touches[0]) show(e.touches[0]); }, { passive: true });
+  hit.addEventListener("touchend", hide);
+})();
+</script>
+
+<script src="strontia-brief/map.js"></script>
+</body>
+</html>
