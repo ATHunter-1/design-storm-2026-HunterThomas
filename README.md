@@ -48,6 +48,13 @@ The Strontia sonde is the "new sensor data (sonde?)" from Jake's next-steps note
 
 `Foothills_INF_ML_NoConclusions.pptx` is the intro to the deck Jake presented to Denver Water leadership around July 2026. Conclusions removed.
 
+`reference/` holds the background material Cassidi Rosenkrance sent on 2026-09-14 for attendees, in response to Paul's Sep 11 ask for what plant staff actually do when alkalinity is out of range. Both carry Denver Water's note that they are introductory training material, not official regulatory or controlled documents.
+
+| File | What it is |
+|---|---|
+| `reference/TOC_and_Alkalinity_Summary.pdf` | Two-page primer: what TOC and alkalinity are, why they matter for treatment (TOC reacts with disinfectants to form regulated disinfection byproducts; alkalinity sets how much chemical it takes to reach the slightly acidic pH where coagulation removes TOC best), and the 60 mg/L alkalinity threshold that moves the required TOC removal between 35% and 25%. Denver Water typically sees source-water TOC of 1.5 to 4.0 mg/L. Ends with links: a YouTube explainer on how treatment works, Denver Water's treatment-process walkthrough (denverwater.org/your-water/treatment-process), CDPHE's quick guide to the DBP Precursors rule (Regulation 11), and CDPHE's disinfection byproducts fact sheet. |
+| `reference/DBP-PRE and DBP Rule Training Slides_DDD conference.pdf` | Eight slides summarizing Colorado Regulation 11.24 (DBP precursors: monthly paired TOC and source alkalinity samples, removal ratio or SUVA, running annual average) and 11.25 (TTHM and HAA5 sampling and MCLs, what counts as a violation, 48-hour CDPHE notification). Notes Denver Water is a lower-risk system: chloramination and low raw-water organic carbon. |
+
 ## Method, from the deck
 
 - Random forest, trained on lagged features shifted relative to Foothills influent (the deck says 4 days; the September notebooks shift 2 for TOC and 4 for alkalinity, rain 4 and 6)
