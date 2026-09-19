@@ -40,9 +40,11 @@ GAGES = {
         "The sentinel. The last measurement point before 80% of Denver's water "
         "enters Strontia Springs Reservoir. Reads temperature, conductance, "
         "dissolved oxygen, pH, and turbidity every 15 minutes. Water passing "
-        "here takes about four days to reach the plant intake (Denver Water's "
-        "own figure), mostly resting in the reservoir; that transit time is "
-        "the warning window a soft sensor tries to use. In the August 2026 "
+        "here reaches the plant intake in about four hours (Denver Water's "
+        "raw water group), yet what the plant receives tracks these readings "
+        "from a day or two earlier, because the reservoir mixes and settles "
+        "what arrives; that lag is the warning window a soft sensor tries to "
+        "use. In the August 2026 "
         "storm, evening rain became a 329 FNU spike here by 1:45 AM while "
         "the flow gauge upstream barely moved: the sediment washed in from "
         "side canyons between the two, the stretch no gauge watches."),
@@ -77,9 +79,6 @@ RESERVOIRS = {
                "Denver Water's largest reservoir, on the Blue River west of "
                "the Continental Divide. Its water reaches Denver through the "
                "23-mile Roberts Tunnel."),
-    "williams_fork_reservoir": ("Williams Fork Reservoir",
-               "West-slope storage used to repay the Colorado River basin for "
-               "water diverted east."),
     "gross": ("Gross Reservoir",
                "North system storage in the foothills. Receives Fraser River "
                "water delivered by the Moffat Tunnel via South Boulder Creek."),
@@ -87,15 +86,18 @@ RESERVOIRS = {
                "Denver Water's oldest mountain reservoir (1905), on the "
                "mainstem South Platte above the sentinel gage."),
     "eleven_mile": ("Eleven Mile Canyon Reservoir",
-               "High-plains storage on the South Platte in South Park."),
+               "High-plains storage on the South Platte in South Park. The "
+               "marker sits at the dam, near Lake George."),
     "antero": ("Antero Reservoir",
                "The uppermost South Platte reservoir, in South Park."),
     "chatfield": ("Chatfield Reservoir",
                "Army Corps flood-control lake below Waterton Canyon. A "
                "Denver-side landmark rather than part of the supply chain."),
-    "marston": ("Marston Lake",
+    "marston": ("Marston Forebay",
                "Terminal storage inside Denver, beside the Marston Treatment "
-               "Plant. Fed by gravity from Waterton Canyon through Conduit 20."),
+               "Plant. Fed by gravity from Waterton Canyon through Conduit 20. "
+               "A forebay, not a lake: it has no natural inputs, water is "
+               "moved here specifically to be treated."),
 }
 
 
@@ -290,11 +292,13 @@ def facility_points(places):
                   "water passes through. Diverts to the Foothills and Marston "
                   "plants. Aurora draws its supply here too."},
         {"id": "dam-marston-diversion", "kind": "reservoir",
-         "name": "Marston Diversion Dam",
+         "name": "Conduit 20 Diversion",
          "lat": diversion["lat"], "lon": diversion["lon"],
          "blurb": "The second, smaller intake 2.6 miles below Strontia "
-                  "Springs Dam. Feeds Conduit 20, which flows by gravity to "
-                  "Marston Lake."},
+                  "Springs Dam: an instream diversion structure with a weir "
+                  "that forms a small forebay in the river. The conduit "
+                  "intake here delivers water directly to Marston Forebay "
+                  "and the Marston Treatment Plant."},
     ]
 
 
@@ -329,13 +333,14 @@ def tunnel_lines(places):
                   "Foothills plant. Capacity 750 million gallons a day. At "
                   "that full capacity the published diameter and flow work "
                   "out to about 15 ft/s, so water leaving the dam is only "
-                  "about 20 minutes from the plant. The slow part comes "
-                  "before: from the sentinel gauge, through the reservoir, "
-                  "to the intake takes about four days."},
+                  "about 20 minutes from the plant. Even from the sentinel "
+                  "gauge, through the reservoir, to the intake is only about "
+                  "four hours; the days-long lag the soft sensor uses comes "
+                  "from mixing and settling in the reservoir, not travel."},
         {"id": "conduit-20", "name": "Conduit 20", "kind": "tunnel",
          "coords": [[diversion["lon"], diversion["lat"]], [marston["lon"], marston["lat"]]],
-         "blurb": "Gravity conduit from the Marston Diversion Dam in Waterton "
-                  "Canyon to Marston Lake inside Denver."},
+         "blurb": "Gravity conduit from the Conduit 20 Diversion in Waterton "
+                  "Canyon to Marston Forebay inside Denver."},
     ]
 
 

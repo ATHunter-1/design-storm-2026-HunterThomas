@@ -124,14 +124,15 @@
       ]
     },
     "eleven_mile": {
-      "site": "385758105345600",
-      "name": "ELEVEN MILE CANYON RESERVOIR NR HARTSEL, CO.",
-      "lat": 38.9661,
-      "lon": -105.5822,
+      "site": "06695500",
+      "name": "ELEVENMILE CANYON RE NEAR LAKE GEORGE, CO.",
+      "lat": 38.9053,
+      "lon": -105.4756,
       "usgs_dms": [
-        "385758",
-        "1053456"
-      ]
+        "385419",
+        "1052832"
+      ],
+      "note": "Switched 2026-09-18 from USGS site 385758105345600 (NR HARTSEL, the upstream end of the reservoir, which Jake Slawson pointed out sat closer to Spinney Mountain Reservoir than to the dam) to the USGS site at the Eleven Mile Canyon dam near Lake George."
     },
     "antero": {
       "site": "385937105534200",
@@ -249,11 +250,12 @@
       "note": "The second plant Strontia Springs feeds. Beside Marston Lake, inside Denver."
     },
     "marston_diversion_dam": {
-      "name": "Marston Diversion Dam",
+      "name": "Conduit 20 Diversion",
       "lat": 39.47026,
       "lon": -105.13474,
-      "source": "OpenStreetMap way, waterway=weir, name=Marston Diversion Dam",
+      "source": "OpenStreetMap way, waterway=weir, name=Marston Diversion Dam. Official Denver Water name per Cassidi Rosenkrance (2026-09-08): the Conduit 20 Diversion, an instream diversion structure with a weir forming a small forebay in the river.",
       "aliases": [
+        "Marston Diversion Dam",
         "Platte Canyon Diversion Dam",
         "Platte Canyon Intake Dam"
       ],
