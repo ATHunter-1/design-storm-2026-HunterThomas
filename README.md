@@ -20,19 +20,21 @@ Please read them before publishing anything built on this data.
 presented this to the room at the kickoff: who Denver Water is, what the water
 sector is up against, and the three scenarios below.
 
-**[Denver's Water, in 3D](design-storm-water-system-3d.html)** is the system map on
-her slide 4, rebuilt as something you can fly through. Reservoirs, gages, snow
-stations, treatment plants, and the tunnels that carry water under the Continental
-Divide, on real terrain, with live readings behind each marker. Click anything.
-Serve it rather than opening the file directly, because it fetches JSON:
+**[Denver's Water, in 3D](https://exploreddd.com/2026-design-storm-demo/)** is the
+system map on her slide 4, rebuilt as something you can fly through. Reservoirs,
+gages, snow stations, treatment plants, and the tunnels that carry water under the
+Continental Divide, on real terrain, with live readings behind each marker. It runs
+in the browser; click anything. It doubles as a worked example of Scenario 3, and as
+a starting point for the viewing application Scenario 1 asks for.
+
+The page is `design-storm-water-system-3d.html` in this repository, if you want to
+take it apart or build on it. It fetches JSON, so serve it rather than opening the
+file directly:
 
 ```
 python3 serve.py
 open http://localhost:8765/design-storm-water-system-3d
 ```
-
-It doubles as a worked example of Scenario 3, and as a starting point for the
-viewing application Scenario 1 asks for.
 
 ## The three scenarios
 
