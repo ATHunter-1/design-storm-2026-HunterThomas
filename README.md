@@ -135,7 +135,6 @@ need rather than editing in place.
 | `figures/` | **Original.** The plots those notebooks produce. |
 | [`guide.md`](guide.md) | The domain and the models explained from zero. |
 | [`glossary.md`](glossary.md) | Every water and statistics term used here, defined. |
-| [`cohort-prompts.md`](cohort-prompts.md) | Prompts to paste into an AI coding assistant pointed at this folder, staged from first look to modelling. |
 | `design-storm-water-system-3d.html` | The 3D map, plus `water-system-3d/` and `strontia-brief/` for the data it draws and `serve.py` to serve it. |
 
 ## The data
@@ -150,7 +149,20 @@ columns.
 | `SouthPlatteFlow.csv`, `SouthPlatteTelemetry.csv` | Streamflow and gage height, from Colorado DWR. |
 | `HoosierPass.csv`, `MichiganCreek.csv` | Snowpack, as snow water equivalent. |
 | `USC00058022.csv` | Precipitation, snow, and temperature, from NOAA. |
-| `Strontia 0407_0819.xlsx` | The profiling sonde in Strontia Springs Reservoir: 16,093 readings over 104 days, many depths per cast. Temperature, conductivity, pH, turbidity, chlorophyll, dissolved oxygen and more. |
+| `Strontia 0407_0819.xlsx` | The profiling sonde in Strontia Springs Reservoir. See below. |
+
+**The Strontia sonde is the newest thing here, and the least explored.** Unlike the
+daily series above, it takes readings at many depths per cast: 16,093 of them across
+2026-04-07 to 08-19, covering temperature, conductivity, pH, turbidity, chlorophyll,
+phycocyanin and dissolved oxygen. It matters for two of
+the scenarios, for different reasons. In **Scenario 1** it is a closer-in predictor,
+sitting much nearer the Foothills influent than the upstream river gage, which
+Cassidi starred on her slide as the most interesting thread to pull; it may sharpen
+accuracy, but it also shortens the warning time, and that tradeoff is the open
+question. In **Scenario 2** it is the subject rather than an input: because it
+profiles by depth, it shows how a reservoir stratifies and turns over, and how storms
+and spring runoff redistribute water quality through the water column. Jake's models
+do not use it at all, so anything done with it is new ground.
 
 Two things worth knowing before you model. **Readings are provisional**: USGS
 publishes immediately and revises later, so a fresh API pull can differ from these
