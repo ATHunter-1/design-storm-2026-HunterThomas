@@ -182,6 +182,32 @@ His own framing, worth keeping in view: these models are under development, buil
 a case study in what current data makes possible. Not publication-ready, and not the
 bar you have to clear.
 
+## Public data resources
+
+Everything in `data/` except the two Denver Water files was pulled from public
+services, and so was every live reading behind the 3D map. If you want to go past
+what is committed here, fetch more history, add a station, or bring in a signal
+nobody has tried, these are the same sources, open and without keys.
+
+| Source | What you get | Used for |
+|---|---|---|
+| [USGS National Water Information System](https://waterdata.usgs.gov/) ([instantaneous values API](https://waterservices.usgs.gov/docs/instantaneous-values/instantaneous-values-details/)) | River gage readings: discharge, gage height, turbidity, specific conductance, pH, temperature, dissolved oxygen. Fifteen-minute resolution, live and historical. | `USGS_South_Platte.csv`, and the live charts behind every gage on the map |
+| [USGS NLDI](https://api.water.usgs.gov/nldi/) | Drainage basin polygons and river flowlines, from any gage upstream or downstream. | Every basin outline and river line the map draws |
+| [USGS HIVIS](https://apps.usgs.gov/hivis/) | Live cameras at river gages, refreshed every few minutes. | The photos in the map's gage panels |
+| [Colorado DWR (CDSS)](https://dwr.state.co.us/) ([REST API](https://dwr.state.co.us/Rest/GET/Help)) | Streamflow, gage height, and daily reservoir storage for every structure in the state, back decades. | `SouthPlatteFlow.csv`, `SouthPlatteTelemetry.csv`, and the reservoir storage history overlay |
+| [USDA NRCS SNOTEL](https://www.nrcs.usda.gov/resources/data-and-reports/snow-and-water-interactive-map) ([AWDB API](https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations?stationTriplets=*:CO:SNTL&activeOnly=true)) | Snow water equivalent, snow depth, and temperature from every snow pillow in Colorado. | `HoosierPass.csv`, `MichiganCreek.csv`, and the snow station charts |
+| [NOAA NCEI, GHCN Daily](https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily) | Daily precipitation, snowfall, and temperature from land stations. | `USC00058022.csv` |
+| [Iowa State Mesonet](https://mesonet.agron.iastate.edu/) | Archived NEXRAD radar, by timestamp, as map tiles. | The August 14 to 15 storm replay |
+| [OpenStreetMap](https://www.openstreetmap.org/) | Infrastructure geometry, including the conduits and tunnels. | The tunnel and pipeline lines on the map |
+
+Two more that Cassidi recommended and nothing here has touched:
+[eRAMS / Catena](https://erams.com/catena/), her strongest pick for Colorado
+environmental data, and [NASA SnowEx](https://nsidc.org/data/snowex) for snowpack
+measured from the air rather than from a pillow on the ground.
+
+The API grabber notebooks in `scripts/` show how Jake pulled the first five, if you
+want a worked example rather than the raw documentation.
+
 ## Data terms
 
 Denver Water provided this data under two notices. Both apply to everything in this
