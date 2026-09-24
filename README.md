@@ -1,17 +1,35 @@
 # Design Storm 2026: Denver Water
 
 The Design Storm is a hands-on collaborative challenge at
-[Explore DDD 2026](https://exploreddd.com), run with Denver Water. Cohorts worked
-with real water utility data to model something their Water Quality and Treatment
-team actually needs: advance warning of what is coming down the South Platte
-before it reaches a treatment plant.
+[Explore DDD 2026](https://exploreddd.com), run with Denver Water. Cohorts work in
+small groups with real water utility data on something their Water Quality and
+Treatment team actually needs: advance warning of what is coming down the South
+Platte before it reaches a treatment plant.
 
 This repository holds the materials Denver Water shared, the models their data
 scientist built, and a 3D map of the collection system those numbers describe.
 
+**New to water treatment, or to data science, or to both?** That is the expected
+starting point, and nothing here assumes otherwise. [`guide.md`](guide.md) explains
+the domain and the models from zero, for someone who writes software and has touched
+neither. [`glossary.md`](glossary.md) defines every water and statistics term used
+anywhere in the repository. You do not need either to get started, but they are the
+fastest way out of any sentence that stops making sense.
+
 Denver Water's data terms apply to everything here. They are at the bottom of this
-file and in [`data/TERMS.md`](data/TERMS.md), and they restrict redistribution.
-Please read them before publishing anything built on this data.
+file and in [`data/TERMS.md`](data/TERMS.md). Denver Water has confirmed the data is
+public; please keep the terms with anything you build on it.
+
+## Working as a cohort
+
+The simplest way for a cohort to work together is for one person to **fork this
+repository** and share the fork with the rest of the group. The fork becomes the
+cohort's collaboration point: everyone else works against it, opens pull requests
+into it, and it keeps one shared history of what the cohort tried.
+
+Forking also keeps Denver Water's materials, the guide, and the glossary alongside
+whatever you build, so the data terms travel with the work. If a cohort produces
+something worth sharing more widely, a pull request back here is welcome.
 
 ## Start here
 
@@ -36,40 +54,80 @@ python3 serve.py
 open http://localhost:8765/design-storm-water-system-3d
 ```
 
-## Working as a cohort
+## What you are predicting, and why it matters
 
-The simplest way for a cohort to work together is for one person to **fork this
-repository** and share the fork with the rest of the group. The fork becomes the
-cohort's collaboration point: everyone else works against it, opens pull requests
-into it, and it keeps one shared history of what the cohort tried.
+Water reaches Denver Water's **Foothills treatment plant** after travelling down the
+South Platte through Strontia Springs Reservoir. Two things about that water change
+how hard it is to treat:
 
-Forking also keeps Denver Water's materials, the guide, and the glossary alongside
-whatever you build, so the data terms travel with the work. If a cohort produces
-something worth sharing more widely, a pull request back here is welcome.
+- **TOC** (total organic carbon) is dissolved plant and soil matter. It is harmless
+  by itself, but it reacts with the chlorine used to disinfect drinking water and
+  forms **disinfection byproducts**, which are regulated. More TOC arriving means
+  more work to remove it first.
+- **Alkalinity** is the water's resistance to changes in pH. Removing TOC works best
+  at a slightly acidic pH, so alkalinity sets how much chemical the plant has to add
+  to get there. A regulatory threshold sits at 60 mg/L: below it, the plant is
+  required to remove a different proportion of the TOC.
+
+Both are measured by hand from grab samples, which means the plant learns what
+arrived after it arrived. Predicting them a few days out from upstream sensors, snow
+and weather data would let operators plan staffing and chemical dosing before the
+water gets there. That is the problem. Everything else here is in service of it.
 
 ## The three scenarios
 
-**1. TOC and alkalinity predictive model.** Can watershed, hydrologic, and reservoir
-monitoring data give enough advance warning to predict total organic carbon and
-alkalinity arriving at the Foothills treatment plant, and give treatment staff
-actionable time to prepare? Improve on the existing models, bring in the real-time
-Strontia profiling sonde, try different algorithms and lag times, or build the web
-application for viewing predictions alongside the data behind them.
+Cassidi put three to the room. Each question below is hers, quoted from the deck;
+the bullets under it are the ways in she suggested. Pick one, or take a scenario
+somewhere she did not anticipate.
 
-**2. Storm and runoff events, and real-time data.** Given current watershed and
-reservoir conditions, how is an incoming storm likely to affect source water
-quality, when will that impact arrive, and what conditions would you expect at
-different depths within Strontia Springs Reservoir? The sonde profiles the
-reservoir by depth, so stratification and turnover are visible in the data.
+### 1. TOC and alkalinity predictive model
 
-**3. Snowpack and surface water system function.** Build something that shows how
-water and water quality conditions move from the watershed through the collection
-system to the treatment plants, and how hydrologic and seasonal events shape that
-movement. Drought years against wet years, snowpack against streamflow, one
-parameter followed through the system.
+> Can watershed, hydrologic, and reservoir monitoring data provide enough advance
+> warning to accurately predict TOC and alkalinity arriving at Foothills and give
+> treatment staff actionable time to prepare?
 
-Cassidi's deck has the full framing for each, with the questions stated as she put
-them to the room.
+- Using national datasets upstream of Strontia Springs Reservoir, predict TOC and
+  alkalinity concentrations a few days ahead of them hitting the Foothills plant.
+- Bring in the real-time Strontia profiling sonde. It sits much closer to the
+  Foothills influent, which may improve accuracy but also shortens the lead time.
+  Cassidi starred this one on the slide.
+- Machine learning enthusiasts: try different models (support vector machines, say),
+  different lag times, and feature engineering, and see if performance improves.
+- Build a web application for viewing everything behind a prediction (streamflow,
+  weather, USGS sonde water quality) alongside the projected TOC and alkalinity.
+
+### 2. Storm and runoff events, and real-time data
+
+> Given current watershed and reservoir conditions, how is an incoming storm or
+> runoff event likely to affect source-water quality, when will that impact arrive,
+> and what conditions might we expect at different depths within Strontia Springs
+> Reservoir?
+
+- Model how precipitation events hit the real-time water quality readings above
+  Strontia Springs Reservoir.
+- Adapt that model to the Strontia sonde data: how do water quality parameters
+  change and distribute by depth in the reservoir, and how do storms and spring
+  runoff change that picture?
+- Look back through the historical data and model how major precipitation events
+  have moved water quality through the system.
+
+### 3. Snowpack and surface water system function
+
+> Develop an interactive model that visualizes how water and water-quality
+> conditions move from the watershed through the collection system to the treatment
+> plants and evaluate how hydrologic and seasonal events influence that movement.
+
+- Model or visualize how water enters the system and moves through it to the
+  treatment plants.
+- Focus on one aspect of it, for example historical snowpack and streamflow and how
+  those shift year to year, drought against wet.
+- Choose a parameter, or a few, and follow them through the system. See whether
+  snowpack, rainstorms, or lake turnover change how they travel.
+
+Her framing for all three, from the deck: *use your backgrounds and skillsets to
+develop creative solutions.* The scenarios and datasets are ones Denver Water uses
+every day to predict, model, and understand what is happening in their collection
+system.
 
 ## What is in here
 
