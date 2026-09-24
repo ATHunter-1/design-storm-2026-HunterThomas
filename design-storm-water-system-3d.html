@@ -76,6 +76,28 @@
   #panel a { color: #6fc3ff; }
   .gloss { border-bottom: 1px dotted rgba(255,255,255,0.55); cursor: help; }
   .gloss-def { color: var(--panel-ink-2); font-size: 12px; }
+  details.howto { margin: 2px 0 10px; }
+  details.howto summary {
+    cursor: pointer; font-size: 12px; color: var(--panel-ink-2);
+    list-style: none; display: flex; align-items: center; gap: 5px;
+  }
+  details.howto summary::-webkit-details-marker { display: none; }
+  details.howto summary::before { content: "\25B8"; font-size: 9px; transition: transform 0.15s; }
+  details.howto[open] summary::before { transform: rotate(90deg); }
+  details.howto dl {
+    margin: 7px 0 0; display: grid; grid-template-columns: auto 1fr;
+    gap: 4px 10px; font-size: 12px; align-items: baseline;
+  }
+  details.howto dt { color: var(--panel-ink); white-space: nowrap; }
+  details.howto dd { margin: 0; color: var(--panel-ink-2); }
+  details.howto kbd {
+    font: inherit; font-size: 11px; padding: 0 4px; border-radius: 3px;
+    border: 1px solid var(--panel-line); background: rgba(255,255,255,0.07);
+  }
+  details.howto button.linky {
+    font: inherit; padding: 0; border: 0; background: none; cursor: pointer;
+    color: #6fc3ff; text-decoration: underline;
+  }
   details.caveat { margin-top: 10px; font-size: 12.5px; }
   details.caveat summary { cursor: pointer; color: var(--panel-ink-2); font-size: 12px; }
   details.caveat p { margin: 6px 0 0; color: var(--panel-ink); line-height: 1.4; }
@@ -95,7 +117,16 @@
 <div id="tip"></div>
 <div id="panel">
   <h1>Denver&rsquo;s Water, in 3D</h1>
-  <p class="sub">The mountains, reservoirs, tunnels, and probes behind the tap. Drag to look around; click anything.</p>
+  <p class="sub">The mountains, reservoirs, tunnels, and probes behind the tap. Click anything on the map to read about it.</p>
+  <details class="howto" open>
+    <summary>How to move around</summary>
+    <dl>
+      <dt>Pan</dt><dd>Drag with the left mouse button, or one finger on a touchscreen.</dd>
+      <dt>Zoom</dt><dd>Scroll, pinch, or the <kbd>+</kbd> and <kbd>&minus;</kbd> buttons at top right.</dd>
+      <dt>Rotate and tilt</dt><dd>Drag with the right mouse button, or hold <kbd>Ctrl</kbd> and drag. On a trackpad, drag with two fingers. The compass at top right does it too, and clicking the compass snaps back to north.</dd>
+      <dt>Lost?</dt><dd><button type="button" class="linky" id="view-reset">Snap back to the opening view</button>.</dd>
+    </dl>
+  </details>
   <div id="legend"></div>
   <div id="detail"></div>
   <button class="action" id="tour-start">&#9992; Fly the water&rsquo;s path</button>
@@ -177,6 +208,10 @@ const map = new maplibregl.Map({
   },
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+
+document.getElementById("view-reset").addEventListener("click", () => {
+  map.flyTo({ ...HOME, speed: 0.9 });
+});
 map.setTerrain === undefined || map.on("load", () => map.setTerrain({ source: "dem", exaggeration: 1.35 }));
 
 const state = { points: [], lines: [], byId: {}, hidden: new Set(), tourStep: -1 };
@@ -379,10 +414,7 @@ function showIntro() {
     <p class="note">White diamonds weigh the snowpack. Orange triangles measure
     the rivers. Blue circles store the water. Aqua squares treat it. The dashed
     yellow lines are the tunnels that defy the Continental Divide.
-    Dotted-underlined terms explain themselves when clicked.</p>
-    <p class="note">Deep dive: <a href="design-storm-strontia-springs-brief"
-    target="_blank" rel="noopener">the Strontia Springs brief</a>, the full
-    story of the August storm and the gage that watched it happen.</p>`;
+    Dotted-underlined terms explain themselves when clicked.</p>`;
   annotateGlossary();
 }
 
@@ -398,7 +430,6 @@ function showDetail(item) {
     <div id="chartbox"></div>
     <div id="influentbox"></div>
     ${CAVEATS[item.kind] ? `<details class="caveat"><summary>What can go wrong with this reading</summary><p>${CAVEATS[item.kind]}</p></details>` : ""}
-    ${item.id === "gage-06707525" ? `<p class="note">Deep dive: <a href="design-storm-strontia-springs-brief" target="_blank" rel="noopener">the Strontia Springs brief</a>, the full story of what this gage saw in August.</p>` : ""}
     ${(item.photos || []).map((p) => `
       <a href="${p.page}" target="_blank" rel="noopener"><img class="cam" src="${p.url}" alt="${p.label}"></a>
       <div class="note">${p.label} &middot; live USGS camera, updates every few minutes</div>`).join("")}`;

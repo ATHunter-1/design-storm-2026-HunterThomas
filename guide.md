@@ -1,6 +1,6 @@
 # What Jake is doing, from the ground up
 
-A plain-language walkthrough of the Denver Water materials for someone who writes software but has never touched water treatment, statistics, pandas, or Jupyter. Written 2026-08-25 from Jake's notebooks, deck, and email, plus our local runs in `experiments/`; revised 2026-09-05 for his Sep 4 update (data through Aug 19, shorter TOC lags, replacement SNOTEL station, bug fixes). Where this fills in water chemistry Jake never spelled out, it says so. Terms used across the rest of the repo (snowpack, water year, MAE, recall, and the like) are collected in [glossary.md](glossary.md).
+A plain-language walkthrough of the Denver Water materials for someone who writes software but has never touched water treatment, statistics, pandas, or Jupyter. Written 2026-08-25 from Jake's notebooks, deck, and email, plus local re-runs of them; revised 2026-09-05 for his Sep 4 update (data through Aug 19, shorter TOC lags, replacement SNOTEL station, bug fixes). Where this fills in water chemistry Jake never spelled out, it says so. Terms used across the rest of the repo (snowpack, water year, MAE, recall, and the like) are collected in [glossary.md](glossary.md).
 
 ## 1. The physical system
 
@@ -71,9 +71,9 @@ About 1,100 rows in the target, spread over four and a half summers, ending 2026
 
 ## 5. What a Jupyter notebook is
 
-A Python script chopped into **cells**, run one at a time from the top, in a browser. Variables persist between cells, so it is a REPL session that has been saved to a file. Plots and tables appear inline under the cell that produced them. The `.ipynb` file is JSON holding each cell's code and, optionally, its last output. Jake stripped the outputs before sending; our executed copies in `experiments/runs/` have them.
+A Python script chopped into **cells**, run one at a time from the top, in a browser. Variables persist between cells, so it is a REPL session that has been saved to a file. Plots and tables appear inline under the cell that produced them. The `.ipynb` file is JSON holding each cell's code and, optionally, its last output. Jake stripped the outputs before sending, so the notebooks in `scripts/` open empty; run one to see its plots.
 
-To open one: `cd experiments && .venv/bin/jupyter notebook`, then click a file in `runs/`. Shift+Enter runs a cell.
+To open one: `jupyter notebook` from the repository root, then click a file in `scripts/`. Shift+Enter runs a cell.
 
 ## 6. What pandas is, and the five operations Jake uses
 
@@ -130,7 +130,7 @@ Three numbers appear everywhere.
 
 **MAPE**, mean absolute percentage error. The typical miss as a percentage. Easier to read than RMSE, but unfair to the model when the true value is small.
 
-**MAE**, mean absolute error. Also the typical size of a miss in the target's units, but a plain average: take each day's miss, drop the sign, average. RMSE squares the misses first, so a few big misses dominate it; MAE counts one 3 mg/L miss as exactly ten 0.3 mg/L misses. The later experiments (`experiments/novelty/`) use MAE when comparing groups of days, because one outlier day should not swamp a group average.
+**MAE**, mean absolute error. Also the typical size of a miss in the target's units, but a plain average: take each day's miss, drop the sign, average. RMSE squares the misses first, so a few big misses dominate it; MAE counts one 3 mg/L miss as exactly ten 0.3 mg/L misses. MAE is the better choice when comparing groups of days, because one outlier day should not swamp a group average.
 
 Jake's numbers as we reproduced them (test half of the data, re-run 2026-09-04 on the updated materials; the baseline R² is scored on the ablation package's matched rows):
 
@@ -183,13 +183,12 @@ Two of the four originals were fixed by Jake's Sep 4 update; strikethrough kept 
 - ~~The "trim to April 2022" filter removes January to March of every year.~~ Fixed Sep 4: now a real date cutoff (`index >= '2022-04-01'`).
 - Six turbidity figures came in the package with no turbidity notebook. There is a third model.
 - The two Foothills lab exports the notebooks actually read were not shared; `FoothillsInfluent.csv` is their combined output.
-- New in the Sep 4 update: the notebooks fetch and read Buckskin Joe SNOTEL (station 938), but the shipped CSV is `HoosierPass.csv` and its values match Hoosier Pass (station 531) on the NRCS feed. One of the two is stale; question for Jake.
+- New in the Sep 4 update: the notebooks fetch and read Buckskin Joe SNOTEL (station 938), but the shipped CSV is `HoosierPass.csv` and its values match Hoosier Pass (station 531) on the NRCS feed. One of the two is stale.
 
 ## 15. Poking at it yourself
 
 ```
-cd eddd/design-storm/experiments
-.venv/bin/jupyter notebook
+jupyter notebook
 ```
 
-Open `runs/Alkalinity_Soft_Sensor.ipynb`. Read cells top to bottom; every one has its output underneath. Change a number (the lag in `shift(4, freq='D')`, the 60 threshold, the feature list), then Kernel > Restart & Run All and watch the scores move. That is the fastest way to build intuition, and it is roughly what a cohort would do on the day.
+Open `scripts/Alkalinity_Soft_Sensor.ipynb`. Read cells top to bottom. Jake's paths point at his own machine, so the first thing to fix is where the notebook loads `../data/` from. Then change a number (the lag in `shift(4, freq='D')`, the 60 threshold, the feature list), then Kernel > Restart & Run All and watch the scores move. That is the fastest way to build intuition, and it is roughly what a cohort would do on the day.

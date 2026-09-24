@@ -1,5 +1,0 @@
-.venv/
-runs/
-catboost_info/
-__pycache__/
-.pytest_cache/

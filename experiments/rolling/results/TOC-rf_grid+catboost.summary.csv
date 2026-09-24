@@ -1,5 +1,0 @@
-label,model,years,r2_mean,r2_min,r2_max,rmse_mean,recall_mean,precision_mean
-jake_full,rf_grid,4,-0.106502,-0.832611,0.457092,0.602046,0.718803,0.658365
-jake_full,catboost,4,-0.030768,-0.671074,0.662751,0.572099,0.730769,0.723106
-drop:swe_7day,rf_grid,4,-0.562535,-2.712124,0.634891,0.597483,0.723504,0.686778
-drop:swe_7day,catboost,4,-0.565338,-2.692620,0.669081,0.596613,0.744017,0.712632

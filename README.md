@@ -1,88 +1,149 @@
-# Design Storm 2026: Denver Water materials
+# Design Storm 2026: Denver Water
 
-Sent by Jake Slawson (Data Scientist, Denver Water Water Quality & Treatment) on 2026-08-25, following the Aug 24 call with Cassidi Rosenkrance and Paul. Updated 2026-09-04 (`ExploreDDD_Materials_Update.zip`): data through 2026-08-19 to match the real-time profiling sonde deployed in Strontia Reservoir, bug fixes in the notebooks, a replacement SNOTEL station, and shorter TOC lags. The Strontia sonde data itself arrived 2026-09-02 (`data/Strontia 0407_0819.xlsx`, byte-identical to the copy in the update zip).
+The Design Storm is a hands-on collaborative challenge at
+[Explore DDD 2026](https://exploreddd.com), run with Denver Water. Cohorts worked
+with real water utility data to model something their Water Quality and Treatment
+team actually needs: advance warning of what is coming down the South Platte
+before it reaches a treatment plant.
 
-## Disclaimers (Denver Water, must travel with the data)
+This repository holds the materials Denver Water shared, the models their data
+scientist built, and a 3D map of the collection system those numbers describe.
 
-Both notices below travel together. Cassidi Rosenkrance sent the second one on 2026-09-23 as Denver Water's standard public data terms, to be included in addition to the first.
+Denver Water's data terms apply to everything here. They are at the bottom of this
+file and in [`data/TERMS.md`](data/TERMS.md), and they restrict redistribution.
+Please read them before publishing anything built on this data.
+
+## Start here
+
+**[The challenge, as Denver Water framed it](reference/Explore%20DDD%202026%20Denver%20Water%20Design%20Storm%20Presentation.pdf)**
+(PDF, 12 slides). Cassidi Rosenkrance, their Water Quality and Treatment Manager,
+presented this to the room at the kickoff: who Denver Water is, what the water
+sector is up against, and the three scenarios below.
+
+**[Denver's Water, in 3D](design-storm-water-system-3d.html)** is the system map on
+her slide 4, rebuilt as something you can fly through. Reservoirs, gages, snow
+stations, treatment plants, and the tunnels that carry water under the Continental
+Divide, on real terrain, with live readings behind each marker. Click anything.
+Serve it rather than opening the file directly, because it fetches JSON:
+
+```
+python3 serve.py
+open http://localhost:8765/design-storm-water-system-3d
+```
+
+It doubles as a worked example of Scenario 3, and as a starting point for the
+viewing application Scenario 1 asks for.
+
+## The three scenarios
+
+**1. TOC and alkalinity predictive model.** Can watershed, hydrologic, and reservoir
+monitoring data give enough advance warning to predict total organic carbon and
+alkalinity arriving at the Foothills treatment plant, and give treatment staff
+actionable time to prepare? Improve on the existing models, bring in the real-time
+Strontia profiling sonde, try different algorithms and lag times, or build the web
+application for viewing predictions alongside the data behind them.
+
+**2. Storm and runoff events, and real-time data.** Given current watershed and
+reservoir conditions, how is an incoming storm likely to affect source water
+quality, when will that impact arrive, and what conditions would you expect at
+different depths within Strontia Springs Reservoir? The sonde profiles the
+reservoir by depth, so stratification and turnover are visible in the data.
+
+**3. Snowpack and surface water system function.** Build something that shows how
+water and water quality conditions move from the watershed through the collection
+system to the treatment plants, and how hydrologic and seasonal events shape that
+movement. Drought years against wet years, snowpack against streamflow, one
+parameter followed through the system.
+
+Cassidi's deck has the full framing for each, with the questions stated as she put
+them to the room.
+
+## What is in here
+
+| Path | What it is |
+|---|---|
+| [`reference/`](reference/) | Everything Denver Water shared, exactly as sent: Cassidi's kickoff deck, Jake's model walkthrough, and two primers on the water chemistry and the regulations. Has [its own README](reference/README.md). |
+| `data/` | The datasets, as CSV and one spreadsheet. Detailed below. |
+| `scripts/` | Jake Slawson's six original Jupyter notebooks: two model notebooks and four API grabbers. Unmodified, including the hardcoded paths. |
+| `figures/` | The plots those notebooks produce: correlation matrices, feature and permutation importance, prediction comparisons. |
+| `design-storm-water-system-3d.html` | The 3D map. Hand-maintained; no build step. |
+| `water-system-3d/` | The generated JSON behind the map, and the scripts that build it. |
+| `strontia-brief/` | Basin polygons, river lines, and two gage series the map draws. |
+| [`guide.md`](guide.md) | The domain and the models explained from zero, for a developer who has touched neither water treatment nor time-series modelling. |
+| [`glossary.md`](glossary.md) | Every water and statistics term used here, defined. |
+| [`cohort-prompts.md`](cohort-prompts.md) | Prompts to paste into an AI coding assistant pointed at this folder, staged from first look to modelling. |
+
+## The data
+
+Series run 2022-04-01 to 2026-08-19.
+
+| File | Columns | Rows |
+|---|---|---|
+| `FoothillsInfluent.csv` | DATE, TOC_mg_L, Alk_mg_L | 1116 |
+| `HoosierPass.csv` | DATE, SWE (SNOTEL snow water equivalent) | 1602 |
+| `SouthPlatteFlow.csv` | measDate, Flow_CFS (Colorado DWR) | 1603 |
+| `SouthPlatteTelemetry.csv` | Date, Flow_CFS, GageHeight_ft, Precip | 1603 |
+| `USC00058022.csv` | STATION, DATE, PRCP, SNOW, TMAX, TMIN (NOAA GHCN, ends 2026-08-18) | 1602 |
+| `USGS_South_Platte.csv` | Date, site_no, dissolved oxygen, specific conductance, temperature, turbidity, pH (max/mean/min) | 1028 |
+| `Strontia 0407_0819.xlsx` | Profiling sonde in Strontia Springs Reservoir: timestamp, depth, temperature, conductivity, pH, ORP, turbidity, chlorophyll, phycocyanin, dissolved oxygen. 16,093 readings over 104 days, 2026-04-07 to 08-19, many depths per cast. | |
+
+Two things worth knowing before you model:
+
+**Readings are provisional.** USGS publishes immediately and revises later. A fresh
+API pull can differ from the committed CSVs by a value or two. A forecast built on
+a provisional reading inherits that, which is itself an interesting modelling
+question: what happens to yesterday's warning when today's input is corrected?
+
+**`MichiganCreek.csv` carries a known artifact.** It shows snow water equivalent of
+9.0 on May 12 to 15, 2026 between zero readings, an error in the NRCS feed. Jake
+replaced that station with Hoosier Pass in his September update; the file is kept
+because it covers a longer record.
+
+## Jake's models
+
+`reference/Foothills_INF_ML_NoConclusions.pptx` is the walkthrough. The short
+version: a random forest on lagged upstream features, predicting TOC and alkalinity
+at the Foothills influent.
+
+- Features shifted relative to the influent, by 2 days for TOC and 4 for alkalinity,
+  and 4 to 6 days for precipitation
+- Month converted to radians, so January and December sit next to each other
+- Rolling 7-day averages for flow and precipitation, rolling 3-day for turbidity
+- Flow times turbidity as a combined "loading" parameter
+- Spearman correlation used to shortlist predictors, then combinations tried
+
+Reported results: TOC at R^2 0.59, RMSE 0.29 mg/L; alkalinity regression at R^2 0.65,
+RMSE 5.89 mg/L. A classifier asking "is alkalinity below 60 mg/L?" struggles when
+the true value sits near the threshold. Later work added SNOTEL snowpack as a
+predictor and tried CatBoost alongside the forest.
+
+On the lag: Denver Water's raw water group models water moving through this stretch
+in about four hours, so the multi-day lag that predicts best is likely mixing and
+deposition in the reservoir rather than transport time. The exact horizon is
+empirical and still moving. What operators need is any heads-up of a day or more.
+
+Jake's own framing, and worth keeping in view: these models are under development,
+built as a case study in what current data makes possible. Not publication-ready.
+
+## Data terms
+
+Denver Water provided this data under two notices. Both apply to everything in this
+repository, and both travel with any dataset or output derived from it.
 
 > The water quality data is provided "as is." Water quality data provided to the user is provisional and subject to change, and the user should not assume that the data has undergone any quality assurance or quality control review. Denver Water makes no warranty of any kind, express or implied, concerning the data, including accuracy, reliability, completeness, timeliness, or usefulness.
 > Copyright 2026, Denver Water. https://www.denverwater.org/about-us/how-we-operate/public-records
 
 > COPYRIGHT AND DISCLAIMER: The data and metadata contained herein were prepared by Denver Water for its internal purposes only. Denver Water provides data and metadata as a public service with no claim as to the completeness, usefulness, timeliness or accuracy of its content, positional or otherwise. Denver Water and its employees make no warranty, express or implied, and assume no legal liability or responsibility for the ability of users to fulfill their intended purposes in accessing or using data or metadata or for omissions in content regarding such. The information provided is presented "as is," without warranty of any kind, including, but not limited to, the implied warranties of merchantability, fitness for a particular purpose, or non-infringement. Your use of this information is at your own risk. In providing this information or access to it, Denver Water assumes no obligation to assist the user in the use of such information or in the development, use, or maintenance of any applications applied to or associated with the data or metadata. Any sale, reproduction or distribution of this information, or products derived therefrom, in any format is expressly prohibited.
 
-## The problem
+Data from USGS, Colorado DWR, USDA NRCS, and NOAA is public domain. Map imagery is
+Esri and contributors; terrain is Mapzen via AWS; pipeline geometry is
+OpenStreetMap contributors; storm radar is the NEXRAD archive via Iowa State
+Mesonet.
 
-Predict **TOC** and **alkalinity** at the **Foothills Water Treatment Plant influent a few days ahead**, from upstream gage, streamflow, snowpack, and precipitation data. Both analytes affect treatability, so advance warning lets plant operators plan staffing and treatment when outlier water is coming down the South Platte.
+## Thanks
 
-The exact horizon is empirical and still moving, and Jake asks that it not be over-emphasized (email, 2026-09-04). The deck used 4 days; he recently got slightly better results with 2, and the September notebooks use 2 for TOC (alkalinity still uses 4). Physically, Denver Water's raw water group models water moving through this stretch in about 4 hours; the multi-day lag that predicts best for TOC and alkalinity is likely mixing and deposition, not transport. What operators need is any heads-up of a day or more.
-
-Jake's framing: the models are still under development, built as a case study for what is possible with current data. Not publication-ready.
-
-## Contents
-
-`ExploreDDD_Materials/Scripts/` (Jupyter notebooks)
-
-| Notebook | What it does |
-|---|---|
-| `TOC_SoftSensor.ipynb` | TOC model development |
-| `Alkalinity_Soft_Sensor.ipynb` | Alkalinity model development (regression and classification) |
-| `USGS_gage_data_grabber.ipynb` | USGS water quality API pull |
-| `DWR_gage_grabber.ipynb` | Colorado DWR streamflow API pull |
-| `SNTL_grabber.ipynb` | NWCC / SNOTEL snowpack API pull |
-| `GHCN_grabber.ipynb` | NOAA GHCN precipitation API pull |
-
-`ExploreDDD_Materials/Data/` (CSV, series run 2022-04-01 to 2026-08-19 in the Sep 4 update)
-
-| File | Columns | Rows |
-|---|---|---|
-| `FoothillsInfluent.csv` | DATE, TOC_mg_L, Alk_mg_L | 1116 |
-| `HoosierPass.csv` | DATE, SWE (SNOTEL snow water equivalent) | 1602 |
-| `SouthPlatteFlow.csv` | measDate, Flow_CFS (DWR) | 1603 |
-| `SouthPlatteTelemetry.csv` | Date, Flow_CFS, GageHeight_ft, Precip | 1603 |
-| `USC00058022.csv` | STATION, DATE, PRCP, SNOW, TMAX, TMIN (NOAA GHCN, ends 2026-08-18) | 1602 |
-| `USGS_South_Platte.csv` | Date, site_no, dissolved oxygen, specific conductance, temp, turbidity, pH (max/mean/min) | 1028 |
-| `Strontia 0407_0819.xlsx` | Profiling sonde in Strontia Reservoir: timestamp, depth (vertical position), temp, conductivity, pH, ORP, turbidity, chlorophyll, phycocyanin, DO; 16,093 readings over 104 days, 2026-04-07 to 08-19, many depths per cast | |
-
-The Sep 4 update replaced Michigan Creek with a different SNOTEL station because of the erroneous spring 2026 readings (see exploration-notes 7.1). Naming discrepancy to resolve with Jake: the shipped CSV is Hoosier Pass data (station 531, verified against NRCS), but the updated notebooks fetch and read Buckskin Joe (station 938). The superseded `data/MichiganCreek.csv` is kept because the drought analyses (`experiments/snowpack`, `regime`, `analog`) were built on that station's record.
-
-The Strontia sonde is the "new sensor data (sonde?)" from Jake's next-steps note: a real-time reservoir profiling sonde deployed in Strontia, arrival-side data between the USGS river gage and the plant. Jake (Sep 2): it does not need to be pulled into the activity; it is available if there is interest.
-
-`ExploreDDD_Materials/Data/Figures/` holds the model output plots: correlation matrices, feature and permutation importance, and prediction comparisons for TOC, alkalinity, and turbidity, including CatBoost variants.
-
-`Foothills_INF_ML_NoConclusions.pptx` is the intro to the deck Jake presented to Denver Water leadership around July 2026. Conclusions removed.
-
-`reference/` holds the background material Cassidi Rosenkrance sent on 2026-09-14 for attendees, in response to Paul's Sep 11 ask for what plant staff actually do when alkalinity is out of range. Both carry Denver Water's note that they are introductory training material, not official regulatory or controlled documents.
-
-| File | What it is |
-|---|---|
-| `reference/TOC_and_Alkalinity_Summary.pdf` | Two-page primer: what TOC and alkalinity are, why they matter for treatment (TOC reacts with disinfectants to form regulated disinfection byproducts; alkalinity sets how much chemical it takes to reach the slightly acidic pH where coagulation removes TOC best), and the 60 mg/L alkalinity threshold that moves the required TOC removal between 35% and 25%. Denver Water typically sees source-water TOC of 1.5 to 4.0 mg/L. Ends with links: a YouTube explainer on how treatment works, Denver Water's treatment-process walkthrough (denverwater.org/your-water/treatment-process), CDPHE's quick guide to the DBP Precursors rule (Regulation 11), and CDPHE's disinfection byproducts fact sheet. |
-| `reference/DBP-PRE and DBP Rule Training Slides_DDD conference.pdf` | Eight slides summarizing Colorado Regulation 11.24 (DBP precursors: monthly paired TOC and source alkalinity samples, removal ratio or SUVA, running annual average) and 11.25 (TTHM and HAA5 sampling and MCLs, what counts as a violation, 48-hour CDPHE notification). Notes Denver Water is a lower-risk system: chloramination and low raw-water organic carbon. |
-
-## Method, from the deck
-
-- Random forest, trained on lagged features shifted relative to Foothills influent (the deck says 4 days; the September notebooks shift 2 for TOC and 4 for alkalinity, rain 4 and 6)
-- Month converted to radians so the model treats January and December as close
-- Rolling 7-day averages for flow and precipitation, rolling 3-day for turbidity
-- Flow times turbidity as a "loading" parameter
-- Spearman correlation matrix used to pick candidate predictors, then combinations tried until best result
-
-Reported results (deck, ~July 2026):
-- TOC: R^2 0.59, RMSE 0.29 mg/L, MAPE 9.52%. Peak accuracy prioritized over raw R^2, since TOC is stable most of the year. Currently overestimates due to 2023 in the training data.
-- Alkalinity regression: R^2 0.65, RMSE 5.89 mg/L, MAPE 8.34%.
-- Alkalinity classification (above or below 60 mg/L): struggles with back-and-forth near the threshold. Jake: "not sold on precision."
-
-**Newer than the deck:** SNOTEL snowpack added as a predictor (Michigan Creek, replaced in the Sep 4 update), and CatBoost tried as an additional model. Neither is described in the slides.
-
-## Open offers from Jake
-
-- Refresh the CSVs closer to the conference, for attendees who want ready-to-code data (first refresh delivered 2026-09-04)
-- Walk through the material by email or Zoom
-
-## Related
-
-- Plain-language definitions of every water and statistics term used in this repo: [glossary.md](glossary.md)
-- Visualizations: [design-storm-water-system-3d.html](design-storm-water-system-3d.html), a 3D map of the supply system from snowpack to treatment plants, and [design-storm-strontia-springs-brief.html](design-storm-strontia-springs-brief.html), a brief on a real turbidity spike at the Strontia gage on 15 Aug 2026, written before Jake's materials arrived. To view locally: `python3 serve.py 8765` from the repo root (or `python3 -m http.server`), then open `localhost:8765/design-storm-water-system-3d.html`. They load their data from `water-system-3d/` and `strontia-brief/`, so opening the files straight off disk shows an error; map tiles and live gage data also need an internet connection.
-- The 3D map is also published as an online demo: **https://exploreddd.com/2026-design-storm-demo/#pw=snowmelt-2026** (this link skips the password prompt). The plain URL https://exploreddd.com/2026-design-storm-demo/ asks for the passphrase, snowmelt-2026. Unlisted; the Foothills influent data is served AES-encrypted and the brief is not published. The live copy is deployed from the Explore DDD website repo; edits here reach it when Paul re-runs the staging script and pushes.
-- People: Jake Slawson (Data Scientist, Water Quality & Treatment) and Cassidi Rosenkrance (WQ&T Manager, Lab-Monitoring), Denver Water
-- The four-cohort exercise structure is drafted in Explore DDD's planning docs, outside this repository
+To **Cassidi Rosenkrance**, who brought Denver Water to the conference, framed the
+challenge, recruited her colleagues, and answered every question put to her; to
+**Jake Slawson**, who shared his working models and the data behind them; and to
+**Jonathan Spitze** and the Water Quality and Treatment team at Denver Water for
+backing it.

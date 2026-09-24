@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Tiny HTTP server for the EDDD budget planner.
+"""Tiny HTTP server for the pages in this repository.
+
+The 3D map fetches JSON, so opening it as a file:// URL fails; serve it instead:
+
+    python3 serve.py
+    open http://localhost:8765/design-storm-water-system-3d
 
 Behaves like `python3 -m http.server 8765`, but if a request for `/foo`
-would 404 and `/foo.html` exists, rewrites the path first. Saves us from
-the localhost:8765/eddd-budget-planner 404 trap when browser autocomplete
-drops the .html extension.
+would 404 and `/foo.html` exists, rewrites the path first, so a URL without
+the .html extension still resolves.
 """
 import os
 import sys
@@ -17,8 +21,8 @@ ROOT = Path(__file__).resolve().parent
 
 class HtmlFallbackHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
-        # Cost constants live in ES modules the browser will otherwise cache and
-        # keep serving after an edit, so the planner silently shows old money.
+        # Generated JSON is edited in place during development; without this the
+        # browser keeps serving a cached copy and the map silently shows old data.
         self.send_header("Cache-Control", "no-store, must-revalidate")
         super().end_headers()
 

@@ -1,2 +1,15 @@
-ExploreDDD_Materials/
 .DS_Store
+
+# Private working material. Kept locally and in git history, not on the public tip.
+experiments/
+exploration-notes.md
+design-storm-strontia-springs-brief.html
+strontia-brief/build_maps.py
+strontia-brief/map.js
+strontia-brief/svg/
+strontia-brief/vendor/
+
+# Jake's originals as zipped. Unpacked equivalents live in data/ and scripts/.
+ExploreDDD_Materials/
+ExploreDDD_Materials.zip
+ExploreDDD_Materials_Update.zip
