@@ -1,10 +1,10 @@
 # Exploration prompts: Foothills soft-sensor problem
 
-Prompts to paste into an AI coding assistant working in a folder that holds the Denver Water materials: the `Data/` CSVs, the `Scripts/` notebooks, the figures, the disclaimer, and the problem statement. Work through the stages in order, or start wherever you are.
+Prompts to paste into an AI coding assistant working in a folder that holds the Denver Water materials: the `Data/` CSVs, the `Scripts/` notebooks, the figures, the disclaimers, and the problem statement. Work through the stages in order, or start wherever you are.
 
 ## 0. Ground rules (paste first)
 
-> You are helping a small team explore a water-quality dataset from Denver Water. The data is provisional and carries a disclaimer; keep it with any output. Explain water and statistics terms the first time you use them, as if to a software developer who has never touched either. When you are stating general knowledge rather than something in these files, say so. Never invent numbers; compute them or say you cannot.
+> You are helping a small team explore a water-quality dataset from Denver Water. The data is provisional and carries two Denver Water disclaimers; keep both with any output. Explain water and statistics terms the first time you use them, as if to a software developer who has never touched either. When you are stating general knowledge rather than something in these files, say so. Never invent numbers; compute them or say you cannot.
 
 ## 1. Understand the domain
 

@@ -2,10 +2,14 @@
 
 Sent by Jake Slawson (Data Scientist, Denver Water Water Quality & Treatment) on 2026-08-25, following the Aug 24 call with Cassidi Rosenkrance and Paul. Updated 2026-09-04 (`ExploreDDD_Materials_Update.zip`): data through 2026-08-19 to match the real-time profiling sonde deployed in Strontia Reservoir, bug fixes in the notebooks, a replacement SNOTEL station, and shorter TOC lags. The Strontia sonde data itself arrived 2026-09-02 (`data/Strontia 0407_0819.xlsx`, byte-identical to the copy in the update zip).
 
-## Disclaimer (Denver Water, must travel with the data)
+## Disclaimers (Denver Water, must travel with the data)
+
+Both notices below travel together. Cassidi Rosenkrance sent the second one on 2026-09-23 as Denver Water's standard public data terms, to be included in addition to the first.
 
 > The water quality data is provided "as is." Water quality data provided to the user is provisional and subject to change, and the user should not assume that the data has undergone any quality assurance or quality control review. Denver Water makes no warranty of any kind, express or implied, concerning the data, including accuracy, reliability, completeness, timeliness, or usefulness.
 > Copyright 2026, Denver Water. https://www.denverwater.org/about-us/how-we-operate/public-records
+
+> COPYRIGHT AND DISCLAIMER: The data and metadata contained herein were prepared by Denver Water for its internal purposes only. Denver Water provides data and metadata as a public service with no claim as to the completeness, usefulness, timeliness or accuracy of its content, positional or otherwise. Denver Water and its employees make no warranty, express or implied, and assume no legal liability or responsibility for the ability of users to fulfill their intended purposes in accessing or using data or metadata or for omissions in content regarding such. The information provided is presented "as is," without warranty of any kind, including, but not limited to, the implied warranties of merchantability, fitness for a particular purpose, or non-infringement. Your use of this information is at your own risk. In providing this information or access to it, Denver Water assumes no obligation to assist the user in the use of such information or in the development, use, or maintenance of any applications applied to or associated with the data or metadata. Any sale, reproduction or distribution of this information, or products derived therefrom, in any format is expressly prohibited.
 
 ## The problem
 
