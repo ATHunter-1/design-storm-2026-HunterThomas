@@ -10,11 +10,9 @@ This repository holds the materials Denver Water shared, the models their data
 scientist built, and a 3D map of the collection system those numbers describe.
 
 **New to water treatment, or to data science, or to both?** That is the expected
-starting point, and nothing here assumes otherwise. [`guide.md`](guide.md) explains
-the domain and the models from zero, for someone who writes software and has touched
-neither. [`glossary.md`](glossary.md) defines every water and statistics term used
-anywhere in the repository. You do not need either to get started, but they are the
-fastest way out of any sentence that stops making sense.
+starting point. [`guide.md`](guide.md) explains both from zero and
+[`glossary.md`](glossary.md) defines every term, whenever a sentence here stops
+making sense.
 
 Denver Water's data terms apply to everything here. They are at the bottom of this
 file and in [`data/TERMS.md`](data/TERMS.md). Denver Water has confirmed the data is
@@ -27,9 +25,9 @@ repository** and share the fork with the rest of the group. The fork becomes the
 cohort's collaboration point: everyone else works against it, opens pull requests
 into it, and it keeps one shared history of what the cohort tried.
 
-Forking also keeps Denver Water's materials, the guide, and the glossary alongside
-whatever you build, so the data terms travel with the work. If a cohort produces
-something worth sharing more widely, a pull request back here is welcome.
+Work wherever you like in your fork. If you want to send something back here, put it
+all in `cohorts/<your-cohort-name>/` and leave `data/`, `scripts/`, `figures/`, and
+`reference/` as they are, so pull requests from different cohorts never collide.
 
 ## Start here
 
@@ -45,14 +43,9 @@ Continental Divide, on real terrain, with live readings behind each marker. It r
 in the browser; click anything. It doubles as a worked example of Scenario 3, and as
 a starting point for the viewing application Scenario 1 asks for.
 
-The page is `design-storm-water-system-3d.html` in this repository, if you want to
-take it apart or build on it. It fetches JSON, so serve it rather than opening the
-file directly:
-
-```
-python3 serve.py
-open http://localhost:8765/design-storm-water-system-3d
-```
+It is `design-storm-water-system-3d.html` here if you want to take it apart. It
+fetches JSON, so run `python3 serve.py` and open
+<http://localhost:8765/design-storm-water-system-3d> rather than the file directly.
 
 ## What you are predicting, and why it matters
 
@@ -65,14 +58,13 @@ how hard it is to treat:
   forms **disinfection byproducts**, which are regulated. More TOC arriving means
   more work to remove it first.
 - **Alkalinity** is the water's resistance to changes in pH. Removing TOC works best
-  at a slightly acidic pH, so alkalinity sets how much chemical the plant has to add
-  to get there. A regulatory threshold sits at 60 mg/L: below it, the plant is
-  required to remove a different proportion of the TOC.
+  at a slightly acidic pH, so alkalinity sets how much chemical it takes to get
+  there.
 
-Both are measured by hand from grab samples, which means the plant learns what
-arrived after it arrived. Predicting them a few days out from upstream sensors, snow
-and weather data would let operators plan staffing and chemical dosing before the
-water gets there. That is the problem. Everything else here is in service of it.
+Both are measured by hand from grab samples, so the plant learns what arrived only
+after it arrived. Predicting them a few days out, from upstream sensors and snow and
+weather data, would let operators plan staffing and dosing before the water gets
+here. That is the problem. Everything else is in service of it.
 
 ## The three scenarios
 
@@ -131,79 +123,51 @@ system.
 
 ## What is in here
 
-### From Denver Water
+Everything marked **original** is Denver Water's, kept exactly as sent. Copy what you
+need rather than editing in place.
 
 | Path | What it is |
 |---|---|
-| [`reference/`](reference/) | Everything Denver Water shared, exactly as sent: Cassidi's kickoff deck, Jake's model walkthrough, and two primers on the water chemistry and the regulations. Has [its own README](reference/README.md). |
-| `data/` | The datasets, as CSV and one spreadsheet. Detailed below. |
-| `scripts/` | Jake Slawson's six original Jupyter notebooks: two model notebooks and four API grabbers. Unmodified, including the hardcoded paths. |
-| `figures/` | The plots those notebooks produce: correlation matrices, feature and permutation importance, prediction comparisons. |
-
-### Added for the cohorts
-
-| Path | What it is |
-|---|---|
-| `design-storm-water-system-3d.html` | The 3D map. Hand-maintained; no build step. |
-| `water-system-3d/` | The generated JSON behind the map, and the scripts that build it. |
-| `strontia-brief/` | Basin polygons, river lines, and two gage series the map draws. |
-| [`guide.md`](guide.md) | The domain and the models explained from zero, for a developer who has touched neither water treatment nor time-series modelling. |
+| [`reference/`](reference/) | **Original.** Cassidi's kickoff deck, Jake's model walkthrough, and two primers on the chemistry and the regulations. Has [its own README](reference/README.md). |
+| `data/` | **Original.** The datasets. Detailed below. |
+| `scripts/` | **Original.** Jake's six Jupyter notebooks: two model notebooks and four API grabbers, hardcoded paths and all. |
+| `figures/` | **Original.** The plots those notebooks produce. |
+| [`guide.md`](guide.md) | The domain and the models explained from zero. |
 | [`glossary.md`](glossary.md) | Every water and statistics term used here, defined. |
 | [`cohort-prompts.md`](cohort-prompts.md) | Prompts to paste into an AI coding assistant pointed at this folder, staged from first look to modelling. |
-| `data-terms.html`, [`data/TERMS.md`](data/TERMS.md) | Denver Water's terms, in the two places they need to be reachable from. |
-| `serve.py` | A small static server, because the map fetches JSON and will not run from a `file://` URL. |
+| `design-storm-water-system-3d.html` | The 3D map, plus `water-system-3d/` and `strontia-brief/` for the data it draws and `serve.py` to serve it. |
 
 ## The data
 
-Series run 2022-04-01 to 2026-08-19.
+In `data/`, daily series running 2022-04-01 to 2026-08-19. Open one to see its
+columns.
 
-| File | Columns | Rows |
-|---|---|---|
-| `FoothillsInfluent.csv` | DATE, TOC_mg_L, Alk_mg_L | 1116 |
-| `HoosierPass.csv` | DATE, SWE (SNOTEL snow water equivalent) | 1602 |
-| `SouthPlatteFlow.csv` | measDate, Flow_CFS (Colorado DWR) | 1603 |
-| `SouthPlatteTelemetry.csv` | Date, Flow_CFS, GageHeight_ft, Precip | 1603 |
-| `USC00058022.csv` | STATION, DATE, PRCP, SNOW, TMAX, TMIN (NOAA GHCN, ends 2026-08-18) | 1602 |
-| `USGS_South_Platte.csv` | Date, site_no, dissolved oxygen, specific conductance, temperature, turbidity, pH (max/mean/min) | 1028 |
-| `Strontia 0407_0819.xlsx` | Profiling sonde in Strontia Springs Reservoir: timestamp, depth, temperature, conductivity, pH, ORP, turbidity, chlorophyll, phycocyanin, dissolved oxygen. 16,093 readings over 104 days, 2026-04-07 to 08-19, many depths per cast. | |
+| File | What it holds |
+|---|---|
+| `FoothillsInfluent.csv` | TOC and alkalinity at the plant. This is what you are predicting. |
+| `USGS_South_Platte.csv` | The upstream gage: turbidity, specific conductance, pH, temperature, dissolved oxygen. |
+| `SouthPlatteFlow.csv`, `SouthPlatteTelemetry.csv` | Streamflow and gage height, from Colorado DWR. |
+| `HoosierPass.csv`, `MichiganCreek.csv` | Snowpack, as snow water equivalent. |
+| `USC00058022.csv` | Precipitation, snow, and temperature, from NOAA. |
+| `Strontia 0407_0819.xlsx` | The profiling sonde in Strontia Springs Reservoir: 16,093 readings over 104 days, many depths per cast. Temperature, conductivity, pH, turbidity, chlorophyll, dissolved oxygen and more. |
 
-Two things worth knowing before you model:
-
-**Readings are provisional.** USGS publishes immediately and revises later. A fresh
-API pull can differ from the committed CSVs by a value or two. A forecast built on
-a provisional reading inherits that, which is itself an interesting modelling
-question: what happens to yesterday's warning when today's input is corrected?
-
-**`MichiganCreek.csv` carries a known artifact.** It shows snow water equivalent of
-9.0 on May 12 to 15, 2026 between zero readings, an error in the NRCS feed. Jake
-replaced that station with Hoosier Pass in his September update; the file is kept
-because it covers a longer record.
+Two things worth knowing before you model. **Readings are provisional**: USGS
+publishes immediately and revises later, so a fresh API pull can differ from these
+files, and a forecast built on a provisional reading inherits that. **`MichiganCreek.csv`
+has a known bad patch**: snow water equivalent of 9.0 on May 12 to 15, 2026 between
+zero readings, an error in the NRCS feed. Jake replaced that station with Hoosier
+Pass; the file is kept because it covers a longer record.
 
 ## Jake's models
 
-`reference/Foothills_INF_ML_NoConclusions.pptx` is the walkthrough. The short
-version: a random forest on lagged upstream features, predicting TOC and alkalinity
-at the Foothills influent.
+Jake Slawson built a random forest on lagged upstream features that predicts TOC and
+alkalinity at the Foothills influent a few days out. His walkthrough is
+`reference/Foothills_INF_ML_NoConclusions.pptx`, and [`guide.md`](guide.md) explains
+what he did and why, feature by feature, assuming nothing.
 
-- Features shifted relative to the influent, by 2 days for TOC and 4 for alkalinity,
-  and 4 to 6 days for precipitation
-- Month converted to radians, so January and December sit next to each other
-- Rolling 7-day averages for flow and precipitation, rolling 3-day for turbidity
-- Flow times turbidity as a combined "loading" parameter
-- Spearman correlation used to shortlist predictors, then combinations tried
-
-Reported results: TOC at R^2 0.59, RMSE 0.29 mg/L; alkalinity regression at R^2 0.65,
-RMSE 5.89 mg/L. A classifier asking "is alkalinity below 60 mg/L?" struggles when
-the true value sits near the threshold. Later work added SNOTEL snowpack as a
-predictor and tried CatBoost alongside the forest.
-
-On the lag: Denver Water's raw water group models water moving through this stretch
-in about four hours, so the multi-day lag that predicts best is likely mixing and
-deposition in the reservoir rather than transport time. The exact horizon is
-empirical and still moving. What operators need is any heads-up of a day or more.
-
-Jake's own framing, and worth keeping in view: these models are under development,
-built as a case study in what current data makes possible. Not publication-ready.
+His own framing, worth keeping in view: these models are under development, built as
+a case study in what current data makes possible. Not publication-ready, and not the
+bar you have to clear.
 
 ## Data terms
 
