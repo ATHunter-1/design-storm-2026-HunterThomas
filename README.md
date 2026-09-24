@@ -36,6 +36,17 @@ python3 serve.py
 open http://localhost:8765/design-storm-water-system-3d
 ```
 
+## Working as a cohort
+
+The simplest way for a cohort to work together is for one person to **fork this
+repository** and share the fork with the rest of the group. The fork becomes the
+cohort's collaboration point: everyone else works against it, opens pull requests
+into it, and it keeps one shared history of what the cohort tried.
+
+Forking also keeps Denver Water's materials, the guide, and the glossary alongside
+whatever you build, so the data terms travel with the work. If a cohort produces
+something worth sharing more widely, a pull request back here is welcome.
+
 ## The three scenarios
 
 **1. TOC and alkalinity predictive model.** Can watershed, hydrologic, and reservoir
@@ -62,18 +73,27 @@ them to the room.
 
 ## What is in here
 
+### From Denver Water
+
 | Path | What it is |
 |---|---|
 | [`reference/`](reference/) | Everything Denver Water shared, exactly as sent: Cassidi's kickoff deck, Jake's model walkthrough, and two primers on the water chemistry and the regulations. Has [its own README](reference/README.md). |
 | `data/` | The datasets, as CSV and one spreadsheet. Detailed below. |
 | `scripts/` | Jake Slawson's six original Jupyter notebooks: two model notebooks and four API grabbers. Unmodified, including the hardcoded paths. |
 | `figures/` | The plots those notebooks produce: correlation matrices, feature and permutation importance, prediction comparisons. |
+
+### Added for the cohorts
+
+| Path | What it is |
+|---|---|
 | `design-storm-water-system-3d.html` | The 3D map. Hand-maintained; no build step. |
 | `water-system-3d/` | The generated JSON behind the map, and the scripts that build it. |
 | `strontia-brief/` | Basin polygons, river lines, and two gage series the map draws. |
 | [`guide.md`](guide.md) | The domain and the models explained from zero, for a developer who has touched neither water treatment nor time-series modelling. |
 | [`glossary.md`](glossary.md) | Every water and statistics term used here, defined. |
 | [`cohort-prompts.md`](cohort-prompts.md) | Prompts to paste into an AI coding assistant pointed at this folder, staged from first look to modelling. |
+| `data-terms.html`, [`data/TERMS.md`](data/TERMS.md) | Denver Water's terms, in the two places they need to be reachable from. |
+| `serve.py` | A small static server, because the map fetches JSON and will not run from a `file://` URL. |
 
 ## The data
 
