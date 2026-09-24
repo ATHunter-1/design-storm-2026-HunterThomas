@@ -1,10 +1,11 @@
 # Design Storm 2026: Denver Water
 
 The Design Storm is a hands-on collaborative challenge at
-[Explore DDD 2026](https://exploreddd.com), run with Denver Water. Cohorts work in
-small groups with real water utility data on something their Water Quality and
-Treatment team actually needs: advance warning of what is coming down the South
-Platte before it reaches a treatment plant.
+[Explore DDD 2026](https://exploreddd.com), run with Denver Water. Attendees join a
+cohort at their own experience level, then work in small teams of two to four with
+real water utility data on something Denver Water's Water Quality and Treatment team
+actually needs: advance warning of what is coming down the South Platte before it
+reaches a treatment plant.
 
 This repository holds the materials Denver Water shared, the models their data
 scientist built, and a 3D map of the collection system those numbers describe.
@@ -18,16 +19,16 @@ Denver Water's data terms apply to everything here. They are at the bottom of th
 file and in [`data/TERMS.md`](data/TERMS.md). Denver Water has confirmed the data is
 public; please keep the terms with anything you build on it.
 
-## Working as a cohort
+## Working as a small team
 
-The simplest way for a cohort to work together is for one person to **fork this
-repository** and share the fork with the rest of the group. The fork becomes the
-cohort's collaboration point: everyone else works against it, opens pull requests
-into it, and it keeps one shared history of what the cohort tried.
+The simplest way for a small team to work together is for one person to **fork this
+repository** and share the fork with the rest of the team. The fork becomes the
+team's collaboration point: everyone else works against it, opens pull requests into
+it, and it keeps one shared history of what the team tried.
 
 Work wherever you like in your fork. If you want to send something back here, put it
-all in `cohorts/<your-cohort-name>/` and leave `data/`, `scripts/`, `figures/`, and
-`reference/` as they are, so pull requests from different cohorts never collide.
+all in `teams/<your-team-name>/` and leave `data/`, `scripts/`, `figures/`, and
+`reference/` as they are, so pull requests from different teams never collide.
 
 ## Start here
 

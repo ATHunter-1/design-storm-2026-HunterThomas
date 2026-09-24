@@ -191,4 +191,4 @@ Two of the four originals were fixed by Jake's Sep 4 update; strikethrough kept 
 jupyter notebook
 ```
 
-Open `scripts/Alkalinity_Soft_Sensor.ipynb`. Read cells top to bottom. Jake's paths point at his own machine, so the first thing to fix is where the notebook loads `../data/` from. Then change a number (the lag in `shift(4, freq='D')`, the 60 threshold, the feature list), then Kernel > Restart & Run All and watch the scores move. That is the fastest way to build intuition, and it is roughly what a cohort would do on the day.
+Open `scripts/Alkalinity_Soft_Sensor.ipynb`. Read cells top to bottom. Jake's paths point at his own machine, so the first thing to fix is where the notebook loads `../data/` from. Then change a number (the lag in `shift(4, freq='D')`, the 60 threshold, the feature list), then Kernel > Restart & Run All and watch the scores move. That is the fastest way to build intuition, and it is roughly what a small team would do on the day.
