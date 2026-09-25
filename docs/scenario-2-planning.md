@@ -173,6 +173,8 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 
 ## DDD model
 
+Visual version: [ddd-model.html](ddd-model.html) (Event Storming timeline, context map, context contents, and shared vocabulary). Open it directly in a browser.
+
 **Domain events** (past tense): `StormEventIdentified`, `GageResponseObserved`, `TurbiditySpikeDetected`, `ReservoirProfileCollected`, `DepthChangeObserved`, `PlantResponseObserved`, `ImpactArrivalEstimated`, `ReadingRevised`.
 
 **Entities**: `StormEvent`, `MonitoringStation` (gage, sonde, or plant lab), `ReservoirCast`, `ImpactArrivalEstimate`.
@@ -181,6 +183,7 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 
 **Language rules**:
 
+- Build on the repo's `glossary.md` and `guide.md`. [ddd-model.html](ddd-model.html) maps every glossary water term to its place in the model.
 - `StormEvent` is the real-world storm. Past-tense names such as `StormEventIdentified` are domain events in the software.
 - "Water arrival" (hours) and "impact arrival" (about a day for Aug 14-15) are different things. The tool is about impact arrival.
 - The operator makes the `ImpactArrivalEstimate`. The system supplies the evidence and past storms for comparison.

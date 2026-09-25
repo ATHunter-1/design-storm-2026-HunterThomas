@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scenario 2 DDD Model: Storm Impact Visualization</title>
+<style>
+  :root {
+    --event: #f7a24b; --command: #7fb3f0; --actor: #fbe27a; --policy: #c9a5e8;
+    --readmodel: #9fdc9a; --external: #f4b6c8; --hotspot: #ff6b6b;
+    --core: #1f5fa8; --supporting: #6b7a8c; --ink: #1d2733; --muted: #5c6773; --line: #d9dee4;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: #f5f7f9; }
+  header { background: #12324f; color: #fff; padding: 28px 40px 22px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 4px 0; max-width: 900px; opacity: .92; }
+  nav { background: #0d2740; padding: 8px 40px; }
+  nav a { color: #cfe3f7; margin-right: 18px; text-decoration: none; font-size: 14px; }
+  nav a:hover { text-decoration: underline; }
+  main { padding: 10px 40px 40px; max-width: 1400px; }
+  section { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 22px 26px; margin: 22px 0; }
+  h2 { margin: 0 0 4px; font-size: 20px; }
+  .lede { color: var(--muted); margin: 0 0 16px; }
+  .draft { display: inline-block; background: #fff3cd; color: #7a5b00; border: 1px solid #f0d77a; border-radius: 4px; padding: 2px 8px; font-size: 13px; }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0 0 16px; font-size: 13px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 16px; height: 16px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,.15); }
+
+  /* Event Storming board */
+  .board-wrap { overflow-x: auto; }
+  .board { display: grid; grid-template-columns: 120px repeat(8, minmax(128px, 1fr)); gap: 8px; min-width: 1180px; }
+  .lane-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: flex; align-items: center; }
+  .stage { font-size: 12px; font-weight: 600; color: #12324f; border-bottom: 3px solid #12324f; padding-bottom: 4px; }
+  .stage small { display: block; font-weight: 400; color: var(--muted); }
+  .cell { min-height: 20px; display: flex; flex-direction: column; gap: 6px; }
+  .sticky { padding: 8px 9px; border-radius: 3px; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+  .sticky b { display: block; font-size: 13px; overflow-wrap: anywhere; }
+  .sticky em { font-style: normal; font-size: 12px; color: rgba(0,0,0,.68); display: block; margin-top: 2px; }
+  .s-event { background: var(--event); } .s-command { background: var(--command); } .s-actor { background: var(--actor); }
+  .s-policy { background: var(--policy); } .s-readmodel { background: var(--readmodel); } .s-external { background: var(--external); }
+  .s-hotspot { background: #ffe1e1; border-left: 5px solid var(--hotspot); }
+  .flow-arrow { grid-column: 2 / -1; height: 14px; position: relative; margin: 2px 0 6px; }
+  .flow-arrow::before { content: ""; position: absolute; left: 0; right: 14px; top: 6px; border-top: 2px dashed #12324f; }
+  .flow-arrow::after { content: ""; position: absolute; right: 0; top: 0; border: 7px solid transparent; border-left: 14px solid #12324f; }
+  .flow-caption { grid-column: 2 / -1; font-size: 12px; color: var(--muted); margin-top: -4px; }
+
+  /* Context map */
+  svg text { font-family: inherit; }
+  .cm-wrap { overflow-x: auto; }
+
+  /* Context cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .card h3 { margin: 0; padding: 10px 14px; font-size: 16px; color: #fff; }
+  .card.core h3 { background: var(--core); } .card.supporting h3 { background: var(--supporting); }
+  .card h3 small { display: block; font-weight: 400; font-size: 12px; opacity: .9; }
+  .card .body { padding: 10px 14px 14px; font-size: 14px; }
+  .card .row { margin: 8px 0 0; }
+  .card .row > .lbl { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  .chip { display: inline-block; margin: 3px 4px 0 0; padding: 2px 7px; border-radius: 4px; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .c-agg { background: #fde9c4; border: 1px solid #e9b85c; font-weight: 700; }
+  .c-ent { background: #fff6dd; border: 1px solid #e8d49a; }
+  .c-vo { background: #e6f0fb; border: 1px solid #a9c6ea; }
+  .c-ev { background: #fde0c4; border: 1px solid #f0a95e; }
+  .c-rm { background: #e3f5e1; border: 1px solid #9fcf9a; }
+
+  /* Language */
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  td:first-child { font-weight: 600; }
+  tr.group td { background: #eef3f8; color: #12324f; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; padding-top: 12px; }
+  td.model { color: #1f5fa8; font-size: 13px; }
+  td.src { color: var(--muted); font-size: 12px; white-space: nowrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .contrast { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .contrast div { border-radius: 8px; padding: 12px 14px; }
+  .contrast .water { background: #e6f0fb; } .contrast .impact { background: #fde9c4; }
+  .contrast b { display: block; font-size: 16px; }
+  footer { font-size: 12.5px; color: var(--muted); }
+  footer details { margin-top: 10px; }
+  footer blockquote { margin: 8px 0; padding: 8px 12px; background: #f5f7f9; border-left: 3px solid var(--line); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Scenario 2 DDD Model: Storm Impact Visualization</h1>
+  <p>We help Denver Water see a storm's impact move from the river, through Strontia Springs Reservoir, to the Foothills plant, so staff can judge when it will arrive.</p>
+  <p><span class="draft">Draft model, to validate with Denver Water</span> Example figures are from the Aug 14-15, 2026 storm (provisional data). Source: <a href="scenario-2-planning.md" style="color:#cfe3f7">scenario-2-planning.md</a>.</p>
+</header>
+<nav>
+  <a href="#storming">Event Storming</a>
+  <a href="#contextmap">Context map</a>
+  <a href="#contexts">Bounded contexts</a>
+  <a href="#language">Ubiquitous language</a>
+</nav>
+
+<main>
+
+<section id="storming">
+  <h2>1. Event Storming timeline</h2>
+  <p class="lede">What happens, in order, as a storm's impact moves down the flow path. Orange stickies are domain events (past tense); the other colours show who or what causes them and what people look at.</p>
+  <div class="legend">
+    <span><i style="background:var(--event)"></i>Domain event</span>
+    <span><i style="background:var(--command)"></i>Command</span>
+    <span><i style="background:var(--actor)"></i>Actor</span>
+    <span><i style="background:var(--external)"></i>External system</span>
+    <span><i style="background:var(--policy)"></i>Policy ("whenever... then...")</span>
+    <span><i style="background:var(--readmodel)"></i>Read model (what the user sees)</span>
+    <span><i style="background:#ffe1e1;border-left:4px solid var(--hotspot)"></i>Hot spot (open question)</span>
+  </div>
+  <div class="board-wrap"><div class="board" id="board"></div></div>
+</section>
+
+<section id="contextmap">
+  <h2>2. Context map</h2>
+  <p class="lede">Five bounded contexts. External feeds pass through an anti-corruption layer (ACL) so their formats and quirks, such as Excel date numbers and provisional flags, stay out of our model. Arrows point from upstream (supplier) to downstream (consumer).</p>
+  <div class="cm-wrap">
+  <svg viewBox="0 0 1000 530" width="100%" style="min-width:640px" role="img" aria-label="Context map">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#44505c"/>
+      </marker>
+    </defs>
+
+    <!-- ACL band -->
+    <rect x="212" y="20" width="44" height="490" rx="6" fill="#f1ecf8" stroke="#b9a3d9" stroke-dasharray="4 3"/>
+    <text x="234" y="265" transform="rotate(-90 234 265)" text-anchor="middle" font-size="14" fill="#6a4c93" font-weight="700">ACL</text>
+
+    <!-- External systems -->
+    <g font-size="13" text-anchor="middle">
+      <rect x="15" y="40" width="180" height="52" rx="6" fill="#fde7ee" stroke="#e59ab1" stroke-dasharray="5 3"/>
+      <text x="105" y="62" font-weight="600">USGS NWIS</text><text x="105" y="80" font-size="12" fill="#5c6773">gages 06707525, 06701900</text>
+
+      <rect x="15" y="110" width="180" height="52" rx="6" fill="#fde7ee" stroke="#e59ab1" stroke-dasharray="5 3"/>
+      <text x="105" y="132" font-weight="600">NOAA GHCN Daily</text><text x="105" y="150" font-size="12" fill="#5c6773">weather USC00058022</text>
+
+      <rect x="15" y="180" width="180" height="52" rx="6" fill="#fde7ee" stroke="#e59ab1" stroke-dasharray="5 3"/>
+      <text x="105" y="202" font-weight="600">NRCS SNOTEL</text><text x="105" y="220" font-size="12" fill="#5c6773">Hoosier Pass snowpack</text>
+
+      <rect x="15" y="300" width="180" height="52" rx="6" fill="#fde7ee" stroke="#e59ab1" stroke-dasharray="5 3"/>
+      <text x="105" y="322" font-weight="600">Strontia sonde export</text><text x="105" y="340" font-size="12" fill="#5c6773">Excel, readings by depth</text>
+
+      <rect x="15" y="425" width="180" height="52" rx="6" fill="#fde7ee" stroke="#e59ab1" stroke-dasharray="5 3"/>
+      <text x="105" y="447" font-weight="600">Foothills lab</text><text x="105" y="465" font-size="12" fill="#5c6773">daily TOC, alkalinity</text>
+    </g>
+
+    <!-- Bounded contexts -->
+    <g text-anchor="middle">
+      <rect x="280" y="70" width="210" height="120" rx="12" fill="#eef1f4" stroke="#6b7a8c" stroke-width="2"/>
+      <text x="385" y="104" font-size="15" font-weight="700">Watershed Observation</text>
+      <text x="385" y="124" font-size="12" fill="#6b7a8c" font-weight="600">SUPPORTING</text>
+      <text x="385" y="146" font-size="12" fill="#44505c">gage and weather readings,</text>
+      <text x="385" y="162" font-size="12" fill="#44505c">provisional status</text>
+
+      <rect x="280" y="270" width="210" height="110" rx="12" fill="#e3edf9" stroke="#1f5fa8" stroke-width="2.5"/>
+      <text x="385" y="304" font-size="15" font-weight="700">Reservoir Profiling</text>
+      <text x="385" y="324" font-size="12" fill="#1f5fa8" font-weight="600">CORE</text>
+      <text x="385" y="346" font-size="12" fill="#44505c">casts, depth profiles,</text>
+      <text x="385" y="362" font-size="12" fill="#44505c">plume position</text>
+
+      <rect x="280" y="405" width="210" height="95" rx="12" fill="#eef1f4" stroke="#6b7a8c" stroke-width="2"/>
+      <text x="385" y="437" font-size="15" font-weight="700">Plant Influent</text>
+      <text x="385" y="457" font-size="12" fill="#6b7a8c" font-weight="600">SUPPORTING</text>
+      <text x="385" y="478" font-size="12" fill="#44505c">daily TOC and alkalinity</text>
+
+      <rect x="560" y="70" width="200" height="120" rx="12" fill="#e3edf9" stroke="#1f5fa8" stroke-width="2.5"/>
+      <text x="660" y="104" font-size="15" font-weight="700">Storm Event Catalog</text>
+      <text x="660" y="124" font-size="12" fill="#1f5fa8" font-weight="600">CORE</text>
+      <text x="660" y="146" font-size="12" fill="#44505c">what counts as a storm,</text>
+      <text x="660" y="162" font-size="12" fill="#44505c">timelines, past storms</text>
+
+      <rect x="785" y="250" width="200" height="150" rx="12" fill="#d5e5f8" stroke="#1f5fa8" stroke-width="3"/>
+      <text x="885" y="284" font-size="15" font-weight="700">Impact Visualization</text>
+      <text x="885" y="304" font-size="12" fill="#1f5fa8" font-weight="600">CORE</text>
+      <text x="885" y="328" font-size="12" fill="#44505c">flow-path timeline,</text>
+      <text x="885" y="344" font-size="12" fill="#44505c">depth chart, sensor map,</text>
+      <text x="885" y="360" font-size="12" fill="#44505c">operator's arrival estimate</text>
+      <text x="885" y="386" font-size="12" fill="#8a5a00" font-weight="600">Actor: Operator</text>
+    </g>
+
+    <!-- External to contexts -->
+    <g stroke="#44505c" stroke-width="1.6" fill="none" marker-end="url(#arr)">
+      <path d="M195,66 L278,105"/>
+      <path d="M195,136 L278,130"/>
+      <path d="M195,206 L278,160"/>
+      <path d="M195,326 L278,325"/>
+      <path d="M195,451 L278,452"/>
+    </g>
+
+    <!-- Context to context -->
+    <g stroke="#1f5fa8" stroke-width="2" fill="none" marker-end="url(#arr)">
+      <path d="M490,130 L558,130"/>
+      <path d="M720,190 L840,248"/>
+      <path d="M490,325 L783,325"/>
+      <path d="M490,452 L830,402"/>
+      <path d="M490,178 L790,262"/>
+    </g>
+    <g font-size="11.5" fill="#1f5fa8" font-weight="600">
+      <text x="497" y="122">U → D</text>
+      <text x="848" y="214">storm timelines,</text>
+      <text x="848" y="228">past storms</text>
+      <text x="600" y="316">depth-band turbidity by day</text>
+      <text x="660" y="417" text-anchor="middle" transform="rotate(-8.4 660 417)">daily TOC</text>
+      <text x="640" y="210" text-anchor="middle" transform="rotate(15.6 640 210)">river readings</text>
+    </g>
+  </svg>
+  </div>
+</section>
+
+<section id="contexts">
+  <h2>3. Inside each bounded context</h2>
+  <p class="lede">The aggregate is the unit the context protects and changes as a whole. Entities have identity; value objects are defined only by their values.</p>
+  <div class="legend">
+    <span><span class="chip c-agg">Aggregate root</span></span>
+    <span><span class="chip c-ent">Entity</span></span>
+    <span><span class="chip c-vo">Value object</span></span>
+    <span><span class="chip c-ev">Domain event</span></span>
+    <span><span class="chip c-rm">Read model</span></span>
+  </div>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section id="language">
+  <h2>4. Ubiquitous language</h2>
+  <p class="lede">Words the team, the code, and Denver Water should all use the same way. Replace these with Denver Water's own words as we learn them.</p>
+  <div class="contrast">
+    <div class="water"><b>Water arrival: hours</b>River water moves from the gage to the plant intake in about 4 hours (Denver Water's raw water group, per <code>guide.md</code>).</div>
+    <div class="impact"><b>Impact arrival: about a day</b>For Aug 14-15, the water-quality change showed up in the reservoir and at the plant on Aug 16. <strong>The tool is about impact arrival.</strong></div>
+  </div>
+  <table>
+    <thead><tr><th>Term</th><th>Meaning</th><th>In our model</th><th>Source</th></tr></thead>
+    <tbody id="terms"></tbody>
+  </table>
+  <p class="lede" style="margin-top:12px">Every water term in <a href="../glossary.md">glossary.md</a> is included above. Its statistics terms (MAE, median, percentile, fold, recall, precision, and the rest) are about scoring Jake's Scenario 1 models, so only "Lead (days)" carries over here.</p>
+</section>
+
+<footer>
+  <p>Figures on this page are derived from Denver Water and USGS provisional data and are subject to revision. General limnology statements are general knowledge, not from Denver Water's materials.</p>
+  <details>
+    <summary>Denver Water data terms (they apply to anything derived from this data)</summary>
+    <blockquote>The water quality data is provided "as is." Water quality data provided to the user is provisional and subject to change, and the user should not assume that the data has undergone any quality assurance or quality control review. Denver Water makes no warranty of any kind, express or implied, concerning the data, including accuracy, reliability, completeness, timeliness, or usefulness. Copyright 2026, Denver Water. https://www.denverwater.org/about-us/how-we-operate/public-records</blockquote>
+    <blockquote>COPYRIGHT AND DISCLAIMER: The data and metadata contained herein were prepared by Denver Water for its internal purposes only. Denver Water provides data and metadata as a public service with no claim as to the completeness, usefulness, timeliness or accuracy of its content, positional or otherwise. Denver Water and its employees make no warranty, express or implied, and assume no legal liability or responsibility for the ability of users to fulfill their intended purposes in accessing or using data or metadata or for omissions in content regarding such. The information provided is presented "as is," without warranty of any kind, including, but not limited to, the implied warranties of merchantability, fitness for a particular purpose, or non-infringement. Your use of this information is at your own risk. In providing this information or access to it, Denver Water assumes no obligation to assist the user in the use of such information or in the development, use, or maintenance of any applications applied to or associated with the data or metadata. Any sale, reproduction or distribution of this information, or products derived therefrom, in any format is expressly prohibited.</blockquote>
+    <p>See also <a href="../data/TERMS.md">data/TERMS.md</a>.</p>
+  </details>
+</footer>
+
+</main>
+
+<script>
+const lanes = [
+  ["actor", "Actor / external"],
+  ["command", "Command"],
+  ["event", "Domain event"],
+  ["policy", "Policy"],
+  ["readmodel", "Read model"],
+  ["hotspot", "Hot spot"],
+];
+
+const stages = [
+  { title: "River gage", when: "Aug 14, 7:30 PM",
+    actor: [["external", "USGS gage 06707525", "15-minute readings"]],
+    event: [["GageResponseObserved", "turbidity first bump, 29.9 FNU"]] },
+  { title: "River gage", when: "Aug 15, 1:45 AM",
+    event: [["TurbiditySpikeDetected", "peak 329 FNU (baseline about 3-5)"]],
+    policy: [["Whenever turbidity spikes", "then identify a storm event"]],
+    hotspot: [["What turbidity counts as a spike?", "ask Denver Water"]] },
+  { title: "Storm Event Catalog", when: "on detection",
+    command: [["Identify storm event", "triggered by the policy"]],
+    event: [["StormEventIdentified", "Aug 14-15 storm opened"]],
+    readmodel: [["Past-storm comparison", "Jul 28: impact same day"]] },
+  { title: "Reservoir", when: "daily casts",
+    actor: [["external", "Strontia sonde", "readings by depth"]],
+    event: [["ReservoirProfileCollected", "depth profile per cast"]],
+    hotspot: [["Where is the sonde?", "and what unit is Vertical Position?"]] },
+  { title: "Reservoir", when: "Aug 16",
+    event: [["DepthChangeObserved", "5-15 band: 1.5 to 15.6 NTU; surface clear"]],
+    readmodel: [["Reservoir depth chart", "time x depth, coloured by turbidity"]],
+    hotspot: [["What depth is the intake?", "decides if mid-depth matters"]] },
+  { title: "Foothills plant", when: "Aug 16",
+    actor: [["external", "Foothills lab", "daily grab samples"]],
+    event: [["PlantResponseObserved", "TOC 2.0 to 2.5 mg/L"]],
+    hotspot: [["Real-time intake sensor?", "would sharpen timing to hours"]] },
+  { title: "Operator", when: "during a storm",
+    actor: [["actor", "Operator", "makes the timing call"]],
+    command: [["Estimate impact arrival", "earliest / likely / latest"]],
+    event: [["ImpactArrivalEstimated", "recorded with its evidence"]],
+    readmodel: [["Flow-path timeline", "sensors in flow order"], ["Sensor map", "highlights as the pulse arrives"]] },
+  { title: "Any time", when: "USGS revises",
+    actor: [["external", "USGS revision", "provisional data changes"]],
+    event: [["ReadingRevised", "a published value changed"]],
+    policy: [["Whenever a reading is revised", "then refresh views and flag affected estimates"]] },
+];
+
+const board = document.getElementById("board");
+const wrapCamel = s => s.replace(/([a-z])([A-Z])/g, "$1<wbr>$2");
+const add = (html, cls) => { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; board.appendChild(d); };
+add("", "lane-label");
+stages.forEach(s => add(`${s.title}<small>${s.when}</small>`, "stage"));
+add("", "lane-label");
+add("", "flow-arrow");
+add("", "lane-label");
+add("Flow path: river → reservoir → plant → operator decision", "flow-caption");
+lanes.forEach(([key, label]) => {
+  add(label, "lane-label");
+  stages.forEach(s => {
+    const items = s[key] || [];
+    const html = items.map(it => {
+      if (key === "actor") {
+        const [kind, name, note] = it;
+        return `<div class="sticky s-${kind === "external" ? "external" : "actor"}"><b>${name}</b><em>${note}</em></div>`;
+      }
+      const [name, note] = it;
+      return `<div class="sticky s-${key}"><b>${wrapCamel(name)}</b><em>${note}</em></div>`;
+    }).join("");
+    add(html, "cell");
+  });
+});
+
+const contexts = [
+  { name: "Watershed Observation", kind: "supporting", owns: "Gage and weather readings and their provisional status",
+    agg: ["MonitoringStation"], ent: [], vo: ["Measurement", "ProvisionalReading", "FlowPathPosition"],
+    ev: ["GageResponseObserved", "TurbiditySpikeDetected", "ReadingRevised"], rm: [] },
+  { name: "Storm Event Catalog", kind: "core", owns: "What counts as a storm, each storm's timeline, and past storms",
+    agg: ["StormEvent"], ent: [], vo: ["ArrivalWindow"],
+    ev: ["StormEventIdentified"], rm: ["Past-storm comparison"] },
+  { name: "Reservoir Profiling", kind: "core", owns: "Casts, depth profiles, layers, and plume position",
+    agg: ["ReservoirCast"], ent: [], vo: ["DepthProfile", "DepthReading", "Measurement"],
+    ev: ["ReservoirProfileCollected", "DepthChangeObserved"], rm: ["Reservoir depth chart"] },
+  { name: "Plant Influent", kind: "supporting", owns: "Daily lab TOC and alkalinity at Foothills",
+    agg: [], ent: ["MonitoringStation (plant lab)"], vo: ["Measurement"],
+    ev: ["PlantResponseObserved"], rm: [] },
+  { name: "Impact Visualization", kind: "core", owns: "The views the operator uses, and the operator's arrival estimate",
+    agg: ["ImpactArrivalEstimate"], ent: [], vo: ["ArrivalWindow(earliest, likely, latest)"],
+    ev: ["ImpactArrivalEstimated"], rm: ["Flow-path timeline", "Reservoir depth chart", "Sensor map", "Past-storm comparison"] },
+];
+const chips = (arr, cls) => arr.map(x => `<span class="chip ${cls}">${x}</span>`).join("");
+const row = (label, arr, cls) => arr.length ? `<div class="row"><div class="lbl">${label}</div>${chips(arr, cls)}</div>` : "";
+document.getElementById("cards").innerHTML = contexts.map(c => `
+  <div class="card ${c.kind}">
+    <h3>${c.name}<small>${c.kind === "core" ? "Core domain" : "Supporting"}</small></h3>
+    <div class="body">
+      <div>${c.owns}</div>
+      ${row("Aggregate root", c.agg, "c-agg")}
+      ${row("Entities", c.ent, "c-ent")}
+      ${row("Value objects", c.vo, "c-vo")}
+      ${row("Emits", c.ev, "c-ev")}
+      ${row("Read models", c.rm, "c-rm")}
+    </div>
+  </div>`).join("");
+
+const G = "glossary.md", GU = "guide.md", US = "this model";
+const termGroups = [
+  { title: "Our model's terms", rows: [
+    ["Storm event", "A real-world storm. Not the same as a domain event, which is a past-tense record in the software, such as StormEventIdentified.", "StormEvent aggregate", US],
+    ["Plume", "The body of muddy storm water moving through the reservoir. For Aug 14-15 it travelled at mid-depth while the surface stayed clear.", "Plume position in Reservoir Profiling", US],
+    ["Sonde (\"sond\")", "An instrument package lowered through the reservoir.", "MonitoringStation", US],
+    ["Cast", "One trip of the sonde from the surface to the bottom.", "ReservoirCast aggregate", US],
+    ["Depth profile", "The readings from one cast, ordered by depth.", "DepthProfile value object", US],
+    ["Depth band", "A range of depths used to summarise profiles, such as 5-15. Units still to confirm with Denver Water.", "Grouping in the depth chart", US],
+    ["Provisional reading", "A published value that may still be revised. Every reading here is provisional.", "ProvisionalReading; ReadingRevised event", US],
+    ["Flow-path position", "A station's order along the path: river gage, reservoir, intake, plant.", "FlowPathPosition value object", US],
+    ["Arrival window", "Earliest, likely, and latest time an impact reaches a point.", "ArrivalWindow value object", US],
+    ["Impact arrival estimate", "The operator's judgement of when the impact will reach the plant, recorded with the evidence behind it.", "ImpactArrivalEstimate aggregate", US],
+    ["Stratification (general knowledge)", "Summer layering: warm water floats on colder water, so storm water can enter at mid-depth.", "Why the depth chart matters", US],
+  ]},
+  { title: "What the plant cares about", rows: [
+    ["TOC, total organic carbon", "Dissolved plant and soil matter. Reacts with chlorine to form regulated disinfection byproducts. Measured in the lab, in mg/L.", "Measurement in Plant Influent", GU],
+    ["Alkalinity", "The water's resistance to pH change, mostly from dissolved minerals. Low alkalinity makes coagulation harder.", "Measurement in Plant Influent", GU],
+    ["Excursion", "A day beyond the operational threshold: TOC above 3 mg/L or alkalinity below 60 mg/L. For Aug 14-15, plant TOC peaked at 2.5, below the TOC threshold; alkalinity was already near or below 60 before the storm (58 on Aug 14).", "Candidate severity for PlantResponseObserved", G],
+  ]},
+  { title: "What the sensors measure", rows: [
+    ["Turbidity", "Cloudiness. Muddy water usually means runoff, which usually brings organic matter.", "Main Measurement along the flow path", GU],
+    ["Specific conductance", "How well the water conducts electricity, which tracks dissolved minerals. Tied to alkalinity.", "Measurement at the river gage", GU],
+    ["cfs, cubic feet per second", "River flow: how many cubic feet of water pass the gage each second.", "Unit of flow Measurement", G],
+  ]},
+  { title: "Water and weather (from the repo glossary)", rows: [
+    ["Baseflow", "The river when it is neither raining nor melting: groundwater seeping from rock, carrying more of what makes alkalinity.", "The baseline a GageResponseObserved is measured against", G],
+    ["Flush, first flush", "Rising water scours banks and forest floor and carries accumulated dead plant material downstream. \"First flush\" is the same for any storm after a dry spell.", "Candidate StormEvent type", G],
+    ["Convective storms, monsoon", "Summer afternoon thunderstorms: short, intense downpours over small areas.", "Why one weather station misses storms, and why the gage triggers events", G],
+    ["Regime", "A stretch of time where one mechanism dominates, such as a snow-flush year versus a drought-plus-thunderstorm year.", "Tag on StormEvent, so past-storm comparison compares like with like", G],
+    ["Burn scar (general knowledge)", "Land where wildfire removed vegetation; rain runs straight off carrying ash, soil, and organic carbon. Buffalo Creek 1996 and Hayman 2002 are in the watershed.", "Open question for Denver Water", G],
+    ["Snowpack", "Snow lying on the mountains through winter. Most of the Front Range's water arrives as snowmelt.", "Context in Watershed Observation", G],
+    ["SWE, snow water equivalent", "How deep a layer of water the snowpack would make if it melted now.", "Snowpack Measurement", G],
+    ["SNOTEL", "The federal network of automated mountain snow stations. One station is a proxy for the basin, not the basin.", "MonitoringStation (Hoosier Pass 531)", G],
+    ["Peak and melt-out", "SWE's yearly maximum, then the point it reaches zero. The curve's shape is the year's water story.", "Context for spring runoff storms", G],
+    ["April 1 SWE", "The traditional comparison date, usually near peak. \"How was the snowpack this year\" means April 1 SWE versus average.", "Context for comparing years", G],
+    ["Water year", "October 1 to September 30. Group snow data by water year, never calendar year.", "Grouping rule for past-storm comparison", G],
+  ]},
+  { title: "Forecast terms (from the repo glossary)", rows: [
+    ["Lead (days)", "The gap between the first warning and the day an episode actually began. Negative means the warning came first.", "How to score an ImpactArrivalEstimate afterwards", G],
+  ]},
+];
+document.getElementById("terms").innerHTML = termGroups.map(g =>
+  `<tr class="group"><td colspan="4">${g.title}</td></tr>` +
+  g.rows.map(([t, d, m, s]) => `<tr><td>${t}</td><td>${d}</td><td class="model">${m}</td><td class="src">${s}</td></tr>`).join("")
+).join("");
+</script>
+</body>
+</html>
