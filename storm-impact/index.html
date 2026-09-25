@@ -51,6 +51,7 @@
   .axis text, .chart text { font-size: 11px; fill: var(--muted); }
   .axis line, .grid line { stroke: var(--line); }
   .peak-label { font-size: 11px; font-weight: 600; fill: var(--ink) !important; }
+  .intake-label { font-size: 11px; font-weight: 600; fill: #111 !important; paint-order: stroke; stroke: rgba(255,255,255,.85); stroke-width: 3px; }
   .empty { fill: var(--muted); font-style: italic; font-size: 12px; }
   .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-top: 4px; }
   .legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 4px; }
@@ -123,7 +124,8 @@
       <h2>1. Flow-path timeline</h2>
       <p class="note" style="margin-top:0">One row per stop, in flow order, on one time axis. Drag the slider to move the cursor;
         the orange dashed line marks the river peak, and the blue dotted line marks 4 hours later, when that water reaches
-        the intake (Denver Water's travel time, confirmed by Jake).</p>
+        the intake (Denver Water's travel time, confirmed by Jake). In the reservoir row, the black dashed line is the sonde's
+        reading at the intake pipe's depth, 45 ft (13.7 m).</p>
       <div id="timeline"></div>
     </section>
 
@@ -139,8 +141,9 @@
       </div>
       <div id="scale"><span id="scale-lo"></span><canvas id="scale-canvas" width="220" height="10"></canvas><span id="scale-hi"></span><span id="scale-note"></span></div>
       <p class="note">Depth is the sonde's "Vertical Position", in metres below the surface (the file gives no unit; Jake confirmed metres).
+        The black dashed line is the depth of Foothills' primary intake pipe, 45 ft (13.7 m) below the surface (Cassidi). It is the default of several intake levels, and the depth holds because the reservoir level is kept steady.
         The sonde hangs in the middle of the reservoir, roughly 400 m from the intake, which is nearer the dam (Jake). The
-        time zone of the sonde's clock is not stated; times are shown as recorded. <span id="bottom-note"></span></p> <span id="bottom-note"></span></p>
+        time zone of the sonde's clock is not stated; times are shown as recorded. <span id="bottom-note"></span></p>
     </section>
 
     <section class="panel">
@@ -158,7 +161,7 @@
       <h2>4. Sensors along the path</h2>
       <div id="lmap" aria-label="Map of sensors in flow order"></div>
       <svg id="map" viewBox="0 0 340 420" role="img" aria-label="Map of sensors in flow order" style="display:none"></svg>
-      <div class="map-ctl"><label for="band">Reservoir marker shows band</label><select id="band"></select></div>
+      <div class="map-ctl"><label for="band">Reservoir marker shows</label><select id="band"></select></div>
       <div class="legend-bar"></div>
       <div class="legend-values"><span>storm baseline</span><span>storm peak</span></div>
       <p class="note">Marker colour and size show each sensor's reading at the cursor against its own scale for this storm
@@ -315,6 +318,7 @@ function drawRow(key, svg, w, h) {
     const cs = fullCasts().filter(c => inWin(c.ms));
     D.bands.forEach((b, i) => lines.push({ pts: cs.filter(c => c.bands[i] != null).map(c => [c.ms, c.bands[i]]),
                                            color: BAND_COLORS[i], dots: true, gapMs: 13 * HOUR }));
+    lines.push({ pts: cs.filter(c => c.at_intake != null).map(c => [c.ms, c.at_intake]), color: "#111", dash: "4 2", gapMs: 13 * HOUR });
     const r = summary.reservoir;
     if (r) peak = { t: parseT(r.time), v: r.value, text: `${fmtN(r.value)} NTU, band ${r.band_label} m, ${fmtT(parseT(r.time))}` };
   } else if (key === "toc") {
@@ -355,7 +359,7 @@ function drawRow(key, svg, w, h) {
       d += (prev == null || (l.gapMs && t - prev > l.gapMs) ? "M" : "L") + xScale(t).toFixed(1) + "," + y(v).toFixed(1);
       prev = t;
     }
-    el("path", { d, fill: "none", stroke: l.color, "stroke-width": 1.8 }, svg);
+    el("path", { d, fill: "none", stroke: l.color, "stroke-width": 1.8, ...(l.dash ? { "stroke-dasharray": l.dash } : {}) }, svg);
     if (l.dots) for (const [t, v] of l.pts) el("circle", { cx: xScale(t), cy: y(v), r: 2, fill: l.color }, svg);
   }
   if (peak) {
@@ -367,7 +371,7 @@ function drawRow(key, svg, w, h) {
   }
   if (key === "res") {
     const lg = el("text", { x: PAD.l + plotW, y: 11, "text-anchor": "end" }, svg);
-    lg.innerHTML = D.bands.map((b, i) => `<tspan fill="${BAND_COLORS[i]}">●</tspan> ${b[0]}-${b[1]}`).join("  ") + "  (depth band, m)";
+    lg.innerHTML = D.bands.map((b, i) => `<tspan fill="${BAND_COLORS[i]}">●</tspan> ${b[0]}-${b[1]}`).join("  ") + "  (depth band, m)  <tspan fill=\"#111\">╌</tspan> at intake depth";
   }
 }
 
@@ -435,6 +439,10 @@ function drawDepth() {
   }
   for (const [lo] of D.bands.slice(1))
     el("line", { x1: DPAD.l, x2: DPAD.l + pw, y1: y(lo), y2: y(lo), stroke: "rgba(0,0,0,.18)", "stroke-dasharray": "3 4" }, axes);
+  el("line", { x1: DPAD.l, x2: DPAD.l + pw, y1: y(D.intake.depth_m), y2: y(D.intake.depth_m), style: "stroke: rgba(255,255,255,.8); stroke-width: 3.5" }, axes);
+  el("line", { x1: DPAD.l, x2: DPAD.l + pw, y1: y(D.intake.depth_m), y2: y(D.intake.depth_m), style: "stroke: #111; stroke-width: 1.5; stroke-dasharray: 6 3" }, axes);
+  el("text", { x: DPAD.l + pw - 4, y: y(D.intake.depth_m) - 4, "text-anchor": "end", class: "intake-label" }, axes).textContent =
+    `primary intake depth, ${intakeLabel()}`;
   const rp = riverPeakT(summary);
   el("line", { x1: x(rp), x2: x(rp), y1: DPAD.t, y2: DPAD.t + ph, stroke: "#d95926", "stroke-dasharray": "4 3" }, axes);
   el("line", { x1: x(rp + WATER_TRAVEL), x2: x(rp + WATER_TRAVEL), y1: DPAD.t, y2: DPAD.t + ph, stroke: "#1f5fa8", "stroke-dasharray": "1 3", "stroke-width": 1.5 }, axes);
@@ -463,17 +471,20 @@ function drawCompare() {
       <td>${fmtN(r.value, 0)} FNU ${r.time ? "at " + fmtT(parseT(r.time)) : "(daily max, " + fmtT(dayStart(r.date), false) + "; time unknown)"}
           <br><small>baseline median ${fmtN(r.baseline_median)} FNU</small></td>
       <td>${re ? `${fmtN(re.value)} NTU, band ${re.band_label} m<br><small>${fmtT(parseT(re.time))}; baseline ${fmtN(re.baseline_median, 2)}</small>` : "–"}</td>
+      <td>${s.intake_depth ? `${fmtN(s.intake_depth.value)} NTU<br><small>${fmtT(parseT(s.intake_depth.time))}; baseline ${fmtN(s.intake_depth.baseline_median, 2)}</small>` : "–"}</td>
       <td>${p ? `${fmtN(p.value)} mg/L on ${fmtT(dayStart(p.date), false)}<br><small>baseline median ${fmtN(p.baseline_median, 2)}</small>` : "–"}</td>
-      <td>${re ? `Reservoir: ${re.hours_after_river_peak} h${r.time ? "" : "*"}` : ""}<br>
+      <td>${re ? `Reservoir band: ${re.hours_after_river_peak} h${r.time ? "" : "*"}` : ""}<br>
+          ${s.intake_depth ? `At intake depth: ${s.intake_depth.hours_after_river_peak} h${r.time ? "" : "*"}` : ""}<br>
           ${p ? `Plant: ${p.days_after_river_peak === 0 ? "same day" : p.days_after_river_peak + " day" + (p.days_after_river_peak > 1 ? "s" : "")}` : ""}</td>
     </tr>`;
   }).join("");
   document.getElementById("compare").innerHTML = `<table>
-    <tr><th>Storm</th><th>River peak (gage above Strontia)</th><th>Reservoir peak (highest band median, full casts, 4 days)</th>
+    <tr><th>Storm</th><th>River peak (gage above Strontia)</th><th>Reservoir peak (highest band median, full casts, 4 days)</th><th>Reservoir at intake depth, ${intakeLabel()} (same window)</th>
         <th>Plant TOC peak (peak day + 4 days)</th><th>Lag after river peak</th></tr>${rows}</table>
     <p class="note">* Jul 28 has only a daily maximum at the river gage, so its peak is placed at noon for the hours count.
       Reservoir lag is to the start of the peak cast; casts run about every 6 hours, so it carries that much uncertainty.
-      Plant lag is in whole days (daily lab sample). The Jul 28 reservoir signal is small against an already raised baseline.</p>`;
+      "At intake depth" is the sonde's reading nearest ${intakeLabel()}, the primary intake pipe's depth (Cassidi); the sonde is
+      about 400 m from the intake (Jake). Plant lag is in whole days (daily lab sample). The Jul 28 reservoir signal is small against an already raised baseline.</p>`;
 }
 
 // ---------------------------------------------------------------- map
@@ -528,7 +539,10 @@ const snapRadius = f => 7 + f * 12;
 const pad2 = n => String(n).padStart(2, "0");
 const isoDay = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
 const NO_SENSOR = new Set(["strontia_springs_dam", "conduit_26_intake"]);
-let lmap = null, markers = {}, scales = {}, bandIx = 1;
+let lmap = null, markers = {}, scales = {}, bandIx = "i";
+// "i" is the sonde reading nearest the intake depth; numbers index D.bands.
+const castVal = (c, ix) => ix === "i" ? c.at_intake : c.bands[ix];
+const intakeLabel = () => `${D.intake.depth_ft} ft (${fmtN(D.intake.depth_m, 1)} m)`;
 
 function valueAt(points, ms) {
   let best = null;
@@ -556,9 +570,9 @@ function readingAt(id) {
   }
   if (id === "strontia_springs_reservoir") {
     const c = latestCast(cursor);
-    if (!c || c.bands[bandIx] == null) return null;
-    const b = D.bands[bandIx];
-    return { v: c.bands[bandIx], unit: "NTU", what: `turbidity, band ${b[0]}-${b[1]} m`, when: `cast ${fmtT(c.ms)}`, cast: c };
+    if (!c || castVal(c, bandIx) == null) return null;
+    const what = bandIx === "i" ? `turbidity at intake depth, ${intakeLabel()}` : `turbidity, band ${D.bands[bandIx][0]}-${D.bands[bandIx][1]} m`;
+    return { v: castVal(c, bandIx), unit: "NTU", what, when: `cast ${fmtT(c.ms)}`, cast: c };
   }
   if (id === "foothills_plant") {
     const t = D.toc_daily.find(r => r.date === isoDay(cursor));
@@ -581,12 +595,12 @@ function computeScales() {
   const dmax = D.gage_daily.filter(r => inWin(dayStart(r.date)) && r.turb_max != null).map(r => r.turb_max);
   scales.turbidity = { lo: summary.river.baseline_median, hi: Math.max(summary.river.value, ...dmax), log: true, unit: "FNU" };
   const peakDay = dayStart(summary.river.date), cs = fullCasts();
-  const pre = cs.filter(c => c.ms >= peakDay - 3 * DAY && c.ms < peakDay && c.bands[bandIx] != null).map(c => c.bands[bandIx]);
-  const post = cs.filter(c => c.ms >= peakDay && c.ms < peakDay + 4 * DAY && c.bands[bandIx] != null);
-  const win = cs.filter(c => inWin(c.ms) && c.bands[bandIx] != null).map(c => c.bands[bandIx]);
+  const pre = cs.filter(c => c.ms >= peakDay - 3 * DAY && c.ms < peakDay && castVal(c, bandIx) != null).map(c => castVal(c, bandIx));
+  const post = cs.filter(c => c.ms >= peakDay && c.ms < peakDay + 4 * DAY && castVal(c, bandIx) != null);
+  const win = cs.filter(c => inWin(c.ms) && castVal(c, bandIx) != null).map(c => castVal(c, bandIx));
   if (pre.length && win.length) {
     const lo = median(pre);
-    const top = post.reduce((a, c) => (!a || c.bands[bandIx] > a.bands[bandIx] ? c : a), null);
+    const top = post.reduce((a, c) => (!a || castVal(c, bandIx) > castVal(a, bandIx) ? c : a), null);
     scales.strontia_springs_reservoir = { lo, hi: Math.max(lo * 1.01, ...win), log: true, unit: "NTU", peakT: top && top.ms };
   }
   const toc = D.toc_daily.filter(r => inWin(dayStart(r.date)) && r.toc != null).map(r => r.toc);
@@ -646,6 +660,11 @@ function initLeaflet() {
 function popupHtml(p, st) {
   const rows = [`<div class="popup-title">${p.order + 1}. ${p.label}</div>`];
   if (NO_SENSOR.has(p.id)) rows.push(`<div class="popup-row"><span>No water-quality data in the repo here</span></div>`);
+  if (p.id === "conduit_26_intake") {
+    const c = latestCast(cursor);
+    rows.push(`<div class="popup-row"><span>Primary pipe depth</span><strong>${intakeLabel()}</strong></div>`);
+    if (c && c.at_intake != null) rows.push(`<div class="popup-row"><span>Sonde at that depth (~400 m away)</span><strong>${fmtN(c.at_intake)} NTU</strong></div>`);
+  }
   else if (!st.r) rows.push(`<div class="popup-row"><span>Reading</span><strong>none at cursor</strong></div>`);
   else rows.push(`<div class="popup-row"><span>${st.r.what}</span><strong>${fmtN(st.r.v, st.r.v < 10 ? 2 : 1)} ${st.r.unit}</strong></div>`,
                  `<div class="popup-row"><span>When</span><strong>${st.r.when}</strong></div>`);
@@ -669,6 +688,11 @@ function updateSnapshot() {
     let val = NO_SENSOR.has(p.id) ? "–" : st.r ? `${fmtN(st.r.v, st.r.v < 10 ? 2 : 1)} ${st.r.unit} <span class="smeta">${st.r.what}</span>` : "no reading at cursor";
     let meta = st.r ? st.r.when : "";
     if (st.s) meta += (meta ? " · " : "") + scaleText(st.s);
+    if (p.id === "conduit_26_intake") {
+      const c = latestCast(cursor);
+      meta = `Primary pipe ${intakeLabel()} below the surface (Cassidi).` +
+        (c && c.at_intake != null ? ` Sonde at that depth, about 400 m away: <b>${fmtN(c.at_intake)} NTU</b> (cast ${fmtT(c.ms)}).` : "");
+    }
     if (p.id === "strontia_springs_reservoir" && st.r)
       meta += "<br>depth (m) " + D.bands.map((b, i) => `<span style="color:${BAND_COLORS[i]}">●</span> ${b[0]}-${b[1]}: ${fmtN(st.r.cast.bands[i])}`).join(" &nbsp;");
     cards.push(`<div class="sensor-item ${st.passed ? "passed" : ""}">
@@ -746,9 +770,10 @@ fetch("storm-impact.json").then(r => { if (!r.ok) throw new Error(r.status); ret
     `(${fmtT(parseT(bx[0].t), false)} to ${fmtT(parseT(bx[bx.length - 1].t), false)}) are left out; ` +
     `${bx.filter(c => c.in_window).length} of them fall in the dates shown here.`;
   const bandSel = document.getElementById("band");
-  bandSel.innerHTML = D.bands.map((b, i) => `<option value="${i}">${b[0]}-${b[1]}</option>`).join("");
+  bandSel.innerHTML = `<option value="i">at intake depth, ${intakeLabel()}</option>` +
+    D.bands.map((b, i) => `<option value="${i}">band ${b[0]}-${b[1]} m</option>`).join("");
   bandSel.value = String(bandIx);
-  bandSel.addEventListener("change", () => { bandIx = +bandSel.value; computeScales(); updateCursor(); });
+  bandSel.addEventListener("change", () => { bandIx = bandSel.value === "i" ? "i" : +bandSel.value; computeScales(); updateCursor(); });
   initLeaflet();
   initTip();
   selectStorm(D.storms[0].id);

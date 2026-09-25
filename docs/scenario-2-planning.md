@@ -89,10 +89,11 @@ TOC was 2.0 mg/L through Aug 15, then **2.5 on Aug 16-17**, 2.3 on Aug 18, and 2
 | Stop | Peak signal | When |
 | --- | --- | --- |
 | River gage above Strontia | Turbidity 329 FNU | 1:45 AM, Aug 15 |
-| Strontia reservoir, mid-depth | Turbidity 15.6 NTU (5-15 band) | Aug 16 |
+| Strontia reservoir, mid-depth | Turbidity 15.6 NTU (5-15 band, daily median) | Aug 16 |
+| Strontia reservoir, at the intake pipe's depth (45 ft, 13.7 m) | Turbidity 32.7 NTU, up from a baseline of 1.64 (single cast) | 6:06 PM, Aug 15, about 16 h after the river peak |
 | Foothills plant | TOC 2.0 to 2.5 mg/L | Aug 16 |
 
-The impact reached the reservoir and the plant about a day after the river peak. The Jul 28 storm roughly agrees: river turbidity hit 151 FNU, and plant TOC was 2.4 that day (up from about 2.0) and 1.9 the next.
+The impact reached the reservoir and the plant about a day after the river peak. At the depth of Foothills' primary intake pipe, the sonde saw turbidity jump within about 16 hours (between the 12:06 PM and 6:06 PM casts on Aug 15). The sonde is about 400 m from the intake, so this is the reservoir at the intake's depth, not a reading at the intake itself. The Jul 28 storm roughly agrees: river turbidity hit 151 FNU, and plant TOC was 2.4 that day (up from about 2.0) and 1.9 the next.
 
 Timing at the plant is only accurate to the day, because the lab samples once a day. Two storms, from provisional data, show the pattern, not a proven rule.
 
@@ -148,7 +149,7 @@ Always show a notice that readings are provisional and data terms apply.
 | --- | --- |
 | How does the storm affect source-water quality? | Gage turbidity rose from about 3 to 329 FNU; plant TOC rose from 2.0 to 2.5 mg/L |
 | When does the impact arrive? | River peak at 1:45 AM Aug 15; reservoir and plant response on Aug 16; past storms for comparison |
-| What conditions at different depths? | Plume at mid-depth, then deeper; surface and bottom largely unchanged |
+| What conditions at different depths? | Plume at mid-depth, right at the primary intake pipe's depth (45 ft, 13.7 m), then deeper; surface and bottom largely unchanged |
 
 **It solves:** Denver Water's stated need to see sensor data together, and the operator's timing question, backed by the evidence.
 
@@ -166,12 +167,13 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 ## Open questions for Denver Water
 
 1. Is there a real-time sensor at the Foothills intake or in the plant? It would sharpen timing from about a day to hours, and let the tool check itself.
-2. What depth does Foothills draw water from? This decides whether a mid-depth plume matters.
+2. ~~What depth does Foothills draw water from?~~ Answered (Cassidi): the primary intake pipe is 45 ft (13.7 m) below the surface, inside the 5-15 m band where the plume travelled. Follow-up answers: there are other intake levels, and 45 ft is the default. The depth below the surface doesn't change, because Denver Water tries to keep the reservoir level the same. Still open: the depths of the other levels, and when operators switch to them.
 3. Which of the "everywhere" sensors can we get data from, and which do they look at first after a storm?
 4. ~~Where exactly is the sonde in the reservoir?~~ Answered (Jake): the middle of the reservoir, roughly 400 m from the intake, which is nearer the dam; it casts every 6 hours.
 5. ~~Is "Vertical Position" in feet or metres?~~ Answered (Jake): metres below the surface.
 6. What turbidity or TOC at the intake makes operators change treatment?
 7. ~~Is the conductance reading of 38 on Aug 14 a known sensor glitch?~~ Answered (Jake): probably a glitch. Handling of bad readings is still being worked out, probably by excluding outliers.
+8. The sonde shows turbidity rising at 5-15 m on Aug 14, from the 12:06 PM cast, before the river gage's first bump at 7:30 PM. What time zone is the sonde's clock in, and could runoff have entered the reservoir without passing the gage?
 
 ## DDD model
 
@@ -232,9 +234,11 @@ This fork is the team workspace, so no `teams/<name>/` folder is needed.
 ```text
 Storm Impact - Aug. 14-15, 2026 (provisional data)
 River:     turbidity ~3 -> 329 FNU at 1:45 AM Aug 15; back to ~5 by 6 PM
-Reservoir: surface clear; plume peaks at mid-depth (5-15) on Aug 16,
+Reservoir: surface clear; at the intake pipe's depth (45 ft / 13.7 m) turbidity
+           1.6 -> 32.7 NTU by 6 PM Aug 15 (~16 h after the river peak);
+           plume peaks at mid-depth (5-15 m) on Aug 16,
            moves deeper (15-25) by Aug 18-19; bottom largely unchanged
 Plant:     TOC 2.0 -> 2.5 mg/L on Aug 16-17
 Impact arrival: about one day after the river peak (Jul 28: same day)
-Open:      intake sensor, intake depth, operator thresholds
+Open:      intake sensor, depths of other intake levels and when to switch, operator thresholds, sonde clock
 ```

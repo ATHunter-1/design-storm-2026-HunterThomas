@@ -50,6 +50,15 @@ STORMS = [
 # unit; Jake (Denver Water) confirmed metres.
 BANDS = [(0, 5), (5, 15), (15, 25), (25, 35), (35, 50)]
 
+# Foothills' primary intake pipe is 45 ft below the surface (Cassidi, Denver
+# Water). Each cast reports the turbidity of its reading nearest that depth,
+# if one lies within INTAKE_TOL_M. The sonde hangs mid-reservoir, roughly 400 m
+# from the intake (Jake), so this is the sonde's reading at the intake's depth,
+# not a reading at the intake itself.
+INTAKE_DEPTH_FT = 45
+INTAKE_DEPTH_M = round(INTAKE_DEPTH_FT * 0.3048, 2)
+INTAKE_TOL_M = 1.0
+
 # A new cast starts when consecutive sonde readings are this far apart.
 CAST_GAP = timedelta(minutes=20)
 
@@ -187,6 +196,13 @@ def summarize_cast(cast):
     return [round(statistics.median(v), 2) if v else None for v in by_band]
 
 
+def at_intake_depth(cast):
+    near = min(cast, key=lambda r: abs(r[1] - INTAKE_DEPTH_M))
+    if abs(near[1] - INTAKE_DEPTH_M) > INTAKE_TOL_M:
+        return None
+    return round(near[2], 2)
+
+
 # ----------------------------------------------------------------- daily files
 
 def read_gage_daily():
@@ -302,6 +318,24 @@ def storm_summary(storm, iv_turb, gage_daily, casts_out, toc):
             (datetime.fromisoformat(best["time"]) - anchor)
             .total_seconds() / 3600, 1)
 
+    # Reservoir at the intake's depth: same window and baseline rule.
+    idp = None
+    for c in casts_out:
+        t = datetime.fromisoformat(c["t"])
+        if (lo <= t < hi and c["full"] and c["at_intake"] is not None
+                and (idp is None or c["at_intake"] > idp["value"])):
+            idp = {"value": c["at_intake"], "time": c["t"]}
+    if idp:
+        vals = [c["at_intake"] for c in casts_out if c["full"]
+                and c["at_intake"] is not None
+                and lo - timedelta(days=3) <= datetime.fromisoformat(c["t"]) < lo]
+        idp["depth_m"] = INTAKE_DEPTH_M
+        idp["baseline_median"] = (round(statistics.median(vals), 2)
+                                  if vals else None)
+        idp["hours_after_river_peak"] = round(
+            (datetime.fromisoformat(idp["time"]) - anchor)
+            .total_seconds() / 3600, 1)
+
     # Plant: highest TOC from the river peak day through 4 days after (first
     # day if tied), against the median of the 5 days before.
     tocd = {d["date"]: d["toc"] for d in toc}
@@ -321,7 +355,7 @@ def storm_summary(storm, iv_turb, gage_daily, casts_out, toc):
                      (date.fromisoformat(k) - peak_date).days}
 
     return {"id": storm["id"], "river": river, "reservoir": best,
-            "plant": plant}
+            "intake_depth": idp, "plant": plant}
 
 
 # ------------------------------------------------------------------------ main
@@ -350,6 +384,7 @@ def main():
             # ones only sample the top few metres.
             "full": max(depths) >= 40,
             "bands": summarize_cast(c),
+            "at_intake": at_intake_depth(c),
             "readings": [[round(r[1], 2), round(r[2], 2), round(r[3], 2)]
                          for r in c],
         })
@@ -374,6 +409,12 @@ def main():
         "storms": STORMS,
         "summaries": summaries,
         "bands": [list(b) for b in BANDS],
+        "intake": {"depth_ft": INTAKE_DEPTH_FT, "depth_m": INTAKE_DEPTH_M,
+                   "tolerance_m": INTAKE_TOL_M,
+                   "source": ("Primary intake pipe 45 ft below the surface "
+                              "(Cassidi, Denver Water). Values are the sonde's "
+                              "reading nearest that depth; the sonde is mid-"
+                              "reservoir, roughly 400 m from the intake (Jake).")},
         "sonde_max_depth": round(max_depth, 1),
         "sonde_excluded_bottom_contact": [
             {"t": c[0][0].isoformat(timespec="minutes"),
@@ -410,6 +451,12 @@ def main():
     print("left out %d bottom-contact casts: %s" % (len(excluded), ", ".join(
         "%s (%.0f NTU)" % (c[0][0].strftime("%b %d %H:%M"),
                            max(r[2] for r in c)) for c in excluded)))
+    for sm in summaries:
+        it = sm["intake_depth"]
+        if it:
+            print("%s: at intake depth (%.2f m) peak %.2f NTU at %s, baseline %s, "
+                  "%.1f h after river peak" % (sm["id"], INTAKE_DEPTH_M, it["value"],
+                  it["time"], it["baseline_median"], it["hours_after_river_peak"]))
     print("daily median turbidity by band (all readings that day):")
     for d in range(13, 20):
         day = date(2026, 8, d)

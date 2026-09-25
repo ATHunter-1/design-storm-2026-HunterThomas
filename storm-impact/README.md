@@ -23,19 +23,24 @@ not work. It uses no build step; only the sensor map needs the network (see belo
 1. **Flow-path timeline.** One row per stop on a shared time axis: Trumbull flow,
    river-gage turbidity (15-minute where the repo has it, USGS daily max otherwise),
    river-gage conductance, reservoir turbidity by depth band (median of each full
-   sonde cast), and Foothills TOC (daily lab sample). Each row marks its peak. A
-   dashed line marks the river peak.
+   sonde cast) with a black dashed line for the sonde's reading at the intake pipe's
+   depth, and Foothills TOC (daily lab sample). Each row marks its peak. An orange
+   dashed line marks the river peak, and a blue dotted line marks 4 hours later.
 2. **Reservoir depth chart.** Each sonde cast is drawn as a column, with time across
    and depth down. You can color it by turbidity (log scale) or by temperature,
-   which shows the layering. Hover over a cell to read it.
+   which shows the layering. A black dashed line marks the depth of Foothills'
+   primary intake pipe. Hover over a cell to read it.
 3. **Past-storm comparison.** Aug 14-15 and Jul 28 side by side: the river peak, the
-   reservoir peak, the plant TOC peak, each with a baseline, and the lags.
+   reservoir band peak, the reservoir peak at the intake pipe's depth, the plant TOC
+   peak, each with a baseline, and the lags.
 4. **Sensor map.** A Leaflet map in the style of `../sensor-snapshot-map.html`. Each
    marker's colour and size show that sensor's reading at the cursor, placed on a
    per-storm scale from baseline to peak. River and reservoir turbidity use a log
    scale; TOC uses a linear one; flow runs from its window start to twice that. A
-   dark ring marks a stop whose peak has passed. A selector picks which depth band
-   the reservoir marker shows. The "At the cursor" cards list every reading, its
+   dark ring marks a stop whose peak has passed. A selector picks what the reservoir
+   marker shows: the reading at the intake pipe's depth (the default) or a depth
+   band. The Conduit 26 intake card shows the pipe's depth and the sonde's reading
+   there. The "At the cursor" cards list every reading, its
    timestamp, and its scale.
 
 The slider and the Play button move one time cursor through every view at once.
@@ -89,6 +94,12 @@ which matches the table in `docs/scenario-2-planning.md`.
   raw water group, per `guide.md`; Jake confirmed this is the figure to use). The
   timeline and depth chart mark it with a blue dotted line. For Jul 28 that line
   inherits the assumed noon river peak.
+- Foothills' primary intake pipe is 45 ft (13.7 m) below the surface (Cassidi,
+  Denver Water). It is the default of several intake levels; the repo doesn't give
+  the depths of the others, so the page shows only the default. "At intake depth" is the sonde's reading nearest 13.72 m, within
+  1 m. The sonde is about 400 m from the intake, so this shows the reservoir at the
+  intake's depth, not the water entering the pipe. The depth below the surface is
+  treated as fixed: Denver Water tries to keep the reservoir level the same.
 - Plant timing is accurate only to the day, because TOC comes from a daily lab
   sample.
 - The page does not predict, model, prove causes, or recommend treatment.

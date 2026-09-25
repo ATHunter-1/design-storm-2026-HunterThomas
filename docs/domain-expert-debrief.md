@@ -45,7 +45,9 @@ Questions for the debrief, in priority order. If time is short, ask the top five
 | --- | --- | --- |
 | Sensor locations | "Everywhere" | Denver Water |
 | Magic-wand problem | "Biggest problem we have is we don't have visualization." | Denver Water |
-| Intake depth | | |
+| Intake depth | Primary intake pipe is 45 ft (13.7 m) below the surface | Cassidi |
+| Other intake levels | Yes, there are other intake levels; 45 ft is the default | Denver Water |
+| Does intake depth move with reservoir level? | No. They try to keep the reservoir level the same, so the depth below the surface stays put | Denver Water |
 | Aug 14-15 operator story | | |
 | Useful lead time | | |
 | Action thresholds | | |

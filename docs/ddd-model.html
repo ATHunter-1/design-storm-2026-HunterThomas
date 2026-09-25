@@ -134,7 +134,7 @@
 
   <h3 class="sub">Suggested changes to the boards</h3>
   <ul class="fixes">
-    <li><b>Add hot spots</b> (open questions) to match section 2: What turbidity counts as a spike? What is the intake depth? Is there a real-time intake sensor?</li>
+    <li><b>Add hot spots</b> (open questions) to match section 2: What turbidity counts as a spike? At what depths are the other intake levels, and when do operators switch? Is there a real-time intake sensor?</li>
     <li><b>Mark sensors the repo has no data for</b> as hot spots or future sources: the reservoir level sensor and the plant's intake sensor, chlorine sensor, turbidity analyzer and pH monitor. The only plant data here is the daily lab TOC and alkalinity.</li>
     <li><b>"Select intake depth"</b> is an operator decision, so it belongs on a blue command sticky with the operator as its actor. Whether Foothills can choose its intake depth is still an open question.</li>
     <li><b>"If DO low, flag stratification."</b> General knowledge, not from Denver Water's materials: stratification shows up as the gap between surface and deep temperatures, and low oxygen at depth is a result of it. "If surface and deep temperatures differ, flag stratification" is closer; confirm with Denver Water.</li>
@@ -320,9 +320,9 @@ const stages = [
     actor: [["external", "Strontia sonde", "mid-reservoir, about 400 m from the intake"]],
     event: [["ReservoirProfileCollected", "depth profile per cast"]] },
   { title: "Reservoir", when: "Aug 16",
-    event: [["DepthChangeObserved", "5-15 band: 1.5 to 15.6 NTU; surface clear"]],
+    event: [["DepthChangeObserved", "5-15 band: 1.5 to 15.6 NTU; surface clear"], ["DepthChangeObserved", "at intake depth (45 ft, 13.7 m): 1.6 to 32.7 NTU by 6 PM Aug 15"]],
     readmodel: [["Reservoir depth chart", "time x depth, coloured by turbidity"]],
-    hotspot: [["What depth is the intake?", "decides if mid-depth matters"]] },
+    hotspot: [["Other intake levels: what depths?", "default pipe is 45 ft down; level held steady"]] },
   { title: "Foothills plant", when: "Aug 16",
     actor: [["external", "Foothills lab", "daily grab samples"]],
     event: [["PlantResponseObserved", "TOC 2.0 to 2.5 mg/L"]],
