@@ -86,7 +86,6 @@
   .bp-grid figure { margin: 0; }
   .bp-grid img { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; display: block; }
   .bp-grid figcaption { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
-  .bp-missing { border: 2px dashed var(--line); border-radius: 6px; padding: 14px; font-size: 13px; color: var(--muted); }
   h3.sub { font-size: 16px; margin: 18px 0 8px; }
   ul.fixes { margin: 0; padding-left: 20px; font-size: 14px; }
   ul.fixes li { margin: 5px 0; }
@@ -119,8 +118,7 @@
     <figure><a href="EventStorm-SnowpackPrecip.png"><img src="EventStorm-SnowpackPrecip.png" alt="Board 1: Snowpack and Precipitation"></a><figcaption>1. Snowpack &amp; Precipitation</figcaption></figure>
     <figure><a href="EventStorm-RiverTransport.png"><img src="EventStorm-RiverTransport.png" alt="Board 2: River Transport"></a><figcaption>2. River Transport</figcaption></figure>
     <figure><a href="EventStorm-StrontiaReservoir.png"><img src="EventStorm-StrontiaReservoir.png" alt="Board 3: Strontia Springs Reservoir"></a><figcaption>3. Strontia Springs Reservoir</figcaption></figure>
-    <div class="bp-missing"><b>Boards 4 and 5</b><br>Not added yet. The numbering jumps from 3 to 6. The dam and the Conduit 26 intake sit between the reservoir and the plant.</div>
-    <figure><a href="EventStorm-FoothillsTreatment.png"><img src="EventStorm-FoothillsTreatment.png" alt="Board 6: Foothills Treatment Plant"></a><figcaption>6. Foothills Treatment Plant</figcaption></figure>
+    <figure><a href="EventStorm-FoothillsTreatment.png"><img src="EventStorm-FoothillsTreatment.png" alt="Board 4: Foothills Treatment Plant"></a><figcaption>4. Foothills Treatment Plant</figcaption></figure>
     <figure class="legend-fig"><a href="EventStorm-Legend.png"><img src="EventStorm-Legend.png" alt="EventStorming colour key"></a><figcaption>Colour key (same colours as section 2)</figcaption></figure>
   </div>
 
@@ -130,8 +128,7 @@
     <tr><td>1. Snowpack &amp; Precipitation</td><td>Not on the timeline</td><td>Watershed Observation (snowpack, NOAA weather)</td><td>Background only. Rain at the one weather station barely predicts river turbidity (rank correlation 0.02 over 1,009 days), and the runoff forecast is a prediction, which is outside Scenario 2.</td></tr>
     <tr><td>2. River Transport</td><td>River gage (Aug 14, 7:30 PM and Aug 15, 1:45 AM)</td><td>Watershed Observation</td><td>"Turbidity Recorded" is a routine reading. When it jumps, the storm timeline records <code>GageResponseObserved</code> and then <code>TurbiditySpikeDetected</code>. "Water Reached Reservoir" is <b>water arrival</b>, which takes hours. The timeline tracks <b>impact arrival</b>, which took about a day.</td></tr>
     <tr><td>3. Strontia Springs Reservoir</td><td>Reservoir (daily casts, Aug 16)</td><td>Reservoir Profiling</td><td>Temperature, oxygen and pH all come from the same sonde trip, which the timeline records as a single <code>ReservoirProfileCollected</code>. The storm-relevant event is <code>DepthChangeObserved</code>: the plume at mid-depth. "Depth profile view" is the "Reservoir depth chart".</td></tr>
-    <tr><td>4-5. (missing)</td><td>Hot spot "What depth is the intake?"</td><td>None yet</td><td>The repo has no water-quality data for the dam or the Conduit 26 intake.</td></tr>
-    <tr><td>6. Foothills Treatment Plant</td><td>Foothills plant (Aug 16)</td><td>Plant Influent</td><td>"Water Intake Sampled" is the daily lab sample behind <code>PlantResponseObserved</code> (TOC 2.0 to 2.5 mg/L). The treatment steps, from coagulation to release, go beyond Scenario 2.</td></tr>
+    <tr><td>4. Foothills Treatment Plant</td><td>Foothills plant (Aug 16)</td><td>Plant Influent</td><td>"Water Intake Sampled" is the daily lab sample behind <code>PlantResponseObserved</code> (TOC 2.0 to 2.5 mg/L). The treatment steps, from coagulation to release, go beyond Scenario 2.</td></tr>
     <tr><td>None</td><td>Storm Event Catalog, Operator, Any time</td><td>Storm Event Catalog, Impact Visualization</td><td>These are what the big picture doesn't show: identifying a storm, the operator's arrival estimate, readings being revised, and one view across every stage (flow-path timeline, sensor map, past-storm comparison). This cross-stage view is the team's contribution. Each board's dashboard stands alone, which is exactly the "no visualization" problem Denver Water described.</td></tr>
   </table>
 
