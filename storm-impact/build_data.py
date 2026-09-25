@@ -53,6 +53,17 @@ BANDS = [(0, 5), (5, 15), (15, 25), (25, 35), (35, 50)]
 # A new cast starts when consecutive sonde readings are this far apart.
 CAST_GAP = timedelta(minutes=20)
 
+# Denver Water's team found that the out-of-range sonde readings happen when
+# the sonde drops to the bottom of the reservoir at the dam and stirs up
+# sediment. A cast is treated as bottom contact when any reading at or below
+# 34 in "Vertical Position" is more than 10x the cast's median turbidity
+# between 20 and 30. In this file that flags exactly the 11 casts from Apr 7 to
+# May 5, 2026 with spikes of 50 to 2,400 NTU near the bottom. Those casts are left
+# out of the page entirely.
+BOTTOM_REF = (20, 30)
+BOTTOM_ZONE = 34
+BOTTOM_FACTOR = 10
+
 
 def parse_us_date(s):
     return datetime.strptime(s, "%m/%d/%Y").date()
@@ -158,6 +169,13 @@ def band_of(depth):
         if lo <= depth < hi:
             return i
     return None
+
+
+def bottom_contact(cast):
+    ref = [r[2] for r in cast if BOTTOM_REF[0] <= r[1] < BOTTOM_REF[1]]
+    deep = [r[2] for r in cast if r[1] >= BOTTOM_ZONE]
+    return bool(ref and deep and
+                max(deep) > BOTTOM_FACTOR * statistics.median(ref))
 
 
 def summarize_cast(cast):
@@ -316,7 +334,9 @@ def main():
         series, "06701900-discharge-aug14-15.json"))
 
     readings, casts = read_sonde(os.path.join(DATA, "Strontia 0407_0819.xlsx"))
-    max_depth = max(r[1] for r in readings)
+    excluded = [c for c in casts if bottom_contact(c)]
+    casts = [c for c in casts if not bottom_contact(c)]
+    max_depth = max(r[1] for c in casts for r in c)
     casts_out = []
     for c in casts:
         t0 = c[0][0]
@@ -355,6 +375,11 @@ def main():
         "summaries": summaries,
         "bands": [list(b) for b in BANDS],
         "sonde_max_depth": round(max_depth, 1),
+        "sonde_excluded_bottom_contact": [
+            {"t": c[0][0].isoformat(timespec="minutes"),
+             "max_turbidity": round(max(r[2] for r in c), 1),
+             "in_window": WINDOW_START <= c[0][0].date() <= WINDOW_END}
+            for c in excluded],
         "gage_15min": {
             "site": gage_iv["63680"]["site"],
             "site_name": gage_iv["63680"]["site_name"],
@@ -382,6 +407,9 @@ def main():
     print("wrote %s (%d casts, %d KB)" % (os.path.relpath(OUT, ROOT),
                                           len(casts_out),
                                           os.path.getsize(OUT) // 1024))
+    print("left out %d bottom-contact casts: %s" % (len(excluded), ", ".join(
+        "%s (%.0f NTU)" % (c[0][0].strftime("%b %d %H:%M"),
+                           max(r[2] for r in c)) for c in excluded)))
     print("daily median turbidity by band (all readings that day):")
     for d in range(13, 20):
         day = date(2026, 8, d)

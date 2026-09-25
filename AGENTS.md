@@ -27,6 +27,10 @@ challenge itself. `guide.md` explains the domain and Jake's models from zero;
 - **Known data artifact:** `data/MichiganCreek.csv` shows SWE 9.0 on May 12 to 15,
   2026 between zero readings, an error in the NRCS feed. Jake replaced the station
   in his September update; the models use `data/HoosierPass.csv`.
+- **Known data artifact:** in `data/Strontia 0407_0819.xlsx`, out-of-range turbidity
+  (52 to 2,438 NTU, deepest readings and the sediment cloud above them) comes from
+  the sonde dropping to the bottom of the reservoir at the dam. It affects 11 casts
+  between Apr 7 and May 5, 2026. `storm-impact/build_data.py` detects and drops them.
 
 ## The 3D map
 

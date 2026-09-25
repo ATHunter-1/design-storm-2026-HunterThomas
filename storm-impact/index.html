@@ -139,7 +139,7 @@
       <div id="scale"><span id="scale-lo"></span><canvas id="scale-canvas" width="220" height="10"></canvas><span id="scale-hi"></span><span id="scale-note"></span></div>
       <p class="note">"Vertical Position" has no unit in the source file. Warmest readings sit at low values, so it is probably
         depth below the surface, likely metres; confirm with Denver Water. The sonde's exact location and the
-        time zone of its clock are not stated; times are shown as recorded.</p>
+        time zone of its clock are not stated; times are shown as recorded. <span id="bottom-note"></span></p>
     </section>
 
     <section class="panel">
@@ -734,6 +734,11 @@ fetch("storm-impact.json").then(r => { if (!r.ok) throw new Error(r.status); ret
   document.getElementById("play").addEventListener("click", togglePlay);
   document.getElementById("depth-var").addEventListener("change", drawDepth);
   document.getElementById("generated").textContent = `Data built ${D._generated_at} by ${D._generated_by}.`;
+  const bx = D.sonde_excluded_bottom_contact || [];
+  if (bx.length) document.getElementById("bottom-note").textContent =
+    `${bx.length} casts where the sonde dropped to the reservoir bottom and stirred up sediment ` +
+    `(${fmtT(parseT(bx[0].t), false)} to ${fmtT(parseT(bx[bx.length - 1].t), false)}) are left out; ` +
+    `${bx.filter(c => c.in_window).length} of them fall in the dates shown here.`;
   const bandSel = document.getElementById("band");
   bandSel.innerHTML = D.bands.map((b, i) => `<option value="${i}">${b[0]}-${b[1]}</option>`).join("");
   bandSel.value = String(bandIx);

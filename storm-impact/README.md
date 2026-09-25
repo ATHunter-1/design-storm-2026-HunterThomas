@@ -67,6 +67,15 @@ which matches the table in `docs/scenario-2-planning.md`.
   cast counts as **full** when it reaches past 40 in "Vertical Position." Short
   casts only sample the top few units. They appear on the depth chart but are left
   out of the band lines and the peak search.
+- **Bottom contact.** The team found that the sonde's out-of-range readings come
+  from times it dropped to the bottom of the reservoir at the dam and stirred up
+  sediment. `build_data.py` treats a cast as bottom contact when any reading at or
+  below 34 in "Vertical Position" is more than 10× that cast's median turbidity
+  between 20 and 30. Those casts are left out. In this file the rule flags exactly
+  11 casts, all between Apr 7 and May 5, 2026, with spikes of 52 to 2,438 NTU. None
+  of them fall in the Jul 15 to Aug 19 window the page uses, so the storm numbers
+  are the same with or without the filter. The page and `storm-impact.json`
+  (`sonde_excluded_bottom_contact`) list what was left out.
 - "Vertical Position" has no unit in the file. It is probably depth in metres, but
   Denver Water still needs to confirm that. The file also does not state the
   sonde's location or the time zone of its clock, so times are shown as recorded.

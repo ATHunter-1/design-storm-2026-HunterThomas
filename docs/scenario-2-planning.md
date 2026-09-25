@@ -77,6 +77,7 @@ Caveats:
 - "Vertical Position" has no unit. The warmest readings are at low values, so it is probably depth below the surface, likely in meters.
 - These are daily medians from one event, and some days have fewer readings.
 - The data is provisional, so treat this as a case study, not proof.
+- Out-of-range sonde readings happen when the sonde drops to the bottom of the reservoir at the dam and stirs up sediment (a team finding). In this file those are 11 casts between Apr 7 and May 5, 2026, with near-bottom spikes of 52 to 2,438 NTU. None fall in Aug 13-19, so the table above is unaffected. `storm-impact/build_data.py` leaves them out.
 
 ### Foothills plant (`data/FoothillsInfluent.csv`, daily lab samples)
 
