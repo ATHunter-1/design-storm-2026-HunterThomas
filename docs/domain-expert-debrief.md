@@ -43,6 +43,8 @@ Questions for the debrief, in priority order. If time is short, ask the top five
 
 | Question | Answer | Who said it |
 | --- | --- | --- |
+| Sensor locations | "Everywhere" | Denver Water |
+| Magic-wand problem | "Biggest problem we have is we don't have visualization." | Denver Water |
 | Intake depth | | |
 | Aug 14-15 operator story | | |
 | Useful lead time | | |

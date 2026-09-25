@@ -1,12 +1,17 @@
-# Scenario 2 Plan: Storm Impact Investigation
+# Scenario 2 Plan: Storm Impact Visualization
 
 ## Decision
 
-With four hours, take **Scenario 2** and scope it narrowly: one storm (Aug. 14-15, 2026), investigated end to end. Build an investigation workflow, not a prediction model.
+Take **Scenario 2** and build a **visualization**. It shows sensor data along the flow path so the user can judge when a storm's impact will reach the Foothills plant. The tool shows the evidence; the operator makes the timing call.
 
-> We help Denver Water see how a storm signal moves from the river into Strontia Springs Reservoir: when it arrives and which depths it reaches.
+> We help Denver Water see a storm's impact move from the river, through Strontia Springs Reservoir, to the Foothills plant, so staff can judge when it will arrive.
 
-Scenario 1 tends to turn into model tuning, and Scenario 3 risks becoming another map. Scenario 2 fits Event Storming naturally, splits into tasks agents can do, and makes a strong demo.
+Why this direction:
+
+- Denver Water's biggest problem is visualization, not prediction ("Biggest problem we have is we don't have visualization").
+- It directly answers Scenario 2's question of when the impact will arrive.
+- Rain at the one weather station barely predicts river turbidity. The rank correlation between daily rain and the next two days' peak turbidity is 0.02 across 1,009 days. A rain-based forecast would need new data.
+- Scenario 1 tends to turn into model tuning, and Scenario 3 risks becoming another map.
 
 ## Domain primer
 
@@ -73,74 +78,120 @@ Caveats:
 - These are daily medians from one event, and some days have fewer readings.
 - The data is provisional, so treat this as a case study, not proof.
 
+### Foothills plant (`data/FoothillsInfluent.csv`, daily lab samples)
+
+TOC was 2.0 mg/L through Aug 15, then **2.5 on Aug 16-17**, 2.3 on Aug 18, and 2.2 on Aug 19.
+
+### The whole path
+
+| Stop | Peak signal | When |
+| --- | --- | --- |
+| River gage above Strontia | Turbidity 329 FNU | 1:45 AM, Aug 15 |
+| Strontia reservoir, mid-depth | Turbidity 15.6 NTU (5-15 band) | Aug 16 |
+| Foothills plant | TOC 2.0 to 2.5 mg/L | Aug 16 |
+
+The impact reached the reservoir and the plant about a day after the river peak. The Jul 28 storm roughly agrees: river turbidity hit 151 FNU, and plant TOC was 2.4 that day (up from about 2.0) and 1.9 the next.
+
+Timing at the plant is only accurate to the day, because the lab samples once a day. Two storms, from provisional data, show the pattern, not a proven rule.
+
+**Water arrival vs. impact arrival.** Water travels from the gage to the plant intake in about 4 hours, per Denver Water's raw water group in `guide.md`. The water-quality impact showed up about a day later, likely because of mixing in the reservoir. Operators care about the impact.
+
 ## What already exists and the gap
 
 `design-storm-water-system-3d.html` already has **"Replay the Aug 14-15 storm"**: radar, Trumbull flow, and gage turbidity, with captions. Its story ends with "the water is already in the reservoir."
 
-**The team's contribution is to continue the story into the reservoir**: show the plume arriving at mid-depth, sinking, and fading. That is what Scenario 2 asks about, and the repo does not show it yet.
+**The team's contribution is to continue the story through the reservoir to the plant.** Show the plume arriving at mid-depth, sinking, and fading, then the TOC rise at Foothills. That is what Scenario 2 asks about, and the repo does not show it yet.
 
-## Deliverable: Storm Impact Investigation Viewable
+## Deliverable: Storm Impact Visualization
 
-Add a Scenario 2 mode to the 3D map, or build a notebook or static page if that is faster. Either way it needs this analytical backbone:
+It can be a static page, a notebook, or a Scenario 2 mode in the 3D map; pick whichever the team can build fastest.
 
-```text
-Storm event selected -> gage response observed -> Strontia depth profiles compared
-  -> candidate arrival window described -> impact assessment generated
-```
+### Layout
 
-| Scenario 2 question | What we show |
+1. **Flow-path timeline** (the main view): one row per stop in flow order, on a shared time axis, so the pulse can be seen moving down the page.
+
+   ```text
+   River gage above Strontia   turbidity, conductance   ──▲──────────────
+   Strontia, by depth band     turbidity                ─────▲───────────
+   Foothills plant             TOC (daily lab)          ─────▲───────────
+                               Aug 14    Aug 15    Aug 16    Aug 17
+   ```
+
+2. **Reservoir depth chart**: time across, depth down, colored by turbidity. It is the only view that shows the mid-depth plume and how it sinks.
+3. **Past-storm comparison**: for example, "Aug 14-15: river peak to plant TOC rise, about 1 day; Jul 28: same day." This gives the user a reference for judging timing.
+4. **Map context (optional)**: link to the existing 3D storm replay for where each sensor sits.
+
+Always show a notice that readings are provisional and data terms apply.
+
+### How it answers Scenario 2
+
+| Scenario 2 question | What the user sees |
 | --- | --- |
-| How does the storm affect source-water quality? | Gage turbidity rose from about 3 to 329 FNU; conductance changed |
-| When does the impact arrive? | River peak at 1:45 AM Aug 15; mid-depth reservoir peak on Aug 16 |
+| How does the storm affect source-water quality? | Gage turbidity rose from about 3 to 329 FNU; plant TOC rose from 2.0 to 2.5 mg/L |
+| When does the impact arrive? | River peak at 1:45 AM Aug 15; reservoir and plant response on Aug 16; past storms for comparison |
 | What conditions at different depths? | Plume at mid-depth, then deeper; surface and bottom largely unchanged |
 
-**It solves:** a first slice of decision support. It aligns the upstream signal with the reservoir depth response, uses clear domain language, and can be extended toward forecasting.
+**It solves:** Denver Water's stated need to see sensor data together, and the operator's timing question, backed by the evidence.
 
-**It does not solve:** real-time prediction, generalized storm modeling, causal proof, validated travel times, or treatment recommendations. Say so in the demo:
+**It does not solve:** automated prediction, generalized storm modeling, causal proof, validated travel times, or treatment recommendations. Say so in the demo:
 
-> We did not build a storm-impact prediction model in four hours. We built the first slice of a Scenario 2 decision-support workflow: it follows one storm from the river into the reservoir, depth by depth, and produces an initial impact assessment.
+> Denver Water told us their biggest problem is visualization. We built a view that lines up the sensors along the flow path, from the river through the reservoir by depth to the plant. It shows one storm's impact arriving about a day after the river peak, so staff can judge the next one.
 
-## Questions for Denver Water
+## What Denver Water told us
 
-1. What depth does Foothills draw water from? This decides whether a mid-depth plume matters.
-2. Is "Vertical Position" depth below the surface, in meters?
-3. What turbidity at the intake makes operators change treatment?
-4. Is the conductance reading of 38 on Aug 14 a known sensor glitch?
+- Sensors are "everywhere."
+- Their biggest problem is that they don't have visualization.
+
+Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
+
+## Open questions for Denver Water
+
+1. Is there a real-time sensor at the Foothills intake or in the plant? It would sharpen timing from about a day to hours, and let the tool check itself.
+2. What depth does Foothills draw water from? This decides whether a mid-depth plume matters.
+3. Which of the "everywhere" sensors can we get data from, and which do they look at first after a storm?
+4. Is "Vertical Position" depth below the surface, in meters?
+5. What turbidity or TOC at the intake makes operators change treatment?
+6. Is the conductance reading of 38 on Aug 14 a known sensor glitch?
 
 ## DDD model
 
-**Domain events** (past tense): `PrecipitationObserved`, `StormEventIdentified`, `GageResponseObserved`, `TurbiditySpikeDetected`, `ReservoirProfileCollected`, `DepthChangeObserved`, `ImpactAssessmentIssued`, `ReadingRevised`.
+**Domain events** (past tense): `StormEventIdentified`, `GageResponseObserved`, `TurbiditySpikeDetected`, `ReservoirProfileCollected`, `DepthChangeObserved`, `PlantResponseObserved`, `ImpactArrivalEstimated`, `ReadingRevised`.
 
-**Entities**: `StormEvent`, `Gage`, `ReservoirCast`, `ImpactAssessment`.
+**Entities**: `StormEvent`, `MonitoringStation` (gage, sonde, or plant lab), `ReservoirCast`, `ImpactArrivalEstimate`.
 
-**Value objects**: `Measurement`, `DepthReading`, `DepthProfile`, `ArrivalWindow(earliest, likely, latest)`, `ProvisionalReading`.
+**Value objects**: `Measurement`, `DepthReading`, `DepthProfile`, `ArrivalWindow(earliest, likely, latest)`, `ProvisionalReading`, `FlowPathPosition` (the station's order along the path).
 
-**Language rule**: `StormEvent` is the real-world storm. Past-tense names such as `StormEventIdentified` are domain events in the software.
+**Language rules**:
+
+- `StormEvent` is the real-world storm. Past-tense names such as `StormEventIdentified` are domain events in the software.
+- "Water arrival" (hours) and "impact arrival" (about a day for Aug 14-15) are different things. The tool is about impact arrival.
+- The operator makes the `ImpactArrivalEstimate`. The system supplies the evidence and past storms for comparison.
 
 | Bounded context | Owns |
 | --- | --- |
 | Watershed Observation | Gage and weather readings, provisional status, and the translation of external feeds into our model |
-| Storm Event Catalog (core) | What counts as a storm, and each storm's timeline |
+| Storm Event Catalog (core) | What counts as a storm, each storm's timeline, and past storms for comparison |
 | Reservoir Profiling (core) | Casts, depth profiles, layers, and plume position |
-| Impact Assessment (core) | Arrival windows, affected depths, confidence, and limitations |
+| Plant Influent | Daily lab TOC and alkalinity at Foothills |
+| Impact Visualization (core) | The flow-path timeline, the depth chart, and the operator's arrival estimate |
 
 ## Four-hour plan
 
 | Time | Work |
 | --- | --- |
 | 0:00-0:30 | Agree on the framing; run a short Event Storming session using the events above |
-| 0:30-1:30 | Load the gage series and the sonde file; group sonde readings into casts and depth bands |
-| 1:30-2:30 | Build the timeline and depth-profile views and the impact summary, using turbidity first and temperature as the layering context |
+| 0:30-1:30 | Load the gage series, the sonde file (grouped into depth bands), and the Foothills TOC data onto one time axis |
+| 1:30-2:30 | Build the flow-path timeline, the reservoir depth chart, and the past-storm comparison (Aug 14-15 and Jul 28) |
 | 2:30-3:15 | Write up the contexts, assumptions, limitations, and next steps |
-| 3:15-4:00 | Polish the demo: storm, river signal, reservoir response by depth, domain model, how agents helped, what comes next |
+| 3:15-4:00 | Polish the demo: the problem Denver Water named, the storm moving down the timeline, the arrival call, the domain model, how agents helped, what comes next |
 
 ## Team split
 
 | Role | Owns | Output |
 | --- | --- | --- |
 | DDD facilitator | Context map, events, language | `docs/scenario-2-brief.md` |
-| Data wrangler | Sonde loading, casts, depth bands | `storm-impact/analyze_aug14.py` or a notebook |
-| Visualization/demo | Timeline, depth view, 3D map mode | `storm-impact/output/` or the map |
+| Data wrangler | Loading and aligning the gage, sonde, and plant data | `storm-impact/` data prep script or notebook |
+| Visualization/demo | Timeline, depth chart, storm comparison | `storm-impact/` page or the 3D map mode |
 | Agent coordinator/narrator | Prompts, README, limitations | `storm-impact/README.md` |
 
 This fork is the team workspace, so no `teams/<name>/` folder is needed.
@@ -151,15 +202,16 @@ This fork is the team workspace, so no `teams/<name>/` folder is needed.
 - Never invent numbers. Label general hydrology knowledge as general knowledge.
 - Treat all readings as provisional.
 - Keep Denver Water's data terms (`data/TERMS.md`) with any shared output.
-- Out of scope: a general prediction model, all storms, new external data, and a from-scratch web app.
+- Out of scope: automated prediction, all storms, new external data, and a from-scratch web app.
 
 ## Demo summary
 
 ```text
-Storm Impact Assessment - Aug. 14-15, 2026 (investigative, provisional data)
+Storm Impact - Aug. 14-15, 2026 (provisional data)
 River:     turbidity ~3 -> 329 FNU at 1:45 AM Aug 15; back to ~5 by 6 PM
 Reservoir: surface clear; plume peaks at mid-depth (5-15) on Aug 16,
            moves deeper (15-25) by Aug 18-19; bottom largely unchanged
-Arrival:   about one day from river peak to mid-depth reservoir peak
-Open:      intake depth, depth units, operator thresholds
+Plant:     TOC 2.0 -> 2.5 mg/L on Aug 16-17
+Impact arrival: about one day after the river peak (Jul 28: same day)
+Open:      intake sensor, intake depth, depth units, operator thresholds
 ```
