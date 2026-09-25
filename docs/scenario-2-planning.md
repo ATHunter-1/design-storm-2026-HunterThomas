@@ -59,7 +59,7 @@ Upstream at Trumbull (gage 06701900), flow barely moved over the same window (13
 
 ### Reservoir sonde (`data/Strontia 0407_0819.xlsx`)
 
-Median turbidity (NTU) of all readings that day, by "Vertical Position" band:
+Median turbidity (NTU) of all readings that day, by "Vertical Position" band (feet below the surface):
 
 | Date | 0-5 | 5-15 | 15-25 | 25-35 | 35-50 |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -74,7 +74,7 @@ What the table shows: the surface stayed clear. The plume peaked in the 5-15 ban
 
 Caveats:
 
-- "Vertical Position" has no unit. The warmest readings are at low values, so it is probably depth below the surface, likely in meters.
+- "Vertical Position" has no unit in the file. It is depth below the surface in feet, as Cassidi (Denver Water) confirmed in our working session. The depth bands in the table above are in feet.
 - These are daily medians from one event, and some days have fewer readings.
 - The data is provisional, so treat this as a case study, not proof.
 - Out-of-range sonde readings happen when the sonde drops to the bottom of the reservoir at the dam and stirs up sediment (a team finding). In this file those are 11 casts between Apr 7 and May 5, 2026, with near-bottom spikes of 52 to 2,438 NTU. None fall in Aug 13-19, so the table above is unaffected. `storm-impact/build_data.py` leaves them out.
@@ -168,7 +168,7 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 2. What depth does Foothills draw water from? This decides whether a mid-depth plume matters.
 3. Which of the "everywhere" sensors can we get data from, and which do they look at first after a storm?
 4. Where exactly is the sonde in the reservoir? Is it near the dam and the Conduit 26 intake?
-5. Is "Vertical Position" depth below the surface, in meters?
+5. ~~Is "Vertical Position" depth below the surface, in meters?~~ Answered: depth below the surface in feet (Cassidi, working session).
 6. What turbidity or TOC at the intake makes operators change treatment?
 7. Is the conductance reading of 38 on Aug 14 a known sensor glitch?
 

@@ -46,8 +46,8 @@ STORMS = [
      "end": "2026-08-02", "river_peak_date": "2026-07-28"},
 ]
 
-# Depth bands in the sonde's "Vertical Position" units (unitless in the file;
-# probably metres below the surface, still to be confirmed).
+# Depth bands in feet below the surface. The file's "Vertical Position" has no
+# unit; Cassidi (Denver Water) confirmed feet in the team's working session.
 BANDS = [(0, 5), (5, 15), (15, 25), (25, 35), (35, 50)]
 
 # A new cast starts when consecutive sonde readings are this far apart.
@@ -56,9 +56,9 @@ CAST_GAP = timedelta(minutes=20)
 # Denver Water's team found that the out-of-range sonde readings happen when
 # the sonde drops to the bottom of the reservoir at the dam and stirs up
 # sediment. A cast is treated as bottom contact when any reading at or below
-# 34 in "Vertical Position" is more than 10x the cast's median turbidity
-# between 20 and 30. In this file that flags exactly the 11 casts from Apr 7 to
-# May 5, 2026 with spikes of 50 to 2,400 NTU near the bottom. Those casts are left
+# 34 ft is more than 10x the cast's median turbidity
+# between 20 and 30 ft. In this file that flags exactly the 11 casts from Apr 7 to
+# May 5, 2026 with spikes of 52 to 2,438 NTU near the bottom. Those casts are left
 # out of the page entirely.
 BOTTOM_REF = (20, 30)
 BOTTOM_ZONE = 34
@@ -346,8 +346,8 @@ def main():
         casts_out.append({
             "t": t0.isoformat(timespec="minutes"),
             "t_end": c[-1][0].isoformat(timespec="minutes"),
-            # A full cast reaches past 40 in "Vertical Position"; the short
-            # ones only sample the top few units.
+            # A full cast reaches past 40 ft; the short
+            # ones only sample the top few feet.
             "full": max(depths) >= 40,
             "bands": summarize_cast(c),
             "readings": [[round(r[1], 2), round(r[2], 2), round(r[3], 2)]
