@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Denver Water 2D Sensor Map</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: rgba(15, 23, 42, 0.88);
+        --panel-border: rgba(148, 163, 184, 0.28);
+        --text: #e2e8f0;
+        --muted: #a5b4cf;
+        --accent: #38bdf8;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      body {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        width: 100%;
+        height: 100vh;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-right: 1px solid var(--panel-border);
+        padding: 20px 18px;
+        overflow-y: auto;
+        backdrop-filter: blur(8px);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.5rem;
+      }
+
+      .subtitle {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      .badge {
+        display: inline-block;
+        margin-bottom: 16px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.12);
+        color: #bae6fd;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        font-size: 0.73rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .control-group {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      label {
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      select,
+      input[type="range"] {
+        width: 100%;
+      }
+
+      select {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        background: rgba(15, 23, 42, 0.9);
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+
+      input[type="range"] {
+        accent-color: var(--accent);
+      }
+
+      #dateLabel {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .legend {
+        margin: 18px 0 14px;
+      }
+
+      .play-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .play-button {
+        flex: 1;
+        appearance: none;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 8px;
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--text);
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      .play-button:hover {
+        background: rgba(56, 189, 248, 0.2);
+      }
+
+      .legend-bar {
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #dbeafe 0%, #38bdf8 35%, #f59e0b 70%, #ef4444 100%);
+        border: 1px solid rgba(255,255,255,0.2);
+        margin: 8px 0 6px;
+      }
+
+      .legend-values {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+
+      .sensor-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .sensor-item {
+        display: grid;
+        grid-template-columns: 14px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: rgba(15, 23, 42, 0.5);
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: block;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.18);
+      }
+
+      .sensor-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+      }
+
+      .sensor-value {
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+
+      .map-wrap {
+        position: relative;
+        min-height: 100%;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+        background: #dfeaf3;
+      }
+
+      .leaflet-container {
+        background: #dfeaf3;
+      }
+
+      .leaflet-popup-content-wrapper,
+      .leaflet-popup-tip {
+        background: rgba(15, 23, 42, 0.96);
+        color: var(--text);
+      }
+
+      .popup-title {
+        font-size: 0.95rem;
+        margin: 0 0 6px;
+        font-weight: 700;
+      }
+
+      .popup-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        font-size: 0.82rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        padding-top: 6px;
+        margin-top: 6px;
+      }
+
+      .popup-row:first-of-type {
+        border-top: none;
+        margin-top: 0;
+        padding-top: 0;
+      }
+
+      .map-note {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 500;
+        background: rgba(15, 23, 42, 0.82);
+        color: var(--text);
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 0.75rem;
+      }
+
+      @media (max-width: 880px) {
+        .layout {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+        }
+
+        .panel {
+          border-right: none;
+          border-bottom: 1px solid var(--panel-border);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="panel">
+        <h1>Denver Water 2D Sensor Map</h1>
+        <div class="badge">2D prototype</div>
+        <p class="subtitle">
+          A map-style snapshot of the collection system with sensor positions and readings.
+          The scale is fixed to preserve the original range, so new values outside that range are ignored rather than expanding the map.
+        </p>
+
+        <div class="control-group">
+          <label for="metricSelect">Metric</label>
+          <select id="metricSelect"></select>
+
+          <label for="dateSlider">Snapshot date</label>
+          <input id="dateSlider" type="range" min="0" max="0" value="0" />
+          <div id="dateLabel">—</div>
+
+          <div class="play-row">
+            <button id="playButton" class="play-button" type="button">Play</button>
+          </div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-bar" id="legendBar"></div>
+          <div class="legend-values">
+            <span id="legendLow">0</span>
+            <span id="legendHigh">0</span>
+          </div>
+        </div>
+
+        <div class="sensor-list" id="sensorList"></div>
+      </aside>
+
+      <div class="map-wrap">
+        <div id="map" aria-label="Denver Water sensor map"></div>
+        <div class="map-note">OpenStreetMap base layer • swap to Google Static Maps later with an API key</div>
+      </div>
+    </div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      const mapBounds = [[38.6, -106.8], [40.2, -104.8]];
+
+      const sensorConfigs = [
+        {
+          id: "strontia-sensor",
+          name: "Strontia Sentinel Gauge",
+          pointName: "Strontia Springs Sentinel Gauge",
+          metric: "Specific_Cond_Mean",
+          unit: "µS/cm",
+          range: [250, 400],
+          csv: "data/USGS_South_Platte.csv",
+          kind: "gage"
+        },
+        {
+          id: "trumbull-sensor",
+          name: "South Platte near Trumbull",
+          pointName: "South Platte Gauge near Trumbull",
+          metric: "Turbidity_Median",
+          unit: "NTU",
+          range: [0, 15],
+          csv: "data/USGS_South_Platte.csv",
+          kind: "gage"
+        },
+        {
+          id: "hoosier-sensor",
+          name: "Hoosier Pass SNOTEL",
+          pointName: "Hoosier Pass SNOTEL",
+          metric: "SWE",
+          unit: "in",
+          range: [0, 30],
+          csv: "data/HoosierPass.csv",
+          kind: "snotel"
+        },
+        {
+          id: "foothills-sensor",
+          name: "Foothills influent",
+          pointName: "Foothills Treatment Plant",
+          metric: "TOC_mg_L",
+          unit: "mg/L",
+          range: [2.4, 3.2],
+          csv: "data/FoothillsInfluent.csv",
+          kind: "plant"
+        }
+      ];
+
+      const metricSelect = document.getElementById("metricSelect");
+      const dateSlider = document.getElementById("dateSlider");
+      const dateLabel = document.getElementById("dateLabel");
+      const legendLow = document.getElementById("legendLow");
+      const legendHigh = document.getElementById("legendHigh");
+      const sensorList = document.getElementById("sensorList");
+      const playButton = document.getElementById("playButton");
+      let playbackTimer = null;
+
+      const map = L.map("map", {
+        zoomControl: true,
+        scrollWheelZoom: true,
+        maxZoom: 12,
+        minZoom: 6
+      }).fitBounds(mapBounds);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+
+      const pointLookup = new Map();
+      const markerMap = new Map();
+      const sensorSeries = new Map();
+      let dateValues = [];
+      let selectedMetricId = sensorConfigs[0].id;
+
+      function parseDate(value) {
+        if (!value) return null;
+        const dt = new Date(value);
+        return Number.isNaN(dt.getTime()) ? null : dt;
+      }
+
+      function formatDateLabel(date) {
+        return new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        }).format(date);
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+
+      function colorFromPercent(percent) {
+        const hue = 220 - percent * 180;
+        return `hsl(${hue}, 78%, 58%)`;
+      }
+
+      function valueToPercent(value, min, max) {
+        if (max === min) return 0;
+        const clamped = clamp(value, min, max);
+        return (clamped - min) / (max - min);
+      }
+
+      function colorForValue(value, range) {
+        const percent = valueToPercent(value, range[0], range[1]);
+        return colorFromPercent(percent);
+      }
+
+      function parseCSV(text) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) return [];
+
+        const headers = lines[0].split(",").map((header) => header.trim());
+        return lines.slice(1).filter(Boolean).map((line) => {
+          const values = line.split(",");
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header] = values[index] ? values[index].trim() : "";
+          });
+          return row;
+        });
+      }
+
+      function loadStaticPoints() {
+        return fetch("water-system-3d/system.json")
+          .then((response) => response.json())
+          .then((payload) => {
+            payload.points.forEach((point) => {
+              if (point.lat && point.lon && point.name) {
+                pointLookup.set(point.name, point);
+              }
+            });
+          });
+      }
+
+      function loadSensorSeries(sensor) {
+        return fetch(sensor.csv)
+          .then((response) => response.text())
+          .then((text) => {
+            const rows = parseCSV(text);
+            const values = {};
+
+            rows.forEach((row) => {
+              const dateValue = row.Date || row.DATE || row.date;
+              const dt = parseDate(dateValue);
+              if (!dt) return;
+
+              const key = dt.toISOString().slice(0, 10);
+              const rawNumber = Number(row[sensor.metric]);
+              if (!Number.isFinite(rawNumber)) return;
+              values[key] = rawNumber;
+            });
+
+            sensorSeries.set(sensor.id, {
+              sensor,
+              values,
+              orderedDates: Object.keys(values).sort()
+            });
+          });
+      }
+
+      function ensureMarker(sensor) {
+        const point = pointLookup.get(sensor.pointName);
+        if (!point) return null;
+
+        if (!markerMap.has(sensor.id)) {
+          const marker = L.circleMarker([point.lat, point.lon], {
+            radius: 10,
+            weight: 2,
+            color: "#e2e8f0",
+            fillColor: "#38bdf8",
+            fillOpacity: 0.85
+          }).addTo(map);
+
+          marker.bindPopup(`
+            <div>
+              <div class="popup-title">${sensor.name}</div>
+              <div class="popup-row"><span>Metric</span><strong>${sensor.metric}</strong></div>
+              <div class="popup-row"><span>Location</span><strong>${point.name}</strong></div>
+            </div>
+          `);
+
+          markerMap.set(sensor.id, marker);
+        }
+
+        return markerMap.get(sensor.id);
+      }
+
+      function getSnapshotValue(sensor) {
+        const series = sensorSeries.get(sensor.id);
+        if (!series) return Number.NaN;
+
+        const dateKey = dateValues[Number(dateSlider.value)];
+        if (!dateKey) return Number.NaN;
+
+        return Number.isFinite(series.values[dateKey]) ? series.values[dateKey] : Number.NaN;
+      }
+
+      function updateLegend(sensor) {
+        const [min, max] = sensor.range;
+        legendLow.textContent = `${min} ${sensor.unit}`;
+        legendHigh.textContent = `${max} ${sensor.unit}`;
+      }
+
+      function renderList() {
+        sensorList.innerHTML = "";
+
+        sensorConfigs.forEach((sensor) => {
+          const item = document.createElement("div");
+          item.className = "sensor-item";
+
+          const marker = document.createElement("span");
+          marker.className = "dot";
+
+          const title = document.createElement("div");
+          title.className = "sensor-name";
+          title.textContent = sensor.name;
+
+          const value = document.createElement("div");
+          value.className = "sensor-value";
+          const current = getSnapshotValue(sensor);
+          value.textContent = `${Number.isFinite(current) ? current.toFixed(1) : "—"} ${sensor.unit}`;
+
+          marker.style.background = getDotColor(sensor, getSnapshotValue(sensor));
+          item.appendChild(marker);
+          item.appendChild(title);
+          item.appendChild(value);
+          sensorList.appendChild(item);
+        });
+      }
+
+      function getDotColor(sensor, value) {
+        if (!Number.isFinite(value)) return "#64748b";
+        const [min, max] = sensor.range;
+        const percent = valueToPercent(value, min, max);
+        return colorFromPercent(percent);
+      }
+
+      function syncSnapshot() {
+        const selectedSensor = sensorConfigs.find((item) => item.id === selectedMetricId) || sensorConfigs[0];
+        const currentDateKey = dateValues[Number(dateSlider.value)];
+
+        if (currentDateKey) {
+          dateLabel.textContent = formatDateLabel(new Date(`${currentDateKey}T00:00:00`));
+        }
+
+        updateLegend(selectedSensor);
+
+        sensorConfigs.forEach((sensor) => {
+          const marker = ensureMarker(sensor);
+          if (!marker) return;
+
+          const value = getSnapshotValue(sensor);
+          const point = pointLookup.get(sensor.pointName);
+
+          if (!Number.isFinite(value) || !point) {
+            marker.setStyle({
+              radius: 7,
+              fillColor: "#64748b",
+              color: "#cbd5e1",
+              fillOpacity: 0.45
+            });
+            marker.bindPopup(`
+              <div>
+                <div class="popup-title">${sensor.name}</div>
+                <div class="popup-row"><span>Value</span><strong>No data</strong></div>
+                <div class="popup-row"><span>Location</span><strong>${point ? point.name : sensor.pointName}</strong></div>
+              </div>
+            `);
+            return;
+          }
+
+          const [min, max] = sensor.range;
+          const percent = valueToPercent(value, min, max);
+          const radius = 7 + percent * 12;
+          const color = colorForValue(value, sensor.range);
+
+          marker.setStyle({
+            radius,
+            fillColor: color,
+            color: "#f8fafc",
+            fillOpacity: 0.85,
+            opacity: 1,
+            weight: 2
+          });
+
+          marker.bindPopup(`
+            <div>
+              <div class="popup-title">${sensor.name}</div>
+              <div class="popup-row"><span>Reading</span><strong>${value.toFixed(1)} ${sensor.unit}</strong></div>
+              <div class="popup-row"><span>Metric</span><strong>${sensor.metric}</strong></div>
+              <div class="popup-row"><span>Date</span><strong>${formatDateLabel(new Date(`${currentDateKey}T00:00:00`))}</strong></div>
+            </div>
+          `);
+        });
+
+        renderList();
+      }
+
+      function stopPlayback() {
+        if (playbackTimer) {
+          clearInterval(playbackTimer);
+          playbackTimer = null;
+        }
+        playButton.textContent = "Play";
+      }
+
+      function startPlayback() {
+        if (!dateValues.length) return;
+
+        if (playbackTimer) {
+          stopPlayback();
+          return;
+        }
+
+        playButton.textContent = "Pause";
+        playbackTimer = setInterval(() => {
+          const index = Number(dateSlider.value);
+          const nextIndex = index >= dateValues.length - 1 ? 0 : index + 1;
+          dateSlider.value = String(nextIndex);
+
+          const dateKey = dateValues[nextIndex];
+          if (!dateKey) return;
+          dateLabel.textContent = formatDateLabel(new Date(`${dateKey}T00:00:00`));
+          syncSnapshot();
+        }, 800);
+      }
+
+      function initializeSlider() {
+        const allDates = [...new Set(sensorConfigs.flatMap((sensor) => sensorSeries.get(sensor.id)?.orderedDates || []))].sort();
+
+        if (!allDates.length) {
+          dateSlider.disabled = true;
+          dateLabel.textContent = "No dates available";
+          return;
+        }
+
+        dateValues = allDates;
+        dateSlider.min = "0";
+        dateSlider.max = String(allDates.length - 1);
+        dateSlider.value = String(allDates.length - 1);
+        dateLabel.textContent = formatDateLabel(new Date(`${allDates[allDates.length - 1]}T00:00:00`));
+
+        dateSlider.addEventListener("input", (event) => {
+          stopPlayback();
+          const index = Number(event.target.value);
+          const dateKey = dateValues[index];
+          if (!dateKey) return;
+          dateLabel.textContent = formatDateLabel(new Date(`${dateKey}T00:00:00`));
+          syncSnapshot();
+        });
+      }
+
+      playButton.addEventListener("click", () => {
+        if (playbackTimer) {
+          stopPlayback();
+          return;
+        }
+        startPlayback();
+      });
+
+      Promise.all([
+        loadStaticPoints(),
+        ...sensorConfigs.map(loadSensorSeries)
+      ])
+        .then(() => {
+          sensorConfigs.forEach((sensor) => ensureMarker(sensor));
+
+          metricSelect.innerHTML = "";
+          sensorConfigs.forEach((sensor) => {
+            const option = document.createElement("option");
+            option.value = sensor.id;
+            option.textContent = sensor.name;
+            metricSelect.appendChild(option);
+          });
+
+          metricSelect.value = sensorConfigs[0].id;
+          selectedMetricId = sensorConfigs[0].id;
+          initializeSlider();
+          syncSnapshot();
+        })
+        .catch((error) => {
+          console.error("Failed to initialize 2D sensor map:", error);
+          dateLabel.textContent = "Data load failed";
+        });
+    </script>
+  </body>
+</html>
