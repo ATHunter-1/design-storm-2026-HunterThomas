@@ -94,7 +94,7 @@ The impact reached the reservoir and the plant about a day after the river peak.
 
 Timing at the plant is only accurate to the day, because the lab samples once a day. Two storms, from provisional data, show the pattern, not a proven rule.
 
-**Water arrival vs. impact arrival.** Water travels from the gage to the plant intake in about 4 hours, per Denver Water's raw water group in `guide.md`. The water-quality impact showed up about a day later, likely because of mixing in the reservoir. Operators care about the impact.
+**Water arrival vs. impact arrival.** Water travels from the gage to the plant intake in about 4 hours, per Denver Water's raw water group in `guide.md`. The gage is only 1.76 km straight-line upstream of the dam (`strontia-brief/places.json`). Yet the water-quality impact showed up about a day later, so the delay is likely happening inside the reservoir. Operators care about the impact.
 
 ## What already exists and the gap
 
@@ -119,7 +119,24 @@ It can be a static page, a notebook, or a Scenario 2 mode in the 3D map; pick wh
 
 2. **Reservoir depth chart**: time across, depth down, colored by turbidity. It is the only view that shows the mid-depth plume and how it sinks.
 3. **Past-storm comparison**: for example, "Aug 14-15: river peak to plant TOC rise, about 1 day; Jul 28: same day." This gives the user a reference for judging timing.
-4. **Map context (optional)**: link to the existing 3D storm replay for where each sensor sits.
+4. **Sensor map**: a small 2D map beside the timeline with the sensors drawn in flow order. Each one highlights when the pulse reaches it on the timeline. The existing 3D map already plots these points and can serve as a fuller view.
+
+### Sensor coordinates
+
+| Stop | Sensor | Lat, lon | Source |
+| --- | --- | --- | --- |
+| Upstream flow | USGS 06701900 (Trumbull) | 39.2600, -105.2214 | `strontia-brief/places.json` |
+| River above the reservoir | USGS 06707525 (turbidity, conductance, and more) | 39.4164, -105.15106 | `places.json` |
+| Reservoir | Strontia Springs Reservoir (center point) | 39.42453, -105.13845 | `places.json` |
+| Dam | Strontia Springs Dam | 39.43276, -105.12591 | `places.json` |
+| Intake | Conduit 26 intake (Strontia Springs Denver intake) | 39.431939, -105.126546 | `places.json` |
+| Plant | Foothills Water Treatment Facility | 39.46637, -105.06154 | `places.json` |
+| Snowpack (context) | Hoosier Pass SNOTEL 531 | 39.36092, -106.05999 | `water-system-3d/system.json` |
+
+Not in the repo:
+
+- **The sonde's exact position** (ask Denver Water).
+- **NOAA weather station USC00058022** and **DWR flow gage PLASPLCO**. Both are available from the public NOAA and Colorado DWR station records if needed.
 
 Always show a notice that readings are provisional and data terms apply.
 
@@ -149,9 +166,10 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 1. Is there a real-time sensor at the Foothills intake or in the plant? It would sharpen timing from about a day to hours, and let the tool check itself.
 2. What depth does Foothills draw water from? This decides whether a mid-depth plume matters.
 3. Which of the "everywhere" sensors can we get data from, and which do they look at first after a storm?
-4. Is "Vertical Position" depth below the surface, in meters?
-5. What turbidity or TOC at the intake makes operators change treatment?
-6. Is the conductance reading of 38 on Aug 14 a known sensor glitch?
+4. Where exactly is the sonde in the reservoir? Is it near the dam and the Conduit 26 intake?
+5. Is "Vertical Position" depth below the surface, in meters?
+6. What turbidity or TOC at the intake makes operators change treatment?
+7. Is the conductance reading of 38 on Aug 14 a known sensor glitch?
 
 ## DDD model
 
@@ -180,7 +198,7 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 | Time | Work |
 | --- | --- |
 | 0:00-0:30 | Agree on the framing; run a short Event Storming session using the events above |
-| 0:30-1:30 | Load the gage series, the sonde file (grouped into depth bands), and the Foothills TOC data onto one time axis |
+| 0:30-1:30 | Load the gage series, the sonde file (grouped into depth bands), and the Foothills TOC data onto one time axis; pull sensor coordinates from `places.json` |
 | 1:30-2:30 | Build the flow-path timeline, the reservoir depth chart, and the past-storm comparison (Aug 14-15 and Jul 28) |
 | 2:30-3:15 | Write up the contexts, assumptions, limitations, and next steps |
 | 3:15-4:00 | Polish the demo: the problem Denver Water named, the storm moving down the timeline, the arrival call, the domain model, how agents helped, what comes next |
