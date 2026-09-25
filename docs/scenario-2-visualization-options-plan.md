@@ -11,6 +11,9 @@ reservoir depth chart, past-storm comparison, and sensor map.
 
 ## Option A — Static page
 
+**Status:** Built in [`storm-impact/`](../storm-impact/). Run `python3 serve.py` and
+open <http://localhost:8765/storm-impact/>.
+
 **What it is:** A single self-contained HTML file (e.g., `storm-impact/index.html`)
 with pre-rendered charts, no server logic beyond `serve.py`.
 
