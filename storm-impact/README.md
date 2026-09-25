@@ -15,7 +15,7 @@ open http://localhost:8765/storm-impact/
 ```
 
 The page fetches `storm-impact.json`, so serve it. Opening the file directly will
-not work. It needs no network connection and has no external libraries.
+not work. It uses no build step; only the sensor map needs the network (see below).
 
 ## What is on the page
 
@@ -29,17 +29,25 @@ not work. It needs no network connection and has no external libraries.
    which shows the layering. Hover over a cell to read it.
 3. **Past-storm comparison.** Aug 14-15 and Jul 28 side by side: the river peak, the
    reservoir peak, the plant TOC peak, each with a baseline, and the lags.
-4. **Sensor map.** Stops are numbered in flow order. Each stop lights up once the
-   time cursor passes that stop's peak.
+4. **Sensor map.** A Leaflet map in the style of `../sensor-snapshot-map.html`. Each
+   marker's colour and size show that sensor's reading at the cursor, placed on a
+   per-storm scale from baseline to peak. River and reservoir turbidity use a log
+   scale; TOC uses a linear one; flow runs from its window start to twice that. A
+   dark ring marks a stop whose peak has passed. A selector picks which depth band
+   the reservoir marker shows. The "At the cursor" cards list every reading, its
+   timestamp, and its scale.
 
-The slider and the Play button move one time cursor through every view at once. The
-"At the cursor" panel reads out the values at that time.
+The slider and the Play button move one time cursor through every view at once.
+
+The map needs a network connection for Leaflet (unpkg) and the OpenStreetMap
+tiles. If Leaflet cannot load, the page falls back to a simple offline SVG map.
+Everything else works offline.
 
 ## Files
 
 | Path | What it is |
 |---|---|
-| `index.html` | Hand-written page with vanilla JS and SVG/canvas. |
+| `index.html` | Hand-written page: vanilla JS and SVG/canvas, plus Leaflet for the sensor map. |
 | `build_data.py` | Generates `storm-impact.json`. Uses only the standard library and works offline. |
 | `storm-impact.json` | Generated file. Do not edit it by hand. Rebuild it with `python3 storm-impact/build_data.py`. |
 

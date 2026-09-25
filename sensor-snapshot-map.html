@@ -307,7 +307,7 @@
       const sensorConfigs = [
         {
           id: "strontia-sensor",
-          name: "Strontia Sentinel Gauge",
+          name: "Strontia Sentinel Gauge (conductance)",
           pointName: "Strontia Springs Sentinel Gauge",
           metric: "Specific_Cond_Mean",
           unit: "µS/cm",
@@ -316,9 +316,11 @@
           kind: "gage"
         },
         {
-          id: "trumbull-sensor",
-          name: "South Platte near Trumbull",
-          pointName: "South Platte Gauge near Trumbull",
+          // USGS_South_Platte.csv is gage 06707525 above Strontia, not Trumbull;
+          // the repo has no daily Trumbull series.
+          id: "strontia-turbidity",
+          name: "Strontia Sentinel Gauge (turbidity)",
+          pointName: "Strontia Springs Sentinel Gauge",
           metric: "Turbidity_Median",
           unit: "NTU",
           range: [0, 15],
@@ -509,6 +511,7 @@
         sensorConfigs.forEach((sensor) => {
           const item = document.createElement("div");
           item.className = "sensor-item";
+          if (sensor.id === selectedMetricId) item.style.borderColor = "var(--accent)";
 
           const marker = document.createElement("span");
           marker.className = "dot";
@@ -575,15 +578,17 @@
           const percent = valueToPercent(value, min, max);
           const radius = 7 + percent * 12;
           const color = colorForValue(value, sensor.range);
+          const selected = sensor.id === selectedSensor.id;
 
           marker.setStyle({
             radius,
             fillColor: color,
-            color: "#f8fafc",
-            fillOpacity: 0.85,
+            color: selected ? "#0f172a" : "#f8fafc",
+            fillOpacity: selected ? 0.9 : 0.45,
             opacity: 1,
-            weight: 2
+            weight: selected ? 3 : 2
           });
+          if (selected) marker.bringToFront();
 
           marker.bindPopup(`
             <div>
@@ -658,6 +663,11 @@
           return;
         }
         startPlayback();
+      });
+
+      metricSelect.addEventListener("change", () => {
+        selectedMetricId = metricSelect.value;
+        syncSnapshot();
       });
 
       Promise.all([

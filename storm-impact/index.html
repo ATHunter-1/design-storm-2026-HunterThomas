@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Storm Impact: river to reservoir to Foothills</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
   :root {
     --bg: #f6f7f9; --panel: #fff; --ink: #1d2733; --muted: #5d6b7a; --line: #dfe4ea;
@@ -61,10 +65,27 @@
   #map .station.wait circle.dot { fill: #9aa7b4; }
   #map .station.none circle.dot { fill: #fff; stroke: #9aa7b4; stroke-width: 1.5; }
   #map .station.lit circle.halo { fill: rgba(217,89,38,.25); }
-  .readout { font-size: 13px; }
-  .readout div { padding: 5px 0; border-top: 1px solid var(--line); }
-  .readout div:first-child { border-top: none; }
-  .readout b { display: block; font-size: 12px; color: var(--muted); font-weight: 600; }
+  #lmap { width: 100%; height: 400px; border-radius: 6px; background: #e8eef2; }
+  #lmap .leaflet-tooltip.stop-num { background: #1d2733; color: #fff; border: none; font-size: 11px; font-weight: 700;
+      padding: 1px 5px; box-shadow: none; }
+  #lmap .leaflet-tooltip.stop-num::before { display: none; }
+  .popup-title { font-weight: 700; margin-bottom: 4px; }
+  .popup-row { display: flex; justify-content: space-between; gap: 14px; font-size: 12px; border-top: 1px solid var(--line); padding-top: 3px; margin-top: 3px; }
+  .legend-bar { height: 10px; border-radius: 999px; margin: 8px 0 4px;
+      background: linear-gradient(90deg, hsl(220,78%,58%), hsl(160,78%,58%), hsl(100,78%,58%), hsl(40,78%,58%)); }
+  .legend-values { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+  .map-ctl { display: flex; align-items: center; gap: 6px; font-size: 12.5px; margin: 8px 0 0; }
+  .map-ctl select { font: inherit; padding: 2px 6px; }
+  .sensor-list { display: grid; gap: 8px; }
+  .sensor-item { display: grid; grid-template-columns: 14px 1fr; gap: 4px 10px; align-items: start;
+      border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .sensor-item .sdot { width: 12px; height: 12px; border-radius: 50%; margin-top: 3px; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #cfd6dd; }
+  .sensor-item.passed .sdot { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1d2733; }
+  .sensor-item .sname { font-weight: 600; font-size: 13px; }
+  .sensor-item .sval { font-size: 13px; font-variant-numeric: tabular-nums; }
+  .sensor-item .smeta { grid-column: 2; font-size: 11.5px; color: var(--muted); }
+  .sensor-item .sstate { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .sensor-item.passed .sstate { color: #1d2733; }
   footer { padding: 0 24px 32px; font-size: 12px; color: var(--muted); }
   footer blockquote { margin: 8px 0; padding: 6px 10px; border-left: 3px solid var(--line); background: #fff; }
   code { font-size: 12px; }
@@ -124,17 +145,20 @@
   <aside class="aside">
     <section class="panel">
       <h2>4. Sensors along the path</h2>
-      <svg id="map" viewBox="0 0 340 420" role="img" aria-label="Map of sensors in flow order"></svg>
-      <div class="legend">
-        <span><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#d95926"/></svg> peak reached at cursor</span>
-        <span><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#9aa7b4"/></svg> not yet</span>
-        <span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#fff" stroke="#9aa7b4"/></svg> no water-quality data here</span>
-      </div>
-      <p class="note">Rivers: USGS NLDI flowlines. Intake-to-plant line is schematic; Conduit 26's route is not in the repo.</p>
+      <div id="lmap" aria-label="Map of sensors in flow order"></div>
+      <svg id="map" viewBox="0 0 340 420" role="img" aria-label="Map of sensors in flow order" style="display:none"></svg>
+      <div class="map-ctl"><label for="band">Reservoir marker shows band</label><select id="band"></select></div>
+      <div class="legend-bar"></div>
+      <div class="legend-values"><span>storm baseline</span><span>storm peak</span></div>
+      <p class="note">Marker colour and size show each sensor's reading at the cursor against its own scale for this storm
+        (listed on each card). A dark ring means that stop's peak has passed. Hollow markers have no water-quality data.
+        Stop 1 (Trumbull) is about 18 km straight-line upstream; zoom out to see it.
+        Rivers: USGS NLDI flowlines. Intake-to-plant line is schematic; Conduit 26's route is not in the repo.
+        <span id="map-mode"></span></p>
     </section>
     <section class="panel">
       <h2>At the cursor</h2>
-      <div id="readout" class="readout"></div>
+      <div id="sensor-list" class="sensor-list"></div>
     </section>
   </aside>
 </main>
@@ -470,7 +494,8 @@ function stopPeakT() {
     foothills_plant: summary.plant ? dayStart(summary.plant.date) : null,
   };
 }
-function updateMap() {
+// Fallback when Leaflet cannot load (offline): the simple SVG map.
+function updateSvgMap() {
   const peaks = stopPeakT();
   document.querySelectorAll("#map .station").forEach(g => {
     const id = g.dataset.id, t = peaks[id];
@@ -479,36 +504,166 @@ function updateMap() {
   });
 }
 
-// ---------------------------------------------------------------- cursor
+// ---------------------------------------------------------------- sensor snapshot map
+// Marker styling follows sensor-snapshot-map.html: colour and radius come from
+// where the reading sits on that sensor's scale. Scales are per storm, from the
+// storm's baseline to its peak, so the pulse is visible at every stop.
+const snapColor = f => `hsl(${220 - f * 180}, 78%, 58%)`;
+const snapRadius = f => 7 + f * 12;
+const pad2 = n => String(n).padStart(2, "0");
+const isoDay = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const NO_SENSOR = new Set(["strontia_springs_dam", "conduit_26_intake"]);
+let lmap = null, markers = {}, scales = {}, bandIx = 1;
+
 function valueAt(points, ms) {
   let best = null;
   for (const [t, v] of points) { const tt = typeof t === "number" ? t : parseT(t); if (tt <= ms) best = [tt, v]; else break; }
   return best;
 }
-function updateReadout() {
-  const day = new Date(cursor); day.setHours(0, 0, 0, 0);
-  const iso = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
-  const gd = D.gage_daily.find(r => r.date === iso), td = D.toc_daily.find(r => r.date === iso);
-  const tp = D.gage_15min.turbidity.points, inFine = tp.length && cursor >= parseT(tp[0][0]) && cursor <= parseT(tp[tp.length - 1][0]) + 15 * 60e3;
-  const fine = inFine ? valueAt(tp, cursor) : null;
-  const river = fine ? `${fmtN(fine[1])} FNU (15-min, ${fmtT(fine[0])})`
-                     : gd && gd.turb_max != null ? `daily max ${fmtN(gd.turb_max)}, median ${fmtN(gd.turb_median)} FNU` : "no reading in repo for this day";
-  const cast = fullCasts().filter(c => c.ms <= cursor).pop();
-  const res = cast && cursor - cast.ms < 2 * DAY
-    ? `cast ${fmtT(cast.ms)}:<br>` + D.bands.map((b, i) => `<span style="color:${BAND_COLORS[i]}">●</span> ${b[0]}-${b[1]}: ${fmtN(cast.bands[i])}`).join("<br>") + " NTU"
-    : "no full cast in the last 2 days";
-  document.getElementById("readout").innerHTML = `
-    <div><b>2. River gage above Strontia, turbidity</b>${river}</div>
-    <div><b>3. Reservoir, latest full cast (band median)</b>${res}</div>
-    <div><b>6. Foothills plant, TOC that day</b>${td && td.toc != null ? fmtN(td.toc) + " mg/L" : "no sample in repo"}</div>`;
+function fineAt(points, ms) {
+  if (!points.length || ms < parseT(points[0][0]) || ms > parseT(points[points.length - 1][0]) + 15 * 60e3) return null;
+  return valueAt(points, ms);
 }
+function latestCast(ms) {
+  const c = fullCasts().filter(c => c.ms <= ms).pop();
+  return c && ms - c.ms < 2 * DAY ? c : null;
+}
+function readingAt(id) {
+  if (id === "flow") {
+    const f = fineAt(D.trumbull_15min.points, cursor);
+    return f && { v: f[1], unit: "cfs", what: "flow", when: `15-min, ${fmtT(f[0])}` };
+  }
+  if (id === "turbidity") {
+    const f = fineAt(D.gage_15min.turbidity.points, cursor);
+    if (f) return { v: f[1], unit: "FNU", what: "turbidity", when: `15-min, ${fmtT(f[0])}` };
+    const g = D.gage_daily.find(r => r.date === isoDay(cursor));
+    return g && g.turb_max != null && { v: g.turb_max, unit: "FNU", what: "turbidity", when: `USGS daily max, ${fmtT(cursor, false)}` };
+  }
+  if (id === "strontia_springs_reservoir") {
+    const c = latestCast(cursor);
+    if (!c || c.bands[bandIx] == null) return null;
+    const b = D.bands[bandIx];
+    return { v: c.bands[bandIx], unit: "NTU", what: `turbidity, band ${b[0]}-${b[1]}`, when: `cast ${fmtT(c.ms)}`, cast: c };
+  }
+  if (id === "foothills_plant") {
+    const t = D.toc_daily.find(r => r.date === isoDay(cursor));
+    return t && t.toc != null && { v: t.toc, unit: "mg/L", what: "TOC", when: `daily lab sample, ${fmtT(cursor, false)}` };
+  }
+  return null;
+}
+
+function median(a) {
+  const s = [...a].sort((x, y) => x - y), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+function computeScales() {
+  scales = {};
+  const flow = pts15(D.trumbull_15min.points);
+  if (flow.length) {
+    const lo = flow[0][1];
+    scales.flow = { lo, hi: 2 * lo, log: false, unit: "cfs", note: "start of window to 2× that" };
+  }
+  const dmax = D.gage_daily.filter(r => inWin(dayStart(r.date)) && r.turb_max != null).map(r => r.turb_max);
+  scales.turbidity = { lo: summary.river.baseline_median, hi: Math.max(summary.river.value, ...dmax), log: true, unit: "FNU" };
+  const peakDay = dayStart(summary.river.date), cs = fullCasts();
+  const pre = cs.filter(c => c.ms >= peakDay - 3 * DAY && c.ms < peakDay && c.bands[bandIx] != null).map(c => c.bands[bandIx]);
+  const post = cs.filter(c => c.ms >= peakDay && c.ms < peakDay + 4 * DAY && c.bands[bandIx] != null);
+  const win = cs.filter(c => inWin(c.ms) && c.bands[bandIx] != null).map(c => c.bands[bandIx]);
+  if (pre.length && win.length) {
+    const lo = median(pre);
+    const top = post.reduce((a, c) => (!a || c.bands[bandIx] > a.bands[bandIx] ? c : a), null);
+    scales.strontia_springs_reservoir = { lo, hi: Math.max(lo * 1.01, ...win), log: true, unit: "NTU", peakT: top && top.ms };
+  }
+  const toc = D.toc_daily.filter(r => inWin(dayStart(r.date)) && r.toc != null).map(r => r.toc);
+  if (summary.plant && toc.length)
+    scales.foothills_plant = { lo: summary.plant.baseline_median, hi: Math.max(summary.plant.baseline_median + 0.1, ...toc), log: false, unit: "mg/L" };
+}
+function frac(s, v) {
+  const f = s.log ? (Math.log(Math.max(v, 1e-6)) - Math.log(s.lo)) / (Math.log(s.hi) - Math.log(s.lo)) : (v - s.lo) / (s.hi - s.lo);
+  return Math.min(1, Math.max(0, f || 0));
+}
+function peakFor(id) {
+  if (id === "turbidity") return riverPeakT(summary);
+  if (id === "strontia_springs_reservoir") return scales[id] ? scales[id].peakT : null;
+  if (id === "foothills_plant") return summary.plant ? dayStart(summary.plant.date) : null;
+  return null;
+}
+function stopState(p) {
+  const r = NO_SENSOR.has(p.id) ? null : readingAt(p.id), s = scales[p.id];
+  const peak = peakFor(p.id), passed = peak != null && cursor >= peak;
+  const f = r && s ? frac(s, r.v) : null;
+  return { r, s, f, peak, passed, color: NO_SENSOR.has(p.id) ? "#fff" : f == null ? "#94a3b8" : snapColor(f) };
+}
+const scaleText = s => s ? `scale ${fmtN(s.lo, s.lo < 10 ? 2 : 0)} → ${fmtN(s.hi, s.hi < 10 ? 2 : 0)} ${s.unit}${s.log ? " (log)" : ""}${s.note ? ", " + s.note : ""}` : "";
+
+function initLeaflet() {
+  if (!window.L) {
+    document.getElementById("lmap").style.display = "none";
+    document.getElementById("map").style.display = "block";
+    document.getElementById("map-mode").textContent = "Map library could not load (offline?), so a simplified map is shown.";
+    drawMap();
+    return;
+  }
+  lmap = L.map("lmap", { scrollWheelZoom: false, zoomSnap: 0.25 });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 15, attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(lmap);
+  for (const line of D.rivers) L.polyline(line.map(c => [c[1], c[0]]), { color: "#3b82c4", weight: 2.5, opacity: .8 }).addTo(lmap);
+  const P = Object.fromEntries(D.places.map(p => [p.id, p]));
+  L.polyline([[P.conduit_26_intake.lat, P.conduit_26_intake.lon], [P.foothills_plant.lat, P.foothills_plant.lon]],
+             { color: "#5d6b7a", weight: 2, dashArray: "6 5" }).addTo(lmap).bindTooltip("Intake to plant (schematic)");
+  lmap.fitBounds(D.places.filter(p => p.id !== "flow").map(p => [p.lat, p.lon]), { padding: [30, 30] });
+  const TIP = { flow: "right", turbidity: "bottom", strontia_springs_reservoir: "left", strontia_springs_dam: "bottom",
+                conduit_26_intake: "top", foothills_plant: "right" };
+  for (const p of D.places) {
+    markers[p.id] = L.circleMarker([p.lat, p.lon], { radius: 7 }).addTo(lmap)
+      .bindTooltip(String(p.order + 1), { permanent: true, direction: TIP[p.id] || "right", offset: [0, 0], className: "stop-num" })
+      .bindPopup("");
+  }
+}
+function popupHtml(p, st) {
+  const rows = [`<div class="popup-title">${p.order + 1}. ${p.label}</div>`];
+  if (NO_SENSOR.has(p.id)) rows.push(`<div class="popup-row"><span>No water-quality data in the repo here</span></div>`);
+  else if (!st.r) rows.push(`<div class="popup-row"><span>Reading</span><strong>none at cursor</strong></div>`);
+  else rows.push(`<div class="popup-row"><span>${st.r.what}</span><strong>${fmtN(st.r.v, st.r.v < 10 ? 2 : 1)} ${st.r.unit}</strong></div>`,
+                 `<div class="popup-row"><span>When</span><strong>${st.r.when}</strong></div>`);
+  if (st.s) rows.push(`<div class="popup-row"><span>${scaleText(st.s)}</span></div>`);
+  rows.push(`<div class="popup-row"><span>${p.name}</span></div>`);
+  return rows.join("");
+}
+function updateSnapshot() {
+  if (!lmap) { updateSvgMap(); }
+  const cards = [];
+  for (const p of [...D.places].sort((a, b) => a.order - b.order)) {
+    const st = stopState(p), m = markers[p.id];
+    if (m) {
+      if (NO_SENSOR.has(p.id)) m.setStyle({ radius: 5, fillColor: "#fff", fillOpacity: 1, color: "#7c8a97", weight: 1.5 });
+      else if (st.f == null) m.setStyle({ radius: 7, fillColor: "#94a3b8", fillOpacity: .5, color: "#fff", weight: 2 });
+      else m.setStyle({ radius: snapRadius(st.f), fillColor: st.color, fillOpacity: .9,
+                        color: st.passed ? "#1d2733" : "#fff", weight: st.passed ? 3.5 : 2 });
+      m.setPopupContent(popupHtml(p, st));
+    }
+    const state = NO_SENSOR.has(p.id) ? "no water-quality sensor" : st.peak == null ? "" : st.passed ? "peak passed" : "before peak";
+    let val = NO_SENSOR.has(p.id) ? "–" : st.r ? `${fmtN(st.r.v, st.r.v < 10 ? 2 : 1)} ${st.r.unit} <span class="smeta">${st.r.what}</span>` : "no reading at cursor";
+    let meta = st.r ? st.r.when : "";
+    if (st.s) meta += (meta ? " · " : "") + scaleText(st.s);
+    if (p.id === "strontia_springs_reservoir" && st.r)
+      meta += "<br>" + D.bands.map((b, i) => `<span style="color:${BAND_COLORS[i]}">●</span> ${b[0]}-${b[1]}: ${fmtN(st.r.cast.bands[i])}`).join(" &nbsp;");
+    cards.push(`<div class="sensor-item ${st.passed ? "passed" : ""}">
+      <span class="sdot" style="background:${st.color};${NO_SENSOR.has(p.id) ? "border:1.5px solid #7c8a97" : ""}"></span>
+      <div><div class="sname">${p.order + 1}. ${p.label} <span class="sstate">${state}</span></div><div class="sval">${val}</div></div>
+      ${meta ? `<div class="smeta">${meta}</div>` : ""}</div>`);
+  }
+  document.getElementById("sensor-list").innerHTML = cards.join("");
+}
+
+// ---------------------------------------------------------------- cursor
 function updateCursor() {
   document.getElementById("cursor-time").textContent = fmtT(cursor);
   const x = xScale ? xScale(cursor) : 0;
   for (const k in rowSvgs) if (rowSvgs[k].cursor) { rowSvgs[k].cursor.setAttribute("x1", x); rowSvgs[k].cursor.setAttribute("x2", x); }
   if (depthCursor) { const dx = depthX(cursor); depthCursor.setAttribute("x1", dx); depthCursor.setAttribute("x2", dx); }
-  updateMap();
-  updateReadout();
+  if (D && summary && Object.keys(scales).length) updateSnapshot();
 }
 function setCursorFromSlider() {
   cursor = t0 + (t1 - t0) * (+document.getElementById("scrub").value / 1000);
@@ -523,6 +678,7 @@ function selectStorm(id) {
   const start = Math.max(t0, riverPeakT(summary) - 1.5 * DAY);
   document.getElementById("scrub").value = Math.round((start - t0) / (t1 - t0) * 1000);
   cursor = start;
+  computeScales();
   buildTimeline();
   drawDepth();
   drawCompare();
@@ -562,11 +718,16 @@ fetch("storm-impact.json").then(r => { if (!r.ok) throw new Error(r.status); ret
   document.getElementById("play").addEventListener("click", togglePlay);
   document.getElementById("depth-var").addEventListener("change", drawDepth);
   document.getElementById("generated").textContent = `Data built ${D._generated_at} by ${D._generated_by}.`;
-  drawMap();
+  const bandSel = document.getElementById("band");
+  bandSel.innerHTML = D.bands.map((b, i) => `<option value="${i}">${b[0]}-${b[1]}</option>`).join("");
+  bandSel.value = String(bandIx);
+  bandSel.addEventListener("change", () => { bandIx = +bandSel.value; computeScales(); updateCursor(); });
+  initLeaflet();
   initTip();
   selectStorm(D.storms[0].id);
   let rt = null;
-  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { buildTimeline(); drawDepth(); }, 150); });
+  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => {
+    buildTimeline(); drawDepth(); if (lmap) lmap.invalidateSize(); }, 150); });
 }).catch(err => {
   document.querySelector("main").innerHTML = `<div class="panel">Could not load storm-impact.json (${err.message}).
     Serve the repository with <code>python3 serve.py</code> and open <code>http://localhost:8765/storm-impact/</code>;
