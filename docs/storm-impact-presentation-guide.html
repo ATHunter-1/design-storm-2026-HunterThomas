@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presenting the Storm Impact page: a science-fair guide</title>
+<style>
+  :root { --ink: #1d2733; --muted: #5c6773; --line: #d9dee4; --accent: #12324f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: #f5f7f9; }
+  header { background: var(--accent); color: #fff; padding: 28px 40px 22px; }
+  header h1 { margin: 0 0 8px; font-size: 26px; }
+  header p { margin: 6px 0; max-width: 900px; opacity: .92; }
+  header a, header code { color: #cfe3f7; background: none; }
+  nav { background: #0d2740; padding: 8px 40px; position: sticky; top: 0; z-index: 2; }
+  nav a { color: #cfe3f7; margin-right: 16px; text-decoration: none; font-size: 14px; white-space: nowrap; line-height: 1.9; }
+  nav a:hover { text-decoration: underline; }
+  main { padding: 10px 40px 40px; max-width: 1100px; }
+  section { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 20px 26px; margin: 22px 0; scroll-margin-top: 60px; }
+  h2 { margin: 0 0 10px; font-size: 21px; color: var(--accent); }
+  h3 { margin: 20px 0 6px; font-size: 17px; }
+  blockquote { margin: 12px 0; padding: 10px 16px; background: #eef5fc; border-left: 4px solid #1f5fa8; border-radius: 4px; font-size: 17px; }
+  blockquote p { margin: 4px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 8px 0 14px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; background: #f0f3f6; padding: 1px 5px; border-radius: 3px; }
+  pre { background: #f0f3f6; padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  li { margin: 4px 0; }
+  li.check { list-style: none; margin-left: -22px; }
+  li.check input { transform: scale(1.2); margin-right: 8px; }
+  footer { font-size: 12.5px; color: var(--muted); }
+  footer blockquote { font-size: 12.5px; background: #f5f7f9; border-left: 3px solid var(--line); }
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    nav { display: none; }
+    header { background: none; color: #000; padding: 0 0 8px; }
+    header a, header code { color: #000; }
+    main { padding: 0; max-width: none; }
+    section { border: none; padding: 0; margin: 14px 0; }
+    section.card-print { break-before: page; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Presenting the Storm Impact page: a science-fair guide</h1>
+  <p>This guide is for presenting <code>storm-impact/</code> at a booth where people walk up, watch
+for a few minutes, ask questions, and move on. It assumes you are new to water
+treatment. Every number here comes from the repo's files. General water knowledge
+that is not in Denver Water's materials is marked as <strong>general knowledge</strong>.</p>
+<p>All readings are <strong>provisional</strong>: USGS and Denver Water can still revise them.
+Say this out loud at least once per visitor.</p>
+</header>
+<nav><a href="#1-before-visitors-arrive">Before visitors arrive</a> <a href="#2-the-one-sentence-pitch">The one-sentence pitch</a> <a href="#3-what-beginners-need-to-know">What beginners need to know</a> <a href="#4-the-3-minute-walkthrough">The 3-minute walkthrough</a> <a href="#5-key-numbers-card">Key numbers card</a> <a href="#6-questions-visitors-may-ask">Questions visitors may ask</a> <a href="#7-what-to-avoid-saying">What to avoid saying</a> <a href="#8-booth-roles-for-a-team">Booth roles for a team</a> <a href="#9-if-something-goes-wrong">If something goes wrong</a></nav>
+<main>
+<section id="1-before-visitors-arrive">
+<h2>1. Before visitors arrive</h2>
+<ul>
+<li class="check"><input type="checkbox"> Start the page from the repository root with <code>python3 serve.py</code>, then open
+      <a href="http://localhost:8765/storm-impact/">http://localhost:8765/storm-impact/</a>. If the port is taken, run
+      <code>python3 serve.py 8766</code> and use that port instead.</li>
+<li class="check"><input type="checkbox"> Check the Wi-Fi. The map needs the internet for its background tiles. If
+      the internet is down, the page shows a simpler offline map and everything
+      else still works.</li>
+<li class="check"><input type="checkbox"> Set <strong>Storm</strong> to <strong>Aug 14-15, 2026</strong>.</li>
+<li class="check"><input type="checkbox"> Drag the splitter (the thin bar between the charts and the map) until the
+      map is big enough to see from a few steps back.</li>
+<li class="check"><input type="checkbox"> Drag the time slider back to the start so <strong>Play</strong> tells the story from the
+      beginning.</li>
+<li class="check"><input type="checkbox"> Have <code>docs/ddd-model.html</code> open in a second tab in case someone asks about
+      the software design.</li>
+<li class="check"><input type="checkbox"> Print or keep open the <strong>Key numbers card</strong> (section 5).</li>
+</ul>
+
+</section>
+<section id="2-the-one-sentence-pitch">
+<h2>2. The one-sentence pitch</h2>
+<blockquote>
+<p>Denver Water told us their biggest problem is that they don't have
+visualization. We built one page that follows a storm from the river, down
+through the reservoir layer by layer, to the treatment plant, so staff can
+see when its effects will arrive.</p>
+</blockquote>
+<p>If they have 30 more seconds:</p>
+<blockquote>
+<p>For the August 14-15 storm, the muddy water hit the river gage at 1:45 in the
+morning on Aug 15. The water only takes about four hours to reach the plant's
+intake, but the effects showed up at the plant about a day later. The page
+shows why: the muddy water slid into the reservoir as a layer below the
+surface and took time to spread.</p>
+</blockquote>
+
+</section>
+<section id="3-what-beginners-need-to-know">
+<h2>3. What beginners need to know</h2>
+<h3>The path the water takes</h3>
+<pre><code class="language-text">Rain on the hills
+  -&gt; South Platte River
+  -&gt; River gage (a sensor station just above the reservoir, reads every 15 minutes)
+  -&gt; Strontia Springs Reservoir (a lake behind a dam; a sonde measures it by depth)
+  -&gt; Conduit 26 intake at the dam (where water leaves for the plant)
+  -&gt; Foothills Treatment Plant (cleans the water; its lab tests it once a day)
+  -&gt; Denver's taps
+</code></pre>
+<h3>Words you will say</h3>
+<table>
+<thead>
+<tr>
+<th>Word</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Storm impact</strong></td>
+<td>The change in water quality a storm causes. It is different from the water itself arriving.</td>
+</tr>
+<tr>
+<td><strong>Turbidity</strong></td>
+<td>How cloudy the water is. Clear water reads about 1 to 5. A storm washes in mud and pushes it up.</td>
+</tr>
+<tr>
+<td><strong>FNU / NTU</strong></td>
+<td>Units of turbidity. The river gage reports FNU and the sonde reports NTU. <strong>General knowledge:</strong> the two come from slightly different instruments, so compare the shape of the change rather than the exact numbers.</td>
+</tr>
+<tr>
+<td><strong>TOC (total organic carbon)</strong></td>
+<td>Dissolved bits of dead plants and soil. It is not dangerous by itself, but the plant must deal with it before adding chlorine (<code>guide.md</code>). The plant lab measures it once a day, in mg/L.</td>
+</tr>
+<tr>
+<td><strong>cfs</strong></td>
+<td>Cubic feet per second: how much water passes a gage each second.</td>
+</tr>
+<tr>
+<td><strong>Gage</strong></td>
+<td>An automatic river monitoring station. USGS runs the ones here.</td>
+</tr>
+<tr>
+<td><strong>Sonde</strong> (say "sond," rhymes with "pond")</td>
+<td>An instrument package lowered from the surface toward the bottom of the reservoir. Each trip down is a <strong>cast</strong>, and it takes one about every 6 hours.</td>
+</tr>
+<tr>
+<td><strong>Depth band</strong></td>
+<td>A slice of the reservoir by depth, such as 5-15 on the depth scale. The page summarises each cast by these slices.</td>
+</tr>
+<tr>
+<td><strong>Stratification</strong></td>
+<td><strong>General knowledge:</strong> in summer, warm water floats on top of cold water, like oil on vinegar. River water slides in at the layer that matches its temperature and density.</td>
+</tr>
+<tr>
+<td><strong>Provisional</strong></td>
+<td>Published right away and possibly corrected later. Nothing here is final.</td>
+</tr>
+<tr>
+<td><strong>Baseline</strong></td>
+<td>What the reading looked like before the storm. It is the "normal" we compare against.</td>
+</tr>
+</tbody>
+</table>
+<h3>The big idea, in plain words</h3>
+<ol>
+<li>The storm made the river muddy fast: turbidity went from about 3 to 329.</li>
+<li>That muddy water did <strong>not</strong> spread evenly through the reservoir. It slid in
+   as a layer <strong>in the 5-15 depth band, below the surface</strong>. The surface stayed clear, and
+   the bottom barely changed.</li>
+<li>A day or so later, the plant's lab saw TOC rise from 2.0 to 2.5 mg/L.</li>
+<li>So an operator watching the river has <strong>about a day</strong> of warning for this
+   kind of storm, not just four hours.</li>
+</ol>
+
+</section>
+<section id="4-the-3-minute-walkthrough">
+<h2>4. The 3-minute walkthrough</h2>
+<p>Do this for each new group. Each step has an action and a script.</p>
+<h3>Step 1: set the scene (about 20 seconds)</h3>
+<p><strong>Do:</strong> point at the title and the yellow <strong>Provisional data</strong> banner.</p>
+<p><strong>Say:</strong> "This is a real storm from August 14-15, 2026, using Denver Water and USGS
+sensor data. The data is provisional, so it could still be corrected. The page
+doesn't predict anything. It puts the evidence side by side so an operator can
+make the call."</p>
+<h3>Step 2: the map (about 30 seconds)</h3>
+<p><strong>Do:</strong> point at the map on the right, following the river downstream.</p>
+<p><strong>Say:</strong> "These dots are the stops in flow order: an upstream flow gage at
+Trumbull, the river gage just above the reservoir, the reservoir, the dam, the
+intake, and the Foothills plant. Colour and size show how far each reading is
+from normal: blue and small is normal, shifting through green to orange and big
+at the storm's peak. The
+dam and the intake are hollow because they have no water-quality sensor."</p>
+<h3>Step 3: press Play (about 60 seconds)</h3>
+<p><strong>Do:</strong> press <strong>Play</strong> and let the cursor sweep. Keep your finger on the timeline
+(section 1) as it moves.</p>
+<p><strong>Say, as it happens:</strong></p>
+<ul>
+<li>"Here's the river gage. Turbidity jumps in the early hours of Aug 15 and peaks
+  at 329 at 1:45 AM. That dashed line marks the river peak."</li>
+<li>"Watch the reservoir row and the reservoir dot. Nothing happens right away. The
+  response builds over the next day."</li>
+<li>"The bottom row is the plant lab. TOC steps up from 2.0 to 2.5 on Aug 16."</li>
+<li>"On the map, a dark ring means that stop's peak has passed. You can see the
+  rings appear one after another as the storm moves downstream."</li>
+</ul>
+<h3>Step 4: the depth chart, which is the "aha" moment (about 45 seconds)</h3>
+<p><strong>Do:</strong> point at section 2, <strong>Reservoir by depth</strong>. Hover over the bright band.</p>
+<p><strong>Say:</strong> "This is the part nobody could see before. Time runs left to right and
+depth runs top to bottom. Each column is one trip of the sonde. See
+this bright stripe? It's the muddy storm water, in the 5-15 depth band. The top stays
+clear. Over the next few days, the stripe moves deeper, to the 15-25 band, and
+fades."</p>
+<p><strong>Optional:</strong> switch <strong>Color by</strong> to <strong>Temperature</strong>. "Warm on top, cold below.
+That layering is why the muddy water travels as a sheet instead of mixing in."</p>
+<h3>Step 5: compare storms and land the point (about 25 seconds)</h3>
+<p><strong>Do:</strong> point at section 3, <strong>Past-storm comparison</strong>.</p>
+<p><strong>Say:</strong> "We checked a second storm, July 28. The plant saw its TOC bump the same
+day there, and about a day later for August. Two storms show a pattern, not a
+rule. That's why the page gives the operator evidence instead of an automatic
+forecast."</p>
+<p><strong>Close:</strong> "Denver Water said they have sensors everywhere but no way to see them
+together. This is one view of the whole path."</p>
+
+</section>
+<section id="5-key-numbers-card" class="card-print">
+<h2>5. Key numbers card</h2>
+<p>Aug 14-15, 2026 storm (provisional)</p>
+<table>
+<thead>
+<tr>
+<th>Stop</th>
+<th>Normal before</th>
+<th>Peak</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>River gage above Strontia (turbidity)</td>
+<td>about 2.5 FNU</td>
+<td><strong>329 FNU</strong></td>
+<td>1:45 AM, Aug 15</td>
+</tr>
+<tr>
+<td>Reservoir, 5-15 band (turbidity, one sonde cast)</td>
+<td>about 1.5 NTU</td>
+<td><strong>18.9 NTU</strong></td>
+<td>12:06 PM, Aug 16, about 34 h after the river peak</td>
+</tr>
+<tr>
+<td>Reservoir, 5-15 band (daily median)</td>
+<td>1.5 NTU (Aug 13)</td>
+<td><strong>15.6 NTU</strong></td>
+<td>Aug 16</td>
+</tr>
+<tr>
+<td>Foothills plant (TOC, daily lab)</td>
+<td>2.0 mg/L</td>
+<td><strong>2.5 mg/L</strong></td>
+<td>Aug 16-17, about 1 day after the river peak</td>
+</tr>
+</tbody>
+</table>
+<p>Jul 28, 2026 storm (provisional)</p>
+<table>
+<thead>
+<tr>
+<th>Stop</th>
+<th>Peak</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>River gage (daily max turbidity; no exact time)</td>
+<td>151 FNU</td>
+<td>Jul 28</td>
+</tr>
+<tr>
+<td>Reservoir, 15-25 band</td>
+<td>4.9 NTU</td>
+<td>Jul 30, about 36 h after the river peak (river peak assumed at noon)</td>
+</tr>
+<tr>
+<td>Foothills plant TOC</td>
+<td>2.4 mg/L</td>
+<td>Jul 28, the same day</td>
+</tr>
+</tbody>
+</table>
+<p>Other useful facts:</p>
+<ul>
+<li>Water moves from the river gage to the plant intake in <strong>about 4 hours</strong>,
+  according to Denver Water's raw water group, as reported in <code>guide.md</code>.</li>
+<li>The river gage is only <strong>1.76 km</strong> straight-line upstream of the dam.</li>
+<li>Upstream at Trumbull, flow barely moved during the storm (139 to 147 cfs).</li>
+<li>For operators, an unusual TOC day is one <strong>above 3 mg/L</strong> (<code>glossary.md</code>). This
+  storm's 2.5 was a noticeable rise but stayed under that line.</li>
+</ul>
+<p><strong>Why two reservoir numbers?</strong> The page's 18.9 is the single highest sonde cast.
+The planning doc's 15.6 is the median of all readings that day. Both are correct;
+they summarise the data differently. Quote the one that matches what's on
+screen.</p>
+
+</section>
+<section id="6-questions-visitors-may-ask">
+<h2>6. Questions visitors may ask</h2>
+<p><strong>"So can it predict when the next storm will hit the plant?"</strong>
+No, and that's on purpose. It lines up the evidence and shows past storms for
+comparison, and the operator makes the call. Two storms aren't enough to build
+a trustworthy prediction.</p>
+<p><strong>"If the water takes four hours, why does the impact take a day?"</strong>
+The water moving and the mud moving aren't the same thing. The depth chart
+suggests the muddy water entered as a layer and spread slowly through the
+reservoir. That's our reading of the data, not a proven cause. Denver Water's
+experts would confirm it.</p>
+<p><strong>"Why does the surface stay clear?"</strong>
+<strong>General knowledge:</strong> in summer the reservoir is layered, warm on top and cold
+below. Cooler, muddier river water sinks to the layer that matches its density.
+You can see the layers when you switch the depth chart to Temperature.</p>
+<p><strong>"What unit is the depth in?"</strong>
+The sonde file doesn't say. We're confirming with Denver Water whether it's feet
+or metres, so the page shows no unit. The pattern is the same either way: muddy
+water in a middle layer, a clear surface, and a bottom that barely changes.</p>
+<p><strong>"Does it matter that the mud is in the 5-15 band?"</strong>
+It depends on how deep the plant's intake draws water. That's one of our open
+questions for Denver Water.</p>
+<p><strong>"Why is July 28 the same day but August is a day later?"</strong>
+We don't know yet. The July river data is only a daily summary, so we don't
+know what time the river peaked, and the plant lab samples only once a day.
+Timing at the plant is accurate only to the day.</p>
+<p><strong>"Were there any bad readings?"</strong>
+Yes. In April and May, the sonde sometimes hit the reservoir bottom at the dam
+and stirred up sediment, which gave false readings as high as 2,438 NTU. The
+page detects those 11 casts and leaves them out. None of them happened during
+these storms. We also saw one conductance reading of 38 at 1 PM on Aug 14,
+between readings of about 300. We think it's a sensor glitch, but that's
+unconfirmed.</p>
+<p><strong>"Is 2.5 mg/L of TOC dangerous?"</strong>
+TOC isn't dangerous by itself. It matters because it reacts with the chlorine
+used to disinfect the water (<code>guide.md</code>). The operational line in these
+materials is 3 mg/L, and this storm stayed under it.</p>
+<p><strong>"Where does the data come from?"</strong>
+USGS river gages, Denver Water's reservoir sonde, and the Foothills plant's
+daily lab samples, all in this repo. A small script, <code>storm-impact/build_data.py</code>,
+turns them into the page's data file.</p>
+<p><strong>"How did you use DDD / AI agents?"</strong>
+Open <code>docs/ddd-model.html</code>. It has the Event Storming timeline, the storm's
+events in the past tense (such as <code>TurbiditySpikeDetected</code> and
+<code>DepthChangeObserved</code>), and the bounded contexts. The key language rule is that
+"water arrival" and "impact arrival" are different things.</p>
+<p><strong>"What would you build next?"</strong>
+Real-time sensors at the intake or in the plant would sharpen timing from a day
+to hours. We'd also add more past storms and the actual intake depth.</p>
+<p>If you don't know an answer, say so: "Good question. That's on our list for
+Denver Water."</p>
+
+</section>
+<section id="7-what-to-avoid-saying">
+<h2>7. What to avoid saying</h2>
+<ul>
+<li>Don't say it <strong>predicts</strong> or <strong>forecasts</strong>. Say it <strong>shows</strong> the evidence.</li>
+<li>Don't say the storm <strong>caused</strong> the TOC rise as a fact. Say the rise
+  <strong>followed</strong> the storm.</li>
+<li>Don't say "it always takes a day." Say it took <strong>about a day for this storm</strong>.</li>
+<li>Don't present numbers as final. Say they're <strong>provisional</strong>.</li>
+<li>Don't give the depth a unit (feet or metres) until Denver Water confirms it.</li>
+<li>Don't give treatment advice.</li>
+<li>Don't hand out copies of the data or the page. Denver Water's terms restrict
+  redistribution (<code>data/TERMS.md</code>, and at the bottom of the page).</li>
+</ul>
+
+</section>
+<section id="8-booth-roles-for-a-team">
+<h2>8. Booth roles for a team</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Driver</td>
+<td>Runs the laptop: Play, hover, switching storms.</td>
+</tr>
+<tr>
+<td>Narrator</td>
+<td>Gives the walkthrough in section 4.</td>
+</tr>
+<tr>
+<td>Greeter / Q&amp;A</td>
+<td>Brings people over, gives the pitch in section 2, and handles questions from section 6.</td>
+</tr>
+</tbody>
+</table>
+<p>Rotate every half hour so nobody's voice gives out.</p>
+
+</section>
+<section id="9-if-something-goes-wrong">
+<h2>9. If something goes wrong</h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Address already in use"</td>
+<td>Run <code>python3 serve.py 8766</code> and open port 8766.</td>
+</tr>
+<tr>
+<td>Blank page or data error</td>
+<td>You opened the file directly. Use the <code>http://localhost</code> address instead.</td>
+</tr>
+<tr>
+<td>Map is a plain drawing with no streets</td>
+<td>The internet is down, so the offline map is showing. Carry on; the story still works.</td>
+</tr>
+<tr>
+<td>Map is squashed</td>
+<td>Widen the window (the map column hides below 1100 px wide) or drag the splitter.</td>
+</tr>
+<tr>
+<td>A stop is off-screen on the map</td>
+<td>Reload the page. It fits all stops until you pan or zoom.</td>
+</tr>
+<tr>
+<td>Splitter width is odd</td>
+<td>Double-click the splitter to reset it.</td>
+</tr>
+</tbody>
+</table></section>
+<footer>
+  <p>Figures on this page are derived from Denver Water and USGS provisional data and are subject to revision. General water-science statements are general knowledge, not from Denver Water's materials.</p>
+  <details>
+    <summary>Denver Water data terms (they apply to anything derived from this data)</summary>
+    <blockquote>The water quality data is provided "as is." Water quality data provided to the user is provisional and subject to change, and the user should not assume that the data has undergone any quality assurance or quality control review. Denver Water makes no warranty of any kind, express or implied, concerning the data, including accuracy, reliability, completeness, timeliness, or usefulness. Copyright 2026, Denver Water. https://www.denverwater.org/about-us/how-we-operate/public-records</blockquote>
+    <blockquote>COPYRIGHT AND DISCLAIMER: The data and metadata contained herein were prepared by Denver Water for its internal purposes only. Denver Water provides data and metadata as a public service with no claim as to the completeness, usefulness, timeliness or accuracy of its content, positional or otherwise. Denver Water and its employees make no warranty, express or implied, and assume no legal liability or responsibility for the ability of users to fulfill their intended purposes in accessing or using data or metadata or for omissions in content regarding such. The information provided is presented "as is," without warranty of any kind, including, but not limited to, the implied warranties of merchantability, fitness for a particular purpose, or non-infringement. Your use of this information is at your own risk. In providing this information or access to it, Denver Water assumes no obligation to assist the user in the use of such information or in the development, use, or maintenance of any applications applied to or associated with the data or metadata. Any sale, reproduction or distribution of this information, or products derived therefrom, in any format is expressly prohibited.</blockquote>
+    <p>See also <a href="../data/TERMS.md">data/TERMS.md</a>.</p>
+  </details>
+</footer>
+</main>
+</body>
+</html>

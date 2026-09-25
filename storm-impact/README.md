@@ -6,7 +6,7 @@ Staff can use it to judge when a storm's impact reaches the plant. The page show
 the evidence, and the operator makes the timing call. See
 [`../docs/scenario-2-planning.md`](../docs/scenario-2-planning.md) and
 [`../docs/scenario-2-visualization-options-plan.md`](../docs/scenario-2-visualization-options-plan.md).
-To demo it, see [`../docs/storm-impact-presentation-guide.md`](../docs/storm-impact-presentation-guide.md).
+To demo it, see [`../docs/storm-impact-presentation-guide.html`](../docs/storm-impact-presentation-guide.html) (Markdown source: [`../docs/storm-impact-presentation-guide.md`](../docs/storm-impact-presentation-guide.md)).
 
 ## Viewing
 
