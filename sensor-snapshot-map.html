@@ -624,7 +624,7 @@
           if (!dateKey) return;
           dateLabel.textContent = formatDateLabel(new Date(`${dateKey}T00:00:00`));
           syncSnapshot();
-        }, 800);
+        }, 250);
       }
 
       function initializeSlider() {
