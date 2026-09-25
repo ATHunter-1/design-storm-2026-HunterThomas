@@ -12,7 +12,7 @@ Questions for the debrief, in priority order. If time is short, ask the top five
 
 ## Data questions
 
-- ~~Is "Vertical Position" depth below the surface, in meters?~~ Answered: depth below the surface in feet (Cassidi, working session).
+- Is "Vertical Position" in feet or metres, and how deep is the water where the sonde hangs? (Cassidi said feet; double-checking.)
 - Where is the sonde relative to the intake and the dam, and how often does it cast?
 - Was the conductance reading of 38 at 1 PM on Aug 14 a sensor glitch? How do they handle bad or provisional readings?
 - Flow at Trumbull barely changed (139 to 147 cfs). Where did the runoff come in: a tributary below Trumbull, or a burn scar?
@@ -50,6 +50,6 @@ Questions for the debrief, in priority order. If time is short, ask the top five
 | Useful lead time | | |
 | Action thresholds | | |
 | Depth-table reaction | | |
-| Vertical Position units | Feet, depth below the surface | Cassidi (Denver Water), working session |
+| Vertical Position units | Feet (being double-checked) | Cassidi (Denver Water), working session |
 | Terms they use | | |
 | Follow-up contact | | |

@@ -137,8 +137,8 @@
         <svg id="depth-axes"></svg>
       </div>
       <div id="scale"><span id="scale-lo"></span><canvas id="scale-canvas" width="220" height="10"></canvas><span id="scale-hi"></span><span id="scale-note"></span></div>
-      <p class="note">Depth is the sonde's "Vertical Position", in feet below the surface. The file has no unit;
-        Cassidi (Denver Water) confirmed feet in our working session. The sonde's exact location and the
+      <p class="note">Depth is the sonde's "Vertical Position" (depth below the surface). The file gives no unit, and we are
+        still confirming it with Denver Water. The sonde's exact location and the
         time zone of its clock are not stated; times are shown as recorded. <span id="bottom-note"></span></p> <span id="bottom-note"></span></p>
     </section>
 
@@ -241,7 +241,7 @@ const ROWS = [
   { key: "trumbull", label: "Trumbull flow gage", sub: "flow, cfs (15-min)", h: 70 },
   { key: "turb", label: "River gage above Strontia", sub: "turbidity, FNU", h: 120 },
   { key: "cond", label: "River gage above Strontia", sub: "specific conductance, µS/cm (15-min)", h: 70 },
-  { key: "res", label: "Strontia Springs Reservoir", sub: "turbidity by depth band (ft), NTU (cast medians)", h: 130 },
+  { key: "res", label: "Strontia Springs Reservoir", sub: "turbidity by depth band, NTU (cast medians)", h: 130 },
   { key: "toc", label: "Foothills plant", sub: "TOC, mg/L (daily lab sample)", h: 90 },
 ];
 const PAD = { l: 38, r: 12, t: 16, b: 6 }, AXIS_H = 22;
@@ -311,7 +311,7 @@ function drawRow(key, svg, w, h) {
     D.bands.forEach((b, i) => lines.push({ pts: cs.filter(c => c.bands[i] != null).map(c => [c.ms, c.bands[i]]),
                                            color: BAND_COLORS[i], dots: true, gapMs: 13 * HOUR }));
     const r = summary.reservoir;
-    if (r) peak = { t: parseT(r.time), v: r.value, text: `${fmtN(r.value)} NTU, band ${r.band_label} ft, ${fmtT(parseT(r.time))}` };
+    if (r) peak = { t: parseT(r.time), v: r.value, text: `${fmtN(r.value)} NTU, band ${r.band_label}, ${fmtT(parseT(r.time))}` };
   } else if (key === "toc") {
     steps.push({ segs: dailySteps(D.toc_daily, "toc"), color: "var(--toc)", solid: true });
     const p = summary.plant;
@@ -362,7 +362,7 @@ function drawRow(key, svg, w, h) {
   }
   if (key === "res") {
     const lg = el("text", { x: PAD.l + plotW, y: 11, "text-anchor": "end" }, svg);
-    lg.innerHTML = D.bands.map((b, i) => `<tspan fill="${BAND_COLORS[i]}">●</tspan> ${b[0]}-${b[1]}`).join("  ") + "  (depth band, ft)";
+    lg.innerHTML = D.bands.map((b, i) => `<tspan fill="${BAND_COLORS[i]}">●</tspan> ${b[0]}-${b[1]}`).join("  ") + "  (depth band)";
   }
 }
 
@@ -423,7 +423,7 @@ function drawDepth() {
     el("text", { x: DPAD.l - 4, y: y(d) + 4, "text-anchor": "end" }, axes).textContent = d;
   }
   el("text", { x: 10, y: DPAD.t + ph / 2, transform: `rotate(-90 10 ${DPAD.t + ph / 2})`, "text-anchor": "middle" }, axes)
-    .textContent = "Depth (ft)";
+    .textContent = "Depth (Vertical Position)";
   for (let d = dayStart(storm.start); d <= t1; d += DAY) {
     el("line", { x1: x(d), x2: x(d), y1: DPAD.t + ph, y2: DPAD.t + ph + 4 }, axes);
     if (d + DAY / 2 < t1) el("text", { x: x(d + DAY / 2), y: H - 6, "text-anchor": "middle" }, axes).textContent = fmtT(d, false);
@@ -456,7 +456,7 @@ function drawCompare() {
       <td><b>${st.label}</b></td>
       <td>${fmtN(r.value, 0)} FNU ${r.time ? "at " + fmtT(parseT(r.time)) : "(daily max, " + fmtT(dayStart(r.date), false) + "; time unknown)"}
           <br><small>baseline median ${fmtN(r.baseline_median)} FNU</small></td>
-      <td>${re ? `${fmtN(re.value)} NTU, band ${re.band_label} ft<br><small>${fmtT(parseT(re.time))}; baseline ${fmtN(re.baseline_median, 2)}</small>` : "–"}</td>
+      <td>${re ? `${fmtN(re.value)} NTU, band ${re.band_label}<br><small>${fmtT(parseT(re.time))}; baseline ${fmtN(re.baseline_median, 2)}</small>` : "–"}</td>
       <td>${p ? `${fmtN(p.value)} mg/L on ${fmtT(dayStart(p.date), false)}<br><small>baseline median ${fmtN(p.baseline_median, 2)}</small>` : "–"}</td>
       <td>${re ? `Reservoir: ${re.hours_after_river_peak} h${r.time ? "" : "*"}` : ""}<br>
           ${p ? `Plant: ${p.days_after_river_peak === 0 ? "same day" : p.days_after_river_peak + " day" + (p.days_after_river_peak > 1 ? "s" : "")}` : ""}</td>
@@ -552,7 +552,7 @@ function readingAt(id) {
     const c = latestCast(cursor);
     if (!c || c.bands[bandIx] == null) return null;
     const b = D.bands[bandIx];
-    return { v: c.bands[bandIx], unit: "NTU", what: `turbidity, band ${b[0]}-${b[1]} ft`, when: `cast ${fmtT(c.ms)}`, cast: c };
+    return { v: c.bands[bandIx], unit: "NTU", what: `turbidity, band ${b[0]}-${b[1]}`, when: `cast ${fmtT(c.ms)}`, cast: c };
   }
   if (id === "foothills_plant") {
     const t = D.toc_daily.find(r => r.date === isoDay(cursor));
@@ -664,7 +664,7 @@ function updateSnapshot() {
     let meta = st.r ? st.r.when : "";
     if (st.s) meta += (meta ? " · " : "") + scaleText(st.s);
     if (p.id === "strontia_springs_reservoir" && st.r)
-      meta += "<br>ft: " + D.bands.map((b, i) => `<span style="color:${BAND_COLORS[i]}">●</span> ${b[0]}-${b[1]}: ${fmtN(st.r.cast.bands[i])}`).join(" &nbsp;");
+      meta += "<br>depth " + D.bands.map((b, i) => `<span style="color:${BAND_COLORS[i]}">●</span> ${b[0]}-${b[1]}: ${fmtN(st.r.cast.bands[i])}`).join(" &nbsp;");
     cards.push(`<div class="sensor-item ${st.passed ? "passed" : ""}">
       <span class="sdot" style="background:${st.color};${NO_SENSOR.has(p.id) ? "border:1.5px solid #7c8a97" : ""}"></span>
       <div><div class="sname">${p.order + 1}. ${p.label} <span class="sstate">${state}</span></div><div class="sval">${val}</div></div>
@@ -718,7 +718,7 @@ function initTip() {
     const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
     const c = depthCells.find(k => mx >= k.xa && mx < k.xb && my >= k.ya && my < k.yb);
     if (!c) { tip.style.display = "none"; return; }
-    tip.innerHTML = `Cast ${fmtT(c.c.ms)}${c.c.full ? "" : " (short cast)"}<br>depth ${c.r[0]} ft · ${c.r[1]} NTU · ${c.r[2]} °C`;
+    tip.innerHTML = `Cast ${fmtT(c.c.ms)}${c.c.full ? "" : " (short cast)"}<br>depth ${c.r[0]} · ${c.r[1]} NTU · ${c.r[2]} °C`;
     tip.style.display = "block";
     tip.style.left = (e.clientX + 12) + "px"; tip.style.top = (e.clientY + 12) + "px";
   });
