@@ -38,6 +38,9 @@ not work. It uses no build step; only the sensor map needs the network (see belo
    timestamp, and its scale.
 
 The slider and the Play button move one time cursor through every view at once.
+Drag the splitter between the charts and the map to make the map column wider or
+narrower. You can also focus the splitter and use the arrow keys, Home, or End, or
+double-click it to reset. The page remembers the width.
 
 The map needs a network connection for Leaflet (unpkg) and the OpenStreetMap
 tiles. If Leaflet cannot load, the page falls back to a simple offline SVG map.

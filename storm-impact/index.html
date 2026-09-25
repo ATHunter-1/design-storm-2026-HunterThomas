@@ -30,8 +30,16 @@
               border-radius: 5px; background: #fff; cursor: pointer; }
   #scrub { flex: 1 1 320px; }
   #cursor-time { font-variant-numeric: tabular-nums; min-width: 150px; font-weight: 600; }
-  main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; padding: 16px 24px 32px; }
-  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
+  main { --aside-w: 360px; display: grid; grid-template-columns: minmax(0, 1fr) 18px var(--aside-w); padding: 16px 24px 32px; }
+  .splitter { cursor: col-resize; position: relative; touch-action: none; outline: none; }
+  .splitter::before { content: ""; position: absolute; top: 0; bottom: 0; left: 8px; width: 2px; border-radius: 2px; background: transparent; }
+  .splitter::after { content: ""; position: sticky; top: 50vh; display: block; margin: 0 auto; width: 6px; height: 40px;
+      border-radius: 3px; background: #c3ccd5; }
+  .splitter:hover::before, .splitter:focus-visible::before, .splitter.dragging::before { background: #3987e5; }
+  .splitter:hover::after, .splitter:focus-visible::after, .splitter.dragging::after { background: #3987e5; }
+  body.resizing { cursor: col-resize; user-select: none; }
+  body.resizing #lmap { pointer-events: none; }
+  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } .splitter { display: none; } }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
   .panel p.note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
   .row { display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: stretch; border-top: 1px solid var(--line); }
@@ -65,7 +73,7 @@
   #map .station.wait circle.dot { fill: #9aa7b4; }
   #map .station.none circle.dot { fill: #fff; stroke: #9aa7b4; stroke-width: 1.5; }
   #map .station.lit circle.halo { fill: rgba(217,89,38,.25); }
-  #lmap { width: 100%; height: 400px; border-radius: 6px; background: #e8eef2; }
+  #lmap { width: 100%; height: clamp(400px, calc(var(--aside-w) * 1.1), 75vh); border-radius: 6px; background: #e8eef2; }
   #lmap .leaflet-tooltip.stop-num { background: #1d2733; color: #fff; border: none; font-size: 11px; font-weight: 700;
       padding: 1px 5px; box-shadow: none; }
   #lmap .leaflet-tooltip.stop-num::before { display: none; }
@@ -142,6 +150,8 @@
     </section>
   </div>
 
+  <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="Resize map column"
+       tabindex="0" title="Drag to resize the map column (double-click to reset)"></div>
   <aside class="aside">
     <section class="panel">
       <h2>4. Sensors along the path</h2>
@@ -725,9 +735,56 @@ fetch("storm-impact.json").then(r => { if (!r.ok) throw new Error(r.status); ret
   initLeaflet();
   initTip();
   selectStorm(D.storms[0].id);
-  let rt = null;
-  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => {
-    buildTimeline(); drawDepth(); if (lmap) lmap.invalidateSize(); }, 150); });
+  let rt = null, raf = 0;
+  const relayout = () => { buildTimeline(); drawDepth(); if (lmap) lmap.invalidateSize(); };
+  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { setAsideW(asideW); relayout(); }, 150); });
+
+  // Splitter between the charts and the map column. Keeps at least 640px for the
+  // charts and remembers the width between visits.
+  const MIN_W = 300, DEFAULT_W = 360, split = document.getElementById("splitter"), mainEl = document.querySelector("main");
+  const maxW = () => Math.max(MIN_W, mainEl.clientWidth - 48 - 18 - 640);
+  let asideW = +localStorage.getItem("stormImpactAsideW") || DEFAULT_W;
+  function setAsideW(w) {
+    asideW = Math.round(Math.min(maxW(), Math.max(MIN_W, w)));
+    mainEl.style.setProperty("--aside-w", asideW + "px");
+    split.setAttribute("aria-valuemin", MIN_W);
+    split.setAttribute("aria-valuemax", maxW());
+    split.setAttribute("aria-valuenow", asideW);
+  }
+  function commitW(w) {
+    setAsideW(w);
+    localStorage.setItem("stormImpactAsideW", asideW);
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(relayout);
+  }
+  setAsideW(asideW);
+  relayout();
+  split.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    split.setPointerCapture(e.pointerId);
+    split.classList.add("dragging");
+    document.body.classList.add("resizing");
+  });
+  split.addEventListener("pointermove", e => {
+    if (!split.hasPointerCapture(e.pointerId)) return;
+    const right = mainEl.getBoundingClientRect().right - 24;
+    commitW(right - e.clientX - 9);
+  });
+  const endDrag = e => {
+    if (split.hasPointerCapture(e.pointerId)) split.releasePointerCapture(e.pointerId);
+    split.classList.remove("dragging");
+    document.body.classList.remove("resizing");
+  };
+  split.addEventListener("pointerup", endDrag);
+  split.addEventListener("pointercancel", endDrag);
+  split.addEventListener("dblclick", () => commitW(DEFAULT_W));
+  split.addEventListener("keydown", e => {
+    const step = e.shiftKey ? 80 : 20;
+    const next = { ArrowLeft: asideW + step, ArrowRight: asideW - step, Home: maxW(), End: MIN_W }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    commitW(next);
+  });
 }).catch(err => {
   document.querySelector("main").innerHTML = `<div class="panel">Could not load storm-impact.json (${err.message}).
     Serve the repository with <code>python3 serve.py</code> and open <code>http://localhost:8765/storm-impact/</code>;
