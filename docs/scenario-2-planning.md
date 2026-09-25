@@ -50,7 +50,7 @@ Rain / snowmelt -> South Platte River -> USGS gage 06707525 (just above the rese
 | Time (MDT) | Observation |
 | --- | --- |
 | Aug 14, noon | Baseline: turbidity about 3-5 FNU, conductance about 296 |
-| Aug 14, 1:00 PM | Conductance reads 38 once, then back to about 300. Likely a sensor glitch, which is why readings stay provisional |
+| Aug 14, 1:00 PM | Conductance reads 38 once, then back to about 300. Jake: probably a sensor glitch. Denver Water is still working out how to handle bad readings, probably by excluding outliers |
 | Aug 14, 7:30 PM | First turbidity bump: 29.9 FNU |
 | Aug 15, 12:30-1:45 AM | Main pulse, peaking at **329 FNU** at 1:45 AM |
 | Aug 15, 6:00 PM | Back to about 5 FNU |
@@ -59,7 +59,7 @@ Upstream at Trumbull (gage 06701900), flow barely moved over the same window (13
 
 ### Reservoir sonde (`data/Strontia 0407_0819.xlsx`)
 
-Median turbidity (NTU) of all readings that day, by "Vertical Position" band (depth below the surface; unit unconfirmed):
+Median turbidity (NTU) of all readings that day, by "Vertical Position" band (metres below the surface):
 
 | Date | 0-5 | 5-15 | 15-25 | 25-35 | 35-50 |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -74,10 +74,11 @@ What the table shows: the surface stayed clear. The plume peaked in the 5-15 ban
 
 Caveats:
 
-- "Vertical Position" has no unit in the file. It is depth below the surface. Cassidi (Denver Water) said feet in our working session, but the team is double-checking: bottom contact at the dam happens at about 45-48, which would be shallow in feet for a 243 ft dam (`strontia-brief/places.json`). Until confirmed, show no unit.
+- "Vertical Position" has no unit in the file. Jake (Denver Water) confirmed it is metres below the surface, which replaces the "feet" we heard earlier in a working session. Metres also fits the bottom-contact depth of about 45-48 behind a 243 ft dam (`strontia-brief/places.json`).
+- Jake says the sonde hangs in the middle of the reservoir, roughly 400 m from the intake, which is nearer the dam. It casts every 6 hours, matching the file.
 - These are daily medians from one event, and some days have fewer readings.
 - The data is provisional, so treat this as a case study, not proof.
-- Out-of-range sonde readings happen when the sonde drops to the bottom of the reservoir at the dam and stirs up sediment (a team finding). In this file those are 11 casts between Apr 7 and May 5, 2026, with near-bottom spikes of 52 to 2,438 NTU. None fall in Aug 13-19, so the table above is unaffected. `storm-impact/build_data.py` leaves them out.
+- Out-of-range sonde readings happen when the sonde drops to the bottom of the reservoir and stirs up sediment (a team finding). In this file those are 11 casts between Apr 7 and May 5, 2026, with near-bottom spikes of 52 to 2,438 NTU. None fall in Aug 13-19, so the table above is unaffected. `storm-impact/build_data.py` leaves them out.
 
 ### Foothills plant (`data/FoothillsInfluent.csv`, daily lab samples)
 
@@ -95,7 +96,7 @@ The impact reached the reservoir and the plant about a day after the river peak.
 
 Timing at the plant is only accurate to the day, because the lab samples once a day. Two storms, from provisional data, show the pattern, not a proven rule.
 
-**Water arrival vs. impact arrival.** Water travels from the gage to the plant intake in about 4 hours, per Denver Water's raw water group in `guide.md`. The gage is only 1.76 km straight-line upstream of the dam (`strontia-brief/places.json`). Yet the water-quality impact showed up about a day later, so the delay is likely happening inside the reservoir. Operators care about the impact.
+**Water arrival vs. impact arrival.** Water travels from the gage to the plant intake in about 4 hours, per Denver Water's raw water group in `guide.md`; Jake confirmed that 4 hours is the travel time to use, not the multi-day model lags. The gage is only 1.76 km straight-line upstream of the dam (`strontia-brief/places.json`). Yet the water-quality impact showed up about a day later, so the delay is likely happening inside the reservoir. Operators care about the impact.
 
 ## What already exists and the gap
 
@@ -167,10 +168,10 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 1. Is there a real-time sensor at the Foothills intake or in the plant? It would sharpen timing from about a day to hours, and let the tool check itself.
 2. What depth does Foothills draw water from? This decides whether a mid-depth plume matters.
 3. Which of the "everywhere" sensors can we get data from, and which do they look at first after a storm?
-4. Where exactly is the sonde in the reservoir? Is it near the dam and the Conduit 26 intake?
-5. Is "Vertical Position" in feet or metres, and how deep is the water where the sonde hangs? (Cassidi said feet; the team is double-checking.)
+4. ~~Where exactly is the sonde in the reservoir?~~ Answered (Jake): the middle of the reservoir, roughly 400 m from the intake, which is nearer the dam; it casts every 6 hours.
+5. ~~Is "Vertical Position" in feet or metres?~~ Answered (Jake): metres below the surface.
 6. What turbidity or TOC at the intake makes operators change treatment?
-7. Is the conductance reading of 38 on Aug 14 a known sensor glitch?
+7. ~~Is the conductance reading of 38 on Aug 14 a known sensor glitch?~~ Answered (Jake): probably a glitch. Handling of bad readings is still being worked out, probably by excluding outliers.
 
 ## DDD model
 
@@ -235,5 +236,5 @@ Reservoir: surface clear; plume peaks at mid-depth (5-15) on Aug 16,
            moves deeper (15-25) by Aug 18-19; bottom largely unchanged
 Plant:     TOC 2.0 -> 2.5 mg/L on Aug 16-17
 Impact arrival: about one day after the river peak (Jul 28: same day)
-Open:      intake sensor, intake depth, depth units, operator thresholds
+Open:      intake sensor, intake depth, operator thresholds
 ```

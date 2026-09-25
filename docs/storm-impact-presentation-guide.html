@@ -143,7 +143,7 @@ surface and took time to spread.</p>
 </tr>
 <tr>
 <td><strong>Depth band</strong></td>
-<td>A slice of the reservoir by depth, such as 5-15 on the depth scale. The page summarises each cast by these slices.</td>
+<td>A slice of the reservoir by depth, such as 5-15 metres below the surface. The page summarises each cast by these slices.</td>
 </tr>
 <tr>
 <td><strong>Stratification</strong></td>
@@ -163,7 +163,7 @@ surface and took time to spread.</p>
 <ol>
 <li>The storm made the river muddy fast: turbidity went from about 3 to 329.</li>
 <li>That muddy water did <strong>not</strong> spread evenly through the reservoir. It slid in
-   as a layer <strong>in the 5-15 depth band, below the surface</strong>. The surface stayed clear, and
+   as a layer <strong>5 to 15 metres below the surface</strong>. The surface stayed clear, and
    the bottom barely changed.</li>
 <li>A day or so later, the plant's lab saw TOC rise from 2.0 to 2.5 mg/L.</li>
 <li>So an operator watching the river has <strong>about a day</strong> of warning for this
@@ -194,7 +194,7 @@ dam and the intake are hollow because they have no water-quality sensor."</p>
 <p><strong>Say, as it happens:</strong></p>
 <ul>
 <li>"Here's the river gage. Turbidity jumps in the early hours of Aug 15 and peaks
-  at 329 at 1:45 AM. That dashed line marks the river peak."</li>
+  at 329 at 1:45 AM. The orange dashed line marks the river peak. The blue dotted line is four hours later, when that water reaches the plant's intake."</li>
 <li>"Watch the reservoir row and the reservoir dot. Nothing happens right away. The
   response builds over the next day."</li>
 <li>"The bottom row is the plant lab. TOC steps up from 2.0 to 2.5 on Aug 16."</li>
@@ -204,9 +204,9 @@ dam and the intake are hollow because they have no water-quality sensor."</p>
 <h3>Step 4: the depth chart, which is the "aha" moment (about 45 seconds)</h3>
 <p><strong>Do:</strong> point at section 2, <strong>Reservoir by depth</strong>. Hover over the bright band.</p>
 <p><strong>Say:</strong> "This is the part nobody could see before. Time runs left to right and
-depth runs top to bottom. Each column is one trip of the sonde. See
-this bright stripe? It's the muddy storm water, in the 5-15 depth band. The top stays
-clear. Over the next few days, the stripe moves deeper, to the 15-25 band, and
+depth runs top to bottom, in metres. Each column is one trip of the sonde. See
+this bright stripe? It's the muddy storm water, 5 to 15 metres down. The top stays
+clear. Over the next few days, the stripe moves deeper, to 15 to 25 metres, and
 fades."</p>
 <p><strong>Optional:</strong> switch <strong>Color by</strong> to <strong>Temperature</strong>. "Warm on top, cold below.
 That layering is why the muddy water travels as a sheet instead of mixing in."</p>
@@ -240,13 +240,13 @@ together. This is one view of the whole path."</p>
 <td>1:45 AM, Aug 15</td>
 </tr>
 <tr>
-<td>Reservoir, 5-15 band (turbidity, one sonde cast)</td>
+<td>Reservoir, 5-15 m (turbidity, one sonde cast)</td>
 <td>about 1.5 NTU</td>
 <td><strong>18.9 NTU</strong></td>
 <td>12:06 PM, Aug 16, about 34 h after the river peak</td>
 </tr>
 <tr>
-<td>Reservoir, 5-15 band (daily median)</td>
+<td>Reservoir, 5-15 m (daily median)</td>
 <td>1.5 NTU (Aug 13)</td>
 <td><strong>15.6 NTU</strong></td>
 <td>Aug 16</td>
@@ -275,7 +275,7 @@ together. This is one view of the whole path."</p>
 <td>Jul 28</td>
 </tr>
 <tr>
-<td>Reservoir, 15-25 band</td>
+<td>Reservoir, 15-25 m</td>
 <td>4.9 NTU</td>
 <td>Jul 30, about 36 h after the river peak (river peak assumed at noon)</td>
 </tr>
@@ -289,7 +289,8 @@ together. This is one view of the whole path."</p>
 <p>Other useful facts:</p>
 <ul>
 <li>Water moves from the river gage to the plant intake in <strong>about 4 hours</strong>,
-  according to Denver Water's raw water group, as reported in <code>guide.md</code>.</li>
+  according to Denver Water's raw water group, as reported in <code>guide.md</code>. Jake confirmed this is the figure to use.</li>
+<li>The sonde hangs in the <strong>middle of the reservoir</strong>, roughly <strong>400 m</strong> from the intake, which is nearer the dam. It casts every 6 hours (Jake).</li>
 <li>The river gage is only <strong>1.76 km</strong> straight-line upstream of the dam.</li>
 <li>Upstream at Trumbull, flow barely moved during the storm (139 to 147 cfs).</li>
 <li>For operators, an unusual TOC day is one <strong>above 3 mg/L</strong> (<code>glossary.md</code>). This
@@ -316,24 +317,25 @@ experts would confirm it.</p>
 <strong>General knowledge:</strong> in summer the reservoir is layered, warm on top and cold
 below. Cooler, muddier river water sinks to the layer that matches its density.
 You can see the layers when you switch the depth chart to Temperature.</p>
-<p><strong>"What unit is the depth in?"</strong>
-The sonde file doesn't say. We're confirming with Denver Water whether it's feet
-or metres, so the page shows no unit. The pattern is the same either way: muddy
-water in a middle layer, a clear surface, and a bottom that barely changes.</p>
-<p><strong>"Does it matter that the mud is in the 5-15 band?"</strong>
-It depends on how deep the plant's intake draws water. That's one of our open
-questions for Denver Water.</p>
+<p><strong>"Where is the sonde?"</strong>
+In the middle of the reservoir, roughly 400 m from the plant's intake, which is
+nearer the dam. It measures from top to bottom every 6 hours. Depths are in
+metres. Jake at Denver Water confirmed all three.</p>
+<p><strong>"Does it matter that the mud is 5 to 15 metres down?"</strong>
+It depends on how deep the plant's intake draws water, and the intake is about
+400 m from the sonde. The intake depth is still an open question for Denver Water.</p>
 <p><strong>"Why is July 28 the same day but August is a day later?"</strong>
 We don't know yet. The July river data is only a daily summary, so we don't
 know what time the river peaked, and the plant lab samples only once a day.
 Timing at the plant is accurate only to the day.</p>
 <p><strong>"Were there any bad readings?"</strong>
-Yes. In April and May, the sonde sometimes hit the reservoir bottom at the dam
+Yes. In April and May, the sonde sometimes hit the reservoir bottom
 and stirred up sediment, which gave false readings as high as 2,438 NTU. The
 page detects those 11 casts and leaves them out. None of them happened during
 these storms. We also saw one conductance reading of 38 at 1 PM on Aug 14,
-between readings of about 300. We think it's a sensor glitch, but that's
-unconfirmed.</p>
+between readings of about 300. Jake says it's probably a sensor glitch.
+Denver Water is still working out how to handle bad readings, probably by
+excluding outliers.</p>
 <p><strong>"Is 2.5 mg/L of TOC dangerous?"</strong>
 TOC isn't dangerous by itself. It matters because it reacts with the chlorine
 used to disinfect the water (<code>guide.md</code>). The operational line in these
@@ -362,7 +364,6 @@ Denver Water."</p>
   <strong>followed</strong> the storm.</li>
 <li>Don't say "it always takes a day." Say it took <strong>about a day for this storm</strong>.</li>
 <li>Don't present numbers as final. Say they're <strong>provisional</strong>.</li>
-<li>Don't give the depth a unit (feet or metres) until Denver Water confirms it.</li>
 <li>Don't give treatment advice.</li>
 <li>Don't hand out copies of the data or the page. Denver Water's terms restrict
   redistribution (<code>data/TERMS.md</code>, and at the bottom of the page).</li>

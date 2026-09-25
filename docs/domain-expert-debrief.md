@@ -10,13 +10,13 @@ Questions for the debrief, in priority order. If time is short, ask the top five
 4. **What turbidity at the intake triggers action?** Are there other triggers, such as TOC, pH, or algae?
 5. **Show them the depth table** in [scenario-2-planning.md](scenario-2-planning.md) and ask whether the pattern matches what they believe happened: a mid-depth peak on Aug 16, deeper by Aug 18-19, surface clear.
 
-## Data questions
+## Data questions (answered by Jake)
 
-- Is "Vertical Position" in feet or metres, and how deep is the water where the sonde hangs? (Cassidi said feet; double-checking.)
-- Where is the sonde relative to the intake and the dam, and how often does it cast?
-- Was the conductance reading of 38 at 1 PM on Aug 14 a sensor glitch? How do they handle bad or provisional readings?
+- Is "Vertical Position" in feet or metres, and how deep is the water where the sonde hangs? (Jake says metres)
+- Where is the sonde relative to the intake and the dam, and how often does it cast? (The sonde is in the middle of the reservoir, and intake closer to the dam, maybe a 400m gap. It measures every 6 hours.)
+- Was the conductance reading of 38 at 1 PM on Aug 14 a sensor glitch? probably a glitch. How do they handle bad or provisional readings? we are still working through how to deal with that - probably exclude the outliers
 - Flow at Trumbull barely changed (139 to 147 cfs). Where did the runoff come in: a tributary below Trumbull, or a burn scar?
-- Travel time: `guide.md` says about 4 hours from the gage to the intake, but the models use lags of several days. Which should we use for arrival?
+- Travel time: `guide.md` says about 4 hours from the gage to the intake, but the models use lags of several days. Which should we use for arrival? we'll stay with 4 hours
 - Are there other storms in the sonde period worth comparing? The weather station shows rain of 0.5 or more on May 6, May 19, Jul 24, and Aug 14.
 
 ## Domain and language (for DDD)
@@ -50,6 +50,9 @@ Questions for the debrief, in priority order. If time is short, ask the top five
 | Useful lead time | | |
 | Action thresholds | | |
 | Depth-table reaction | | |
-| Vertical Position units | Feet (being double-checked) | Cassidi (Denver Water), working session |
+| Vertical Position units | Metres below the surface (replaces the earlier "feet") | Jake |
+| Sonde location and cadence | Middle of the reservoir, roughly 400 m from the intake, which is nearer the dam; casts every 6 hours | Jake |
+| Conductance 38 on Aug 14 | Probably a glitch; handling of bad readings still being worked out, probably excluding outliers | Jake |
+| Travel time for arrival | Stay with about 4 hours, gage to intake | Jake |
 | Terms they use | | |
 | Follow-up contact | | |

@@ -29,7 +29,7 @@ challenge itself. `guide.md` explains the domain and Jake's models from zero;
   in his September update; the models use `data/HoosierPass.csv`.
 - **Known data artifact:** in `data/Strontia 0407_0819.xlsx`, out-of-range turbidity
   (52 to 2,438 NTU, deepest readings and the sediment cloud above them) comes from
-  the sonde dropping to the bottom of the reservoir at the dam. It affects 11 casts
+  the sonde dropping to the bottom of the reservoir. It affects 11 casts
   between Apr 7 and May 5, 2026. `storm-impact/build_data.py` detects and drops them.
 
 ## The 3D map

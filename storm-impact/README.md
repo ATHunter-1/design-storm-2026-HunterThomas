@@ -65,25 +65,30 @@ which matches the table in `docs/scenario-2-planning.md`.
 
 - Every reading is provisional. USGS and Denver Water may revise these values.
 - A **cast** is a run of sonde readings with no gap longer than 20 minutes. A
-  cast counts as **full** when it reaches past 40 in "Vertical Position." Short
-  casts only sample the top few units. They appear on the depth chart but are left
+  cast counts as **full** when it reaches deeper than 40 m. Short
+  casts only sample the top few metres. They appear on the depth chart but are left
   out of the band lines and the peak search.
 - **Bottom contact.** The team found that the sonde's out-of-range readings come
-  from times it dropped to the bottom of the reservoir at the dam and stirred up
+  from times it dropped to the bottom of the reservoir and stirred up
   sediment. `build_data.py` treats a cast as bottom contact when any reading at
-  34 or deeper is more than 10× that cast's median turbidity
-  between 20 and 30. Those casts are left out. In this file the rule flags exactly
+  34 m or deeper is more than 10× that cast's median turbidity
+  between 20 and 30 m. Those casts are left out. In this file the rule flags exactly
   11 casts, all between Apr 7 and May 5, 2026, with spikes of 52 to 2,438 NTU. None
   of them fall in the Jul 15 to Aug 19 window the page uses, so the storm numbers
   are the same with or without the filter. The page and `storm-impact.json`
   (`sonde_excluded_bottom_contact`) list what was left out.
-- "Vertical Position" has no unit in the file. It is depth below the surface; the
-  unit is still being confirmed with Denver Water, so the page shows none. The file
-  does not state the sonde's location or the time zone of its clock, so times are
+- "Vertical Position" has no unit in the file. It is depth below the surface in
+  metres, as Jake (Denver Water) confirmed. Jake also says the sonde hangs in the
+  middle of the reservoir, roughly 400 m from the intake, which is nearer the dam,
+  and casts every 6 hours. The file does not state the time zone of the sonde's clock, so times are
   shown as recorded.
 - The repo has 15-minute river data only for Aug 14 noon to Aug 15 6 PM. At every
   other time, the page shows USGS daily summaries. For Jul 28, the river peak time
   is unknown, so the page places it at noon when it counts lag in hours.
+- Water travel time from the gage to the intake is about 4 hours (Denver Water's
+  raw water group, per `guide.md`; Jake confirmed this is the figure to use). The
+  timeline and depth chart mark it with a blue dotted line. For Jul 28 that line
+  inherits the assumed noon river peak.
 - Plant timing is accurate only to the day, because TOC comes from a daily lab
   sample.
 - The page does not predict, model, prove causes, or recommend treatment.
