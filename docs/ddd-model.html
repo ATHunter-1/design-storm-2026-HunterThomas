@@ -79,6 +79,17 @@
   .contrast div { border-radius: 8px; padding: 12px 14px; }
   .contrast .water { background: #e6f0fb; } .contrast .impact { background: #fde9c4; }
   .contrast b { display: block; font-size: 16px; }
+  /* Big picture */
+  .bp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; margin-bottom: 18px; }
+  @media (max-width: 900px) { .bp-grid { grid-template-columns: 1fr; } }
+  .bp-grid .legend-fig img { max-width: 170px; }
+  .bp-grid figure { margin: 0; }
+  .bp-grid img { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; display: block; }
+  .bp-grid figcaption { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .bp-missing { border: 2px dashed var(--line); border-radius: 6px; padding: 14px; font-size: 13px; color: var(--muted); }
+  h3.sub { font-size: 16px; margin: 18px 0 8px; }
+  ul.fixes { margin: 0; padding-left: 20px; font-size: 14px; }
+  ul.fixes li { margin: 5px 0; }
   footer { font-size: 12.5px; color: var(--muted); }
   footer details { margin-top: 10px; }
   footer blockquote { margin: 8px 0; padding: 8px 12px; background: #f5f7f9; border-left: 3px solid var(--line); }
@@ -92,7 +103,8 @@
   <p><span class="draft">Draft model, to validate with Denver Water</span> Example figures are from the Aug 14-15, 2026 storm (provisional data). Source: <a href="scenario-2-planning.md" style="color:#cfe3f7">scenario-2-planning.md</a>.</p>
 </header>
 <nav>
-  <a href="#storming">Event Storming</a>
+  <a href="#bigpicture">Big picture</a>
+  <a href="#storming">Storm timeline</a>
   <a href="#contextmap">Context map</a>
   <a href="#contexts">Bounded contexts</a>
   <a href="#language">Ubiquitous language</a>
@@ -100,8 +112,43 @@
 
 <main>
 
+<section id="bigpicture">
+  <h2>1. Big picture: the whole water system</h2>
+  <p class="lede">The team's big-picture EventStorm, from snow in the headwaters to treated water leaving Foothills. It shows how the system works on any day. Section 2 zooms in on one part of it: how a storm's <em>impact</em> moves from the river gage to the plant, using real readings. Click a board to open it full size.</p>
+  <div class="bp-grid">
+    <figure><a href="EventStorm-SnowpackPrecip.png"><img src="EventStorm-SnowpackPrecip.png" alt="Board 1: Snowpack and Precipitation"></a><figcaption>1. Snowpack &amp; Precipitation</figcaption></figure>
+    <figure><a href="EventStorm-RiverTransport.png"><img src="EventStorm-RiverTransport.png" alt="Board 2: River Transport"></a><figcaption>2. River Transport</figcaption></figure>
+    <figure><a href="EventStorm-StrontiaReservoir.png"><img src="EventStorm-StrontiaReservoir.png" alt="Board 3: Strontia Springs Reservoir"></a><figcaption>3. Strontia Springs Reservoir</figcaption></figure>
+    <div class="bp-missing"><b>Boards 4 and 5</b><br>Not added yet. The numbering jumps from 3 to 6. The dam and the Conduit 26 intake sit between the reservoir and the plant.</div>
+    <figure><a href="EventStorm-FoothillsTreatment.png"><img src="EventStorm-FoothillsTreatment.png" alt="Board 6: Foothills Treatment Plant"></a><figcaption>6. Foothills Treatment Plant</figcaption></figure>
+    <figure class="legend-fig"><a href="EventStorm-Legend.png"><img src="EventStorm-Legend.png" alt="EventStorming colour key"></a><figcaption>Colour key (same colours as section 2)</figcaption></figure>
+  </div>
+
+  <h3 class="sub">How the two levels connect</h3>
+  <table>
+    <tr><th>Big-picture board</th><th>Storm timeline (section 2)</th><th>Bounded context</th><th>How they relate</th></tr>
+    <tr><td>1. Snowpack &amp; Precipitation</td><td>Not on the timeline</td><td>Watershed Observation (snowpack, NOAA weather)</td><td>Background only. Rain at the one weather station barely predicts river turbidity (rank correlation 0.02 over 1,009 days), and the runoff forecast is a prediction, which is outside Scenario 2.</td></tr>
+    <tr><td>2. River Transport</td><td>River gage (Aug 14, 7:30 PM and Aug 15, 1:45 AM)</td><td>Watershed Observation</td><td>"Turbidity Recorded" is a routine reading. When it jumps, the storm timeline records <code>GageResponseObserved</code> and then <code>TurbiditySpikeDetected</code>. "Water Reached Reservoir" is <b>water arrival</b>, which takes hours. The timeline tracks <b>impact arrival</b>, which took about a day.</td></tr>
+    <tr><td>3. Strontia Springs Reservoir</td><td>Reservoir (daily casts, Aug 16)</td><td>Reservoir Profiling</td><td>Temperature, oxygen and pH all come from the same sonde trip, which the timeline records as a single <code>ReservoirProfileCollected</code>. The storm-relevant event is <code>DepthChangeObserved</code>: the plume at mid-depth. "Depth profile view" is the "Reservoir depth chart".</td></tr>
+    <tr><td>4-5. (missing)</td><td>Hot spot "What depth is the intake?"</td><td>None yet</td><td>The repo has no water-quality data for the dam or the Conduit 26 intake.</td></tr>
+    <tr><td>6. Foothills Treatment Plant</td><td>Foothills plant (Aug 16)</td><td>Plant Influent</td><td>"Water Intake Sampled" is the daily lab sample behind <code>PlantResponseObserved</code> (TOC 2.0 to 2.5 mg/L). The treatment steps, from coagulation to release, go beyond Scenario 2.</td></tr>
+    <tr><td>None</td><td>Storm Event Catalog, Operator, Any time</td><td>Storm Event Catalog, Impact Visualization</td><td>These are what the big picture doesn't show: identifying a storm, the operator's arrival estimate, readings being revised, and one view across every stage (flow-path timeline, sensor map, past-storm comparison). This cross-stage view is the team's contribution. Each board's dashboard stands alone, which is exactly the "no visualization" problem Denver Water described.</td></tr>
+  </table>
+
+  <h3 class="sub">Suggested changes to the boards</h3>
+  <ul class="fixes">
+    <li><b>Add hot spots</b> (open questions) to match section 2: What turbidity counts as a spike? Where is the sonde? What is the intake depth? Is there a real-time intake sensor?</li>
+    <li><b>Mark sensors the repo has no data for</b> as hot spots or future sources: the reservoir level sensor and the plant's intake sensor, chlorine sensor, turbidity analyzer and pH monitor. The only plant data here is the daily lab TOC and alkalinity.</li>
+    <li><b>"Select intake depth"</b> is an operator decision, so it belongs on a blue command sticky with the operator as its actor. Whether Foothills can choose its intake depth is still an open question.</li>
+    <li><b>"If DO low, flag stratification."</b> General knowledge, not from Denver Water's materials: stratification shows up as the gap between surface and deep temperatures, and low oxygen at depth is a result of it. "If surface and deep temperatures differ, flag stratification" is closer; confirm with Denver Water.</li>
+    <li><b>"If turbidity high, alert ops"</b> needs a threshold that Denver Water hasn't given yet. Pair it with a hot spot.</li>
+    <li><b>Spelling:</b> USGS and this repo write "gage", not "gauge".</li>
+    <li><b>Add the operator</b>, and the storm events (<code>StormEventIdentified</code>, <code>ImpactArrivalEstimated</code>), so the big picture shows the decision the tool supports.</li>
+  </ul>
+</section>
+
 <section id="storming">
-  <h2>1. Event Storming timeline</h2>
+  <h2>2. Event Storming timeline: one storm's impact</h2>
   <p class="lede">What happens, in order, as a storm's impact moves down the flow path. Orange stickies are domain events (past tense); the other colours show who or what causes them and what people look at.</p>
   <div class="legend">
     <span><i style="background:var(--event)"></i>Domain event</span>
@@ -116,7 +163,7 @@
 </section>
 
 <section id="contextmap">
-  <h2>2. Context map</h2>
+  <h2>3. Context map</h2>
   <p class="lede">Five bounded contexts. External feeds pass through an anti-corruption layer (ACL) so their formats and quirks, such as Excel date numbers and provisional flags, stay out of our model. Arrows point from upstream (supplier) to downstream (consumer).</p>
   <div class="cm-wrap">
   <svg viewBox="0 0 1000 530" width="100%" style="min-width:640px" role="img" aria-label="Context map">
@@ -212,7 +259,7 @@
 </section>
 
 <section id="contexts">
-  <h2>3. Inside each bounded context</h2>
+  <h2>4. Inside each bounded context</h2>
   <p class="lede">The aggregate is the unit the context protects and changes as a whole. Entities have identity; value objects are defined only by their values.</p>
   <div class="legend">
     <span><span class="chip c-agg">Aggregate root</span></span>
@@ -225,7 +272,7 @@
 </section>
 
 <section id="language">
-  <h2>4. Ubiquitous language</h2>
+  <h2>5. Ubiquitous language</h2>
   <p class="lede">Words the team, the code, and Denver Water should all use the same way. Replace these with Denver Water's own words as we learn them.</p>
   <div class="contrast">
     <div class="water"><b>Water arrival: hours</b>River water moves from the gage to the plant intake in about 4 hours (Denver Water's raw water group, per <code>guide.md</code>).</div>

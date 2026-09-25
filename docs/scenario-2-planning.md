@@ -174,7 +174,7 @@ Notes are in [domain-expert-debrief.md](domain-expert-debrief.md).
 
 ## DDD model
 
-Visual version: [ddd-model.html](ddd-model.html) (Event Storming timeline, context map, context contents, and shared vocabulary). Open it directly in a browser.
+Visual version: [ddd-model.html](ddd-model.html) (big-picture EventStorm boards, the storm's Event Storming timeline, context map, context contents, and shared vocabulary). Open it directly in a browser.
 
 **Domain events** (past tense): `StormEventIdentified`, `GageResponseObserved`, `TurbiditySpikeDetected`, `ReservoirProfileCollected`, `DepthChangeObserved`, `PlantResponseObserved`, `ImpactArrivalEstimated`, `ReadingRevised`.
 
